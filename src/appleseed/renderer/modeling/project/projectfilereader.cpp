@@ -66,6 +66,8 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/subdivisionsurfaceobject.h"
+#include "renderer/modeling/object/subdivisionsurfaceobjectreader.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
@@ -1602,6 +1604,27 @@ namespace
                             m_context.get_project().search_paths(),
                             m_name.c_str(),
                             m_params).release());
+                }
+                else if (m_model == SubdivisionSurfaceObjectFactory::get_model())
+                {
+                    if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
+                    {
+                        m_objects.push_back(
+                            SubdivisionSurfaceObjectFactory::create(
+                                m_name.c_str(),
+                                m_params).release());
+                    }
+                    else
+                    {
+                        SubdivisionSurfaceObjectArray object_array;
+                        if (SubdivisionSurfaceObjectReader::read(
+                                m_context.get_project().search_paths(),
+                                m_name.c_str(),
+                                m_params,
+                                object_array))
+                            m_objects = array_vector<ObjectVector>(object_array);
+                        else m_context.get_event_counters().signal_error();
+                    }
                 }
                 else
                 {

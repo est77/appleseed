@@ -74,6 +74,8 @@ void ShadingPoint::fetch_source_geometry() const
     // Fetch primitive-specific geometry.
     if (m_primitive_type == PrimitiveTriangle)
         fetch_triangle_source_geometry();
+    else if (m_primitive_type == PrimitivePatch)
+        fetch_patch_source_geometry();
     else
     {
         assert(is_curve_primitive());
@@ -260,6 +262,11 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     }
 }
 
+void ShadingPoint::fetch_patch_source_geometry() const
+{
+    m_primitive_pa = 0;
+}
+
 void ShadingPoint::fetch_curve_source_geometry() const
 {
     // Set primitive attribute to default value of 0.
@@ -308,6 +315,10 @@ void ShadingPoint::refine_and_offset() const
             m_front_point,
             m_back_point);
 #endif
+    }
+    else if (m_primitive_type == PrimitivePatch)
+    {
+        // todo: implement this...
     }
     else
     {
@@ -434,6 +445,10 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                 m_assembly_instance_transform.normal_to_parent(
                     obj_instance_transform.normal_to_parent(m_dndv));
         }
+    }
+    else if (m_primitive_type == PrimitivePatch)
+    {
+        // todo: implement this...
     }
     else
     {
@@ -579,6 +594,10 @@ void ShadingPoint::compute_geometric_normal() const
                 m_geometric_normal = -m_geometric_normal;
         }
     }
+    else if (m_primitive_type == PrimitivePatch)
+    {
+        // todo: implement this...
+    }
     else
     {
         assert(is_curve_primitive());
@@ -616,6 +635,10 @@ void ShadingPoint::compute_original_shading_normal() const
             // Use the geometric normal if per-vertex normals are absent.
             m_original_shading_normal = get_geometric_normal();
         }
+    }
+    else if (m_primitive_type == PrimitivePatch)
+    {
+        // todo: implement this...
     }
     else
     {
@@ -667,6 +690,10 @@ void ShadingPoint::compute_shading_basis() const
                         m_shading_basis);
             }
         }
+    }
+    else if (m_primitive_type == PrimitivePatch)
+    {
+        // todo: implement this...
     }
 }
 
@@ -738,6 +765,10 @@ void ShadingPoint::compute_world_space_point_velocity() const
             p1 =  last_v0 * u +  last_v1 * v +  last_v2 * w;
         }
     }
+    else if (m_primitive_type == PrimitivePatch)
+    {
+        // todo: implement this...
+    }
 
     // Transform positions to assembly space.
     const Transformd& obj_instance_transform = m_object_instance->get_transform();
@@ -794,6 +825,10 @@ void ShadingPoint::compute_alpha() const
                 m_alpha *= a;
             }
         }
+    }
+    else if (m_primitive_type == PrimitivePatch)
+    {
+        // todo: implement this...
     }
     else
     {

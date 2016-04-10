@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_SUBDIVISIONSURFACEOBJECTREADER_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_SUBDIVISIONSURFACEOBJECTREADER_H
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
@@ -38,38 +37,38 @@
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
-namespace renderer      { class MeshObject; }
+namespace renderer      { class SubdivisionSurfaceObject; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// An array of mesh objects.
+// An array of subdivision surface objects.
 //
 
-APPLESEED_DECLARE_ARRAY(MeshObjectArray, MeshObject*);
+APPLESEED_DECLARE_ARRAY(SubdivisionSurfaceObjectArray, SubdivisionSurfaceObject*);
 
 
 //
-// Mesh object reader.
+// Subdivision surface object reader.
 //
 
-class APPLESEED_DLLSYMBOL MeshObjectReader
+class APPLESEED_DLLSYMBOL SubdivisionSurfaceObjectReader
 {
   public:
-    typedef MeshObjectArray ResultType;
+    typedef SubdivisionSurfaceObjectArray ResultType;
 
-    // Read mesh objects from disk. The filenames are defined in params.
+    // Read subdivision surface objects from disk. The filenames are defined in params.
     // Returns true on success, false otherwise. When false is returned,
     // nothing should be assumed on the state of the objects parameter.
     static bool read(
         const foundation::SearchPaths&  search_paths,
         const char*                     base_object_name,
         const ParamArray&               params,
-        MeshObjectArray&                objects);
+        SubdivisionSurfaceObjectArray&  objects);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_SUBDIVISIONSURFACEOBJECTREADER_H

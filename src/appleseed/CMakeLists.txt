@@ -255,7 +255,9 @@ set (foundation_math_sources
     foundation/math/basis.h
     foundation/math/bezier.h
     foundation/math/beziercurve.h
+    foundation/math/bezierpatch.h
     foundation/math/bsp.h
+    foundation/math/bsplinepatch.h
     foundation/math/bvh.h
     foundation/math/cdf.h
     foundation/math/combination.h
@@ -266,8 +268,10 @@ set (foundation_math_sources
     foundation/math/fp.h
     foundation/math/fresnel.h
     foundation/math/frustum.h
+    foundation/math/gregorypatch.h
     foundation/math/hash.h
     foundation/math/knn.h
+    foundation/math/looppatch.h
     foundation/math/matrix.h
     foundation/math/microfacet.h
     foundation/math/minmax.h
@@ -864,6 +868,9 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/intersectionsettings.h
     renderer/kernel/intersection/intersector.cpp
     renderer/kernel/intersection/intersector.h
+    renderer/kernel/intersection/patchkey.h
+    renderer/kernel/intersection/patchtree.cpp
+    renderer/kernel/intersection/patchtree.h
     renderer/kernel/intersection/probevisitorbase.h
     renderer/kernel/intersection/regioninfo.h
     renderer/kernel/intersection/regiontree.cpp
@@ -1624,7 +1631,14 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/meshobjectwriter.h
     renderer/modeling/object/object.cpp
     renderer/modeling/object/object.h
+    renderer/modeling/object/objecttraits.h
     renderer/modeling/object/regionkit.h
+    renderer/modeling/object/subdivisionsurfaceobject.cpp
+    renderer/modeling/object/subdivisionsurfaceobject.h
+    renderer/modeling/object/subdivisionsurfaceobjectreader.cpp
+    renderer/modeling/object/subdivisionsurfaceobjectreader.h
+    renderer/modeling/object/subdivisionsurfaceobjectwriter.cpp
+    renderer/modeling/object/subdivisionsurfaceobjectwriter.h
     renderer/modeling/object/triangle.h
 )
 list (APPEND appleseed_sources

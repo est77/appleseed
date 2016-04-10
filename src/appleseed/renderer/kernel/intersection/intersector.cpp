@@ -275,6 +275,7 @@ bool Intersector::trace(
         assembly_tree,
         m_region_tree_cache,
         m_triangle_tree_cache,
+        m_patch_tree_cache,
         m_curve_tree_cache,
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -326,6 +327,7 @@ bool Intersector::trace_probe(
         assembly_tree,
         m_region_tree_cache,
         m_triangle_tree_cache,
+        m_patch_tree_cache,
         m_curve_tree_cache,
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS

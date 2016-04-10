@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_OBJECT_H
-#define APPLESEED_RENDERER_API_OBJECT_H
+#ifndef APPLESEED_FOUNDATION_MATH_BSPLINEPATCH_H
+#define APPLESEED_FOUNDATION_MATH_BSPLINEPATCH_H
 
-// API headers.
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/curveobjectreader.h"
-#include "renderer/modeling/object/curveobjectwriter.h"
-#include "renderer/modeling/object/meshobject.h"
-#include "renderer/modeling/object/meshobjectreader.h"
-#include "renderer/modeling/object/meshobjectwriter.h"
-#include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/subdivisionsurfaceobject.h"
-#include "renderer/modeling/object/subdivisionsurfaceobjectreader.h"
-#include "renderer/modeling/object/subdivisionsurfaceobjectwriter.h"
-#include "renderer/modeling/object/triangle.h"
+namespace foundation
+{
 
-#endif  // !APPLESEED_RENDERER_API_OBJECT_H
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_MATH_BSPLINEPATCH_H

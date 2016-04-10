@@ -147,6 +147,38 @@ const size_t CurveTreeStackSize = 64;
 
 
 //
+// Patch tree settings.
+//
+
+// Patch formats used for storage and intersection.
+//typedef foundation::BezierCurve3<GScalar> CurveType3;
+//typedef foundation::BezierCurve1<GScalar> CurveType1;
+
+// Patch intersectors.
+//typedef foundation::BezierCurveIntersector<CurveType3> Curve3IntersectorType;
+//typedef foundation::BezierCurveIntersector<CurveType1> Curve1IntersectorType;
+
+// Matrix used in patch intersections
+typedef foundation::Matrix<GScalar, 4, 4> PatchMatrixType;
+
+// Maximum number of patches per leaf.
+const size_t PatchTreeDefaultMaxLeafSize = 1;
+
+// Relative cost of traversing an interior node.
+const GScalar PatchTreeDefaultInteriorNodeTraversalCost(1.0);
+
+// Relative cost of intersecting a patch.
+const GScalar PatchTreeDefaultPatchIntersectionCost(1.0);
+
+// Size of the patch tree access cache.
+const size_t PatchTreeAccessCacheLines = 128;
+const size_t PatchTreeAccessCacheWays = 2;
+
+// Size of the stack (in number of nodes) used during traversal.
+const size_t PatchTreeStackSize = 64;
+
+
+//
 // Miscellaneous settings.
 //
 

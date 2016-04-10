@@ -93,7 +93,8 @@ class ShadingPoint
         PrimitiveTriangle   = 1 << 1,
         PrimitiveCurve      = 1 << 2,
         PrimitiveCurve1     = PrimitiveCurve | 0,
-        PrimitiveCurve3     = PrimitiveCurve | 1
+        PrimitiveCurve3     = PrimitiveCurve | 1,
+        PrimitivePatch      = 1 << 3
     };
 
     // Constructor, calls clear().
@@ -124,6 +125,7 @@ class ShadingPoint
     // Return the type of the hit primitive.
     PrimitiveType get_primitive_type() const;
     bool is_triangle_primitive() const;
+    bool is_patch_primitive() const;
     bool is_curve_primitive() const;
 
     // Return the distance from the ray origin to the intersection point.
@@ -266,6 +268,7 @@ class ShadingPoint
 #ifdef APPLESEED_WITH_OSL
     friend class OSLShaderGroupExec;
 #endif
+    friend class PatchLeafVisitor;
     friend class RegionLeafVisitor;
     friend class ShadingPointBuilder;
     friend class TriangleLeafVisitor;
@@ -363,6 +366,7 @@ class ShadingPoint
     // Fetch the source geometry.
     void fetch_source_geometry() const;
     void fetch_triangle_source_geometry() const;
+    void fetch_patch_source_geometry() const;
     void fetch_curve_source_geometry() const;
 
     // Refine and offset the intersection point.
@@ -486,6 +490,11 @@ inline bool ShadingPoint::is_triangle_primitive() const
     return (m_primitive_type & PrimitiveTriangle) != 0;
 }
 
+inline bool ShadingPoint::is_patch_primitive() const
+{
+    return (m_primitive_type & PrimitivePatch) != 0;
+}
+
 inline bool ShadingPoint::is_curve_primitive() const
 {
     return (m_primitive_type & PrimitiveCurve) != 0;
@@ -522,6 +531,10 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
                   v0_uv * (1.0 - m_bary[0] - m_bary[1])
                 + v1_uv * m_bary[0]
                 + v2_uv * m_bary[1];
+        }
+        else if (m_primitive_type == PrimitivePatch)
+        {
+            // todo: implement this...
         }
         else
         {

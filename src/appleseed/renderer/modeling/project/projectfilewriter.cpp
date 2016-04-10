@@ -48,6 +48,9 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/objecttraits.h"
+#include "renderer/modeling/object/subdivisionsurfaceobject.h"
+#include "renderer/modeling/object/subdivisionsurfaceobjectwriter.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/project.h"
@@ -681,6 +684,8 @@ namespace
 
                 if (strcmp(object.get_model(), MeshObjectFactory::get_model()) == 0)
                     write_mesh_object(static_cast<MeshObject&>(object), groups);
+                else if (strcmp(object.get_model(), SubdivisionSurfaceObjectFactory::get_model()) == 0)
+                    write_mesh_object(static_cast<SubdivisionSurfaceObject&>(object), groups);
                 else if (strcmp(object.get_model(), CurveObjectFactory::get_model()) == 0)
                     write_curve_object(static_cast<CurveObject&>(object));
                 else write(object);
@@ -688,7 +693,8 @@ namespace
         }
 
         // Write a mesh object.
-        void write_mesh_object(MeshObject& object, set<string>& groups)
+        template <typename ObjectType>
+        void write_mesh_object(ObjectType& object, set<string>& groups)
         {
             ParamArray& params = object.get_parameters();
 
@@ -703,14 +709,14 @@ namespace
 
                     // Write the object group.
                     params.strings().remove("__base_object_name");
-                    do_write_mesh_object(group_name, params);
+                    do_write_mesh_object<ObjectType>(group_name, params);
                     params.strings().insert("__base_object_name", group_name);
                 }
             }
             else if (params.strings().exist("filename") || params.dictionaries().exist("filename"))
             {
                 // This object has a filename parameter.
-                do_write_mesh_object(object.get_name(), params);
+                do_write_mesh_object<ObjectType>(object.get_name(), params);
             }
             else
             {
@@ -720,6 +726,7 @@ namespace
         }
 
         // Write an <object> element for a mesh with a filename.
+        template <typename ObjectType>
         void do_write_mesh_object(const string& name, ParamArray& params)
         {
             // The object must either have a scalar filename or a composite filename, but not both.
@@ -738,7 +745,9 @@ namespace
             // Write an <object> element.
             XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", name);
-            element.add_attribute("model", MeshObjectFactory::get_model());
+
+            typedef typename EntityTraits<ObjectType>::FactoryType FactoryType;
+            element.add_attribute("model", FactoryType::get_model());
             element.write(XMLElement::HasChildElements);
             write_params(params);
         }
@@ -755,7 +764,8 @@ namespace
         }
 
         // Write an <object> element for a mesh object without a filename.
-        void do_write_orphan_mesh_object(const MeshObject& object)
+        template <typename ObjectType>
+        void do_write_orphan_mesh_object(const ObjectType& object)
         {
             // Construct the name of the mesh file.
             const string object_name = object.get_name();
@@ -765,7 +775,8 @@ namespace
             {
                 // Write the mesh file to disk.
                 const string filepath = (m_project_new_root_dir / filename).string();
-                MeshObjectWriter::write(
+                typedef typename EntityTraits<ObjectType>::WriterType WriterType;
+                WriterType::write(
                     object,
                     object_name.c_str(),
                     filepath.c_str());
@@ -774,7 +785,8 @@ namespace
             // Write the <object> element.
             XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", object_name);
-            element.add_attribute("model", MeshObjectFactory::get_model());
+            typedef typename EntityTraits<ObjectType>::FactoryType FactoryType;
+            element.add_attribute("model", FactoryType::get_model());
             element.write(XMLElement::HasChildElements);
 
             // Output a "filename" parameter but don't add it to the object.

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/intersection/patchtree.h"
 #include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -126,6 +127,7 @@ class Intersector
     // Access caches.
     mutable RegionTreeAccessCache                   m_region_tree_cache;
     mutable TriangleTreeAccessCache                 m_triangle_tree_cache;
+    mutable PatchTreeAccessCache                    m_patch_tree_cache;
     mutable CurveTreeAccessCache                    m_curve_tree_cache;
     mutable RegionKitAccessCache                    m_region_kit_cache;
     mutable StaticTriangleTessAccessCache           m_tess_cache;
@@ -136,6 +138,7 @@ class Intersector
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     mutable foundation::bvh::TraversalStatistics    m_assembly_tree_traversal_stats;
     mutable foundation::bvh::TraversalStatistics    m_triangle_tree_traversal_stats;
+    mutable foundation::bvh::TraversalStatistics    m_patch_tree_traversal_stats;
     mutable foundation::bvh::TraversalStatistics    m_curve_tree_traversal_stats;
 #endif
 };

@@ -413,6 +413,8 @@ void AssemblyTree::create_child_trees(const Assembly& assembly)
             : create_triangle_tree(assembly);
     }
 
+    // todo: create a patch tree id there are subdivs.
+
     // Create a curve tree if there are curve objects.
     if (has_object_instances_of_type(assembly, CurveObjectFactory::get_model()))
         create_curve_tree(assembly);
@@ -473,6 +475,11 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
     m_triangle_trees.insert(make_pair(assembly.get_uid(), triangle_tree));
 }
 
+void AssemblyTree::create_patch_tree(const Assembly& assembly)
+{
+    // todo: implement
+}
+
 void AssemblyTree::create_curve_tree(const Assembly& assembly)
 {
     const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory::get_model());
@@ -506,6 +513,7 @@ void AssemblyTree::delete_child_trees(const UniqueID assembly_id)
 {
     delete_region_tree(assembly_id);
     delete_triangle_tree(assembly_id);
+    delete_patch_tree(assembly_id);
     delete_curve_tree(assembly_id);
 }
 
@@ -527,6 +535,11 @@ void AssemblyTree::delete_triangle_tree(const UniqueID assembly_id)
         m_triangle_tree_repository.release(it->second);
         m_triangle_trees.erase(it);
     }
+}
+
+void AssemblyTree::delete_patch_tree(const UniqueID assembly_id)
+{
+    // todo: implement...
 }
 
 void AssemblyTree::delete_curve_tree(const UniqueID assembly_id)
@@ -732,6 +745,17 @@ bool AssemblyLeafVisitor::visit(
             }
         }
 
+        // Retrieve the patch tree of this assembly.
+        const PatchTree* patch_tree =
+            m_patch_tree_cache.access(
+                item.m_assembly_uid,
+                m_tree.m_patch_trees);
+
+        if (patch_tree)
+        {
+            // todo: do something here...
+        }
+
         // Retrieve the curve tree of this assembly.
         const CurveTree* curve_tree =
             m_curve_tree_cache.access(
@@ -903,6 +927,17 @@ bool AssemblyLeafProbeVisitor::visit(
                     return false;
                 }
             }
+        }
+
+        // Retrieve the patch tree of this assembly.
+        const PatchTree* patch_tree =
+            m_patch_tree_cache.access(
+                item.m_assembly_uid,
+                m_tree.m_patch_trees);
+
+        if (patch_tree)
+        {
+            // todo: do something here...
         }
 
         // Retrieve the curve tree of this assembly.
