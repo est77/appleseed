@@ -86,7 +86,7 @@ class APPLESEED_DLLSYMBOL Project
     foundation::SearchPaths& search_paths() const;
 
     // Return the search paths as a string, in reverse order (for OIIO/OSL).
-    std::string make_search_path_string() const;
+    std::string make_search_path_string(const char pathsep = ';') const;
 
     // Set the scene, replacing the existing scene.
     void set_scene(foundation::auto_release_ptr<Scene> scene);

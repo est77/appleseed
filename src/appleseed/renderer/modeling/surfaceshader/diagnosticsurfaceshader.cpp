@@ -96,7 +96,8 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "regions",                    Regions },
     { "primitives",                 Primitives },
     { "materials",                  Materials },
-    { "ray_spread",                 RaySpread }
+    { "ray_spread",                 RaySpread },
+    { "faceid",                     FaceId }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
@@ -121,7 +122,8 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "regions",                    "Regions" },
     { "primitives",                 "Primitives" },
     { "materials",                  "Materials" },
-    { "ray_spread",                 "Ray Spread" }
+    { "ray_spread",                 "Ray Spread" },
+    { "faceid",                     "Face ID" }
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
@@ -546,6 +548,11 @@ void DiagnosticSurfaceShader::evaluate(
             }
         }
         break;
+
+    case FaceId:
+      shading_result.set_main_to_linear_rgb(
+          integer_to_color(shading_point.get_faceid()));
+      break;
 
       default:
         assert(false);

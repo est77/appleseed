@@ -1105,12 +1105,6 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
-if (WITH_OIIO)
-    list (APPEND renderer_kernel_rendering_sources
-        renderer/kernel/rendering/oiioerrorhandler.cpp
-        renderer/kernel/rendering/oiioerrorhandler.h
-    )
-endif ()
 if (WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources
         renderer/kernel/rendering/rendererservices.cpp
@@ -1883,6 +1877,10 @@ endif ()
 
 if (WITH_PARTIO)
     link_against_partio (appleseed)
+endif ()
+
+if (WITH_PTEX)
+    link_against_ptex (appleseed)
 endif ()
 
 target_link_libraries (appleseed

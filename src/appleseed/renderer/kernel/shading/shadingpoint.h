@@ -222,6 +222,9 @@ class ShadingPoint
     // Return the index of the primitive attribute.
     size_t get_primitive_attribute_index() const;
 
+    // Return the Ptex faceid.
+    size_t get_faceid() const;
+
     // Return the opacity at the intersection point.
     const Alpha& get_alpha() const;
 

@@ -158,9 +158,9 @@ SearchPaths& Project::search_paths() const
     return impl->m_search_paths;
 }
 
-string Project::make_search_path_string() const
+string Project::make_search_path_string(const char pathsep) const
 {
-    return impl->m_search_paths.to_string(';', true);
+    return impl->m_search_paths.to_string(pathsep, true);
 }
 
 void Project::set_scene(auto_release_ptr<Scene> scene)

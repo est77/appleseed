@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
@@ -47,6 +48,7 @@
 // Standard headers.
 #include <exception>
 #include <utility>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -80,6 +82,7 @@ struct ShaderGroup::Impl
     ShaderConnectionContainer   m_connections;
     mutable OSL::ShaderGroupRef m_shader_group_ref;
     mutable SurfaceAreaMap      m_surface_areas;
+    vector<OIIO::ustring>       m_textures;
 };
 
 ShaderGroup::ShaderGroup(const char* name)
@@ -216,6 +219,8 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         get_shadergroup_globals_info(shading_system);
         report_uses_global("dPdtime", UsesdPdTime);
 
+        get_shadergroup_textures(shading_system);
+
         return true;
     }
     catch (const exception& e)
@@ -225,8 +230,13 @@ bool ShaderGroup::create_optimized_osl_shader_group(
     }
 }
 
-void ShaderGroup::release_optimized_osl_shader_group()
+void ShaderGroup::release_optimized_osl_shader_group(
+    RendererServices& renderer_services)
 {
+    for(const_each<vector<OIIO::ustring> > it = impl->m_textures; it; ++it)
+        renderer_services.unregister_texture(*it);
+
+    impl->m_textures.clear();
     impl->m_shader_group_ref.reset();
 }
 
@@ -428,6 +438,61 @@ void ShaderGroup::report_uses_global(const char* global_name, const Flags flag) 
             "shader group %s does not use the %s global.",
             get_name(),
             global_name);
+    }
+}
+
+void ShaderGroup::get_shadergroup_textures(OSL::ShadingSystem& shading_system)
+{
+    int num_unknown_textures = 0;
+    shading_system.getattribute(
+        impl->m_shader_group_ref.get(),
+        "unknown_textures_needed",
+        num_unknown_textures);
+
+    if (num_unknown_textures != 0)
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s has %d unknown textures.",
+            get_name(),
+            num_unknown_textures);
+    }
+
+    int num_textures = 0;
+    shading_system.getattribute(
+        impl->m_shader_group_ref.get(),
+        "num_textures_needed",
+        num_textures);
+
+    if (num_textures != 0)
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s uses %d textures.",
+            get_name(),
+            num_textures);
+
+        OIIO::ustring* textures = 0;
+        if (!shading_system.getattribute(
+                impl->m_shader_group_ref.get(),
+                "textures_needed",
+                OIIO::TypeDesc::PTR,
+                &textures))
+        {
+            RENDERER_LOG_WARNING(
+                "failed to get used textures for shader group %s.",
+                get_name());
+            return;
+        }
+
+        RendererServices* renderer_services =
+            static_cast<RendererServices*>(shading_system.renderer());
+
+        for (int i = 0; i < num_textures; ++i)
+        {
+            if (renderer_services->register_texture(textures[i]))
+            {
+                // ...
+            }
+        }
     }
 }
 

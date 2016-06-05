@@ -49,6 +49,9 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Entity; }
+#ifdef APPLESEED_WITH_OSL
+namespace renderer      { class RendererServices; }
+#endif
 
 namespace renderer
 {
@@ -86,7 +89,8 @@ class APPLESEED_DLLSYMBOL BaseGroup
         foundation::IAbortSwitch*   abort_switch = 0);
 
     // Release internal OSL shader groups.
-    void release_optimized_osl_shader_groups();
+    void release_optimized_osl_shader_groups(
+        RendererServices& renderer_services);
 
 #endif
 

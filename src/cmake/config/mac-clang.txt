@@ -202,6 +202,9 @@ macro (link_against_partio target)
     target_link_libraries (${target} ${PARTIO_LIBRARIES})
 endmacro ()
 
+macro (link_against_ptex target)
+    target_link_libraries (${target} ${PTEX_LIBRARIES})
+endmacro ()
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

@@ -45,12 +45,16 @@
 #include "foundation/core/version.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <limits>
 
 using namespace foundation;
 using namespace std;
+#ifdef APPLESEED_WITH_PTEX
+using namespace Ptex;
+#endif
 
 namespace renderer
 {
@@ -87,6 +91,19 @@ namespace
     OIIO::ustring g_screen_ustr("screen");
     OIIO::ustring g_shader_usrt("shader");
     OIIO::ustring g_world_ustr("world");
+}
+
+RendererServices::TextureEntry::TextureEntry()
+{
+}
+
+RendererServices::TextureEntry::TextureEntry(
+    const Type              type,
+    const OIIO::ustring&    filename)
+  : m_type(type)
+  , m_filename(filename)
+  , m_use_count(1)
+{
 }
 
 RendererServices::RendererServices(
@@ -126,11 +143,22 @@ RendererServices::RendererServices(
     m_global_user_data_getters[OIIO::ustring("Bn")] = &RendererServices::get_user_data_bn;
     m_global_user_data_getters[OIIO::ustring("dNdu")] = &RendererServices::get_user_data_dndu;
     m_global_user_data_getters[OIIO::ustring("dNdv")] = &RendererServices::get_user_data_dndv;
+    m_global_user_data_getters[OIIO::ustring("faceid")] = &RendererServices::get_user_data_faceid;
 }
 
-void RendererServices::initialize(TextureStore& texture_store)
+void RendererServices::initialize(
+    TextureStore& texture_store
+#ifdef APPLESEED_WITH_PTEX
+  , PtexCache& ptex_cache
+#endif
+    )
 {
     m_texture_store = &texture_store;
+
+#ifdef APPLESEED_WITH_PTEX
+    m_ptex_cache = &ptex_cache;
+#endif
+
     m_camera = m_project.get_scene()->get_camera();
 
     m_cam_projection_str =
@@ -142,6 +170,40 @@ void RendererServices::initialize(TextureStore& texture_store)
     m_shutter[0] = static_cast<float>(m_camera->get_shutter_open_time());
     m_shutter[1] = static_cast<float>(m_camera->get_shutter_close_time());
     m_shutter_interval = static_cast<float>(m_camera->get_shutter_open_time_interval());
+}
+
+bool RendererServices::register_texture(const OIIO::ustring& filename)
+{
+    TextureEntriesMapType::iterator it = m_texture_entries.find(filename);
+    if (it != m_texture_entries.end())
+    {
+        it->second.m_use_count++;
+        return true;
+    }
+
+#ifdef APPLESEED_WITH_PTEX
+    if (filename.find(".ptx") != string::npos)
+    {
+        m_texture_entries[filename] =
+            TextureEntry(TextureEntry::PTexTexture, filename);
+        return true;
+    }
+#endif
+
+    return false;
+}
+
+void RendererServices::unregister_texture(const OIIO::ustring& filename)
+{
+    TextureEntriesMapType::iterator it = m_texture_entries.find(filename);
+    if (it != m_texture_entries.end())
+    {
+        it->second.m_use_count--;
+        if (it->second.m_use_count == 0)
+            m_texture_entries.erase(filename);
+
+        return;
+    }
 }
 
 OIIO::TextureSystem* RendererServices::texturesys() const
@@ -166,6 +228,27 @@ bool RendererServices::texture(
     float*                      dresultds,
     float*                      dresultdt)
 {
+    TextureEntriesMapType::const_iterator it(m_texture_entries.find(filename));
+    if (it != m_texture_entries.end())
+    {
+        return lookup_texture(
+            it->second,
+            texture_handle,
+            texture_thread_info,
+            options,
+            sg,
+            s,
+            t,
+            dsdx,
+            dtdx,
+            dsdy,
+            dtdy,
+            nchannels,
+            result,
+            dresultds,
+            dresultdt);
+    }
+
     return OSL::RendererServices::texture(
         filename,
         texture_handle,
@@ -182,6 +265,66 @@ bool RendererServices::texture(
         result,
         dresultds,
         dresultdt);
+}
+
+bool RendererServices::lookup_texture(
+    const TextureEntry&         texture_entry,
+    TextureHandle*              texture_handle,
+    TexturePerthread*           texture_thread_info,
+    OSL::TextureOpt&            options,
+    OSL::ShaderGlobals*         sg,
+    float                       s,
+    float                       t,
+    float                       dsdx,
+    float                       dtdx,
+    float                       dsdy,
+    float                       dtdy,
+    int                         nchannels,
+    float*                      result,
+    float*                      dresultds,
+    float*                      dresultdt)
+{
+#ifdef APPLESEED_WITH_PTEX
+    if (texture_entry.m_type == TextureEntry::PTexTexture)
+    {
+        String error;
+        PtexPtr<PtexTexture> texture(m_ptex_cache->get(texture_entry.m_filename.c_str(), error));
+        if (texture.get() == 0)
+            return false;
+
+        // todo: compute filter footprint here.
+        // For now, we only use point sampling...
+        PtexFilter::Options ptex_opts(PtexFilter::f_point);
+
+        // todo: allocating a filter per shading point is not great at all.
+        // we need to cache them somehow...
+        PtexPtr<PtexFilter> filter(PtexFilter::getFilter(texture.get(), ptex_opts));
+
+        filter->eval(
+            result,
+            options.firstchannel,
+            nchannels,
+            options.subimage,
+            s,
+            t,
+            dsdx,
+            dsdy,
+            dtdx,
+            dtdy);
+
+        // todo: handle derivatives here.
+        // for now, we set them to zero.
+        if (dresultds)
+            memset(dresultds, 0, sizeof(float) * nchannels);
+
+        if (dresultdt)
+            memset(dresultdt, 0, sizeof(float) * nchannels);
+
+        return true;
+    }
+#endif
+
+    return false;
 }
 
 bool RendererServices::get_matrix(
@@ -988,6 +1131,24 @@ IMPLEMENT_USER_DATA_GETTER(dndv)
         reinterpret_cast<float*>(val)[0] = static_cast<float>(dndv.x);
         reinterpret_cast<float*>(val)[1] = static_cast<float>(dndv.y);
         reinterpret_cast<float*>(val)[2] = static_cast<float>(dndv.z);
+
+        if (derivatives)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_USER_DATA_GETTER(faceid)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        reinterpret_cast<int*>(val)[0] = shading_point->get_faceid();
 
         if (derivatives)
             clear_derivatives(type, val);

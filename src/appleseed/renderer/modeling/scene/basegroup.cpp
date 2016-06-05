@@ -134,13 +134,14 @@ bool BaseGroup::create_optimized_osl_shader_groups(
     return success;
 }
 
-void BaseGroup::release_optimized_osl_shader_groups()
+void BaseGroup::release_optimized_osl_shader_groups(
+    RendererServices& renderer_services)
 {
     for (each<AssemblyContainer> i = assemblies(); i; ++i)
-        i->release_optimized_osl_shader_groups();
+        i->release_optimized_osl_shader_groups(renderer_services);
 
     for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
-        i->release_optimized_osl_shader_group();
+        i->release_optimized_osl_shader_group(renderer_services);
 }
 
 #endif

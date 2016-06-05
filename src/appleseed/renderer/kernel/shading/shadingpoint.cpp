@@ -803,6 +803,17 @@ void ShadingPoint::compute_alpha() const
     }
 }
 
+size_t ShadingPoint::get_faceid() const
+{
+    assert(hit());
+
+    if (m_primitive_type == PrimitiveTriangle)
+        return m_primitive_index;
+    else
+        return 0;
+}
+
+
 #ifdef APPLESEED_WITH_OSL
 
 void ShadingPoint::initialize_osl_shader_globals(

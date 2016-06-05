@@ -26,22 +26,18 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/udim.h"
-
 shader as_scalar_texture
 (
     float        U = u,
     float        V = v,
+    int          faceid = 0
+    [[
+        int    lockgeom = 0
+    ]],
     string       Filename = ""
     [[
         string widget = "filename"
     ]],
-    string       UDIM = "off"
-    [[
-        string widget = "popup",
-        string options = "off|mari"
-    ]],
-    string       UDIMPrefix = ".tx",
     string       UWrap = "periodic"
     [[
         string widget = "popup",
@@ -74,39 +70,37 @@ shader as_scalar_texture
     output float FloatOut = 0
 )
 {
-    string mari_filenames[100] = {TEN_MARI_UDIM_ROWS};
+    color c;
 
-    string tx_filename = "";
-    float uu;
-    float vv;
-
-    if (UDIM == "mari")
+    if (endswith(Filename, ".ptx"))
     {
-        int utile  = int(U); 
-        int vtile  = int(V); 
-        int offset = 10 * vtile + utile;
-        tx_filename = mari_filenames[offset];
-        uu = U - utile;
-        vv = V - vtile;
+        c = texture(
+            Filename,
+            u,
+            v,
+            "subimage", faceid,
+            "swidth", UWidth,
+            "twidth", VWidth,
+            "sblur", UBlur,
+            "tblur", VBlur,
+            "swrap", UWrap,
+            "twrap", VWrap,
+            "firstchannel", Channel);
     }
     else
     {
-        tx_filename = Filename;
-        uu = U;
-        vv = V;
+        c = texture(
+            Filename,
+            u,
+            v,
+            "swidth", UWidth,
+            "twidth", VWidth,
+            "sblur", UBlur,
+            "tblur", VBlur,
+            "swrap", UWrap,
+            "twrap", VWrap,
+            "firstchannel", Channel);
     }
-
-    color c = texture(
-        tx_filename,
-        uu,
-        vv,
-        "swidth", UWidth,
-        "twidth", VWidth,
-        "sblur", UBlur,
-        "tblur", VBlur,
-        "swrap", UWrap,
-        "twrap", VWrap,
-        "firstchannel", Channel);
 
     if (Invert)
         FloatOut = 1.0 - c[0];

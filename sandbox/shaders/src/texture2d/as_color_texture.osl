@@ -26,22 +26,18 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/udim.h"
-
 shader as_color_texture
 (
     float        U = u,
     float        V = v,
+    int          faceid = 0
+    [[
+        int    lockgeom = 0
+    ]],
     string       Filename = ""
     [[
         string widget = "filename"
     ]],
-    string       UDIM = "off"
-    [[
-        string widget = "popup",
-        string options = "off|mari"
-    ]],
-    string       UDIMPrefix = ".tx",
     string       UWrap = "periodic"
     [[
         string widget = "popup",
@@ -71,39 +67,37 @@ shader as_color_texture
     output float AlphaOut = 1.0
 )
 {
-    string mari_filenames[100] = {TEN_MARI_UDIM_ROWS};
-
-    string tx_filename = "";
-    float uu;
-    float vv;
-
-    if (UDIM == "mari")
+    if (endswith(Filename, ".ptx"))
     {
-        int utile  = int(U); 
-        int vtile  = int(V);
-        int offset = 10 * vtile + utile;
-        tx_filename = mari_filenames[offset];
-        uu = U - utile;
-        vv = V - vtile;
+        ColorOut = texture(
+            Filename,
+            u,
+            v,
+            "subimage", faceid,
+            "swidth", UWidth,
+            "twidth", VWidth,
+            "sblur", UBlur,
+            "tblur", VBlur,
+            "swrap", UWrap,
+            "twrap", VWrap,
+            "firstchannel", FirstChannel,
+            "fill", Fill,
+            "alpha", AlphaOut);
     }
     else
     {
-        tx_filename = Filename;
-        uu = U;
-        vv = V;
+        ColorOut = texture(
+            Filename,
+            u,
+            v,
+            "swidth", UWidth,
+            "twidth", VWidth,
+            "sblur", UBlur,
+            "tblur", VBlur,
+            "swrap", UWrap,
+            "twrap", VWrap,
+            "firstchannel", FirstChannel,
+            "fill", Fill,
+            "alpha", AlphaOut);
     }
-
-    ColorOut = texture(
-        tx_filename,
-        uu,
-        vv,
-        "swidth", UWidth,
-        "twidth", VWidth,
-        "sblur", UBlur,
-        "tblur", VBlur,
-        "swrap", UWrap,
-        "twrap", VWrap,
-        "firstchannel", FirstChannel,
-        "fill", Fill,
-        "alpha", AlphaOut);
 }

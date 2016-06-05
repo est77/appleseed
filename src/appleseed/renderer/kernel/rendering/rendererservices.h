@@ -47,6 +47,11 @@ BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
 
+// Ptex headers.
+#ifdef APPLESEED_WITH_PTEX
+#include "Ptexture.h"
+#endif
+
 // Boost headers.
 #include "boost/unordered_map.hpp"
 
@@ -76,7 +81,15 @@ class RendererServices
         OIIO::TextureSystem&        texture_sys);
 
     // Initialize before rendering starts.
-    void initialize(TextureStore& texture_store);
+    void initialize(
+        TextureStore& texture_store
+#ifdef APPLESEED_WITH_PTEX
+      , Ptex::PtexCache& ptex_cache
+#endif
+        );
+
+    bool register_texture(const OIIO::ustring& filename);
+    void unregister_texture(const OIIO::ustring& filename);
 
     // Return a pointer to the texture system.
     virtual OIIO::TextureSystem* texturesys() const APPLESEED_OVERRIDE;
@@ -323,15 +336,53 @@ class RendererServices
 
     typedef boost::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
 
-    OIIO::TextureSystem&            m_texture_sys;
-    const Project&                  m_project;
-    AttrGetterMapType               m_global_attr_getters;
-    UserDataGetterMapType           m_global_user_data_getters;
-    const Camera*                   m_camera;
-    TextureStore*                   m_texture_store;
-    OIIO::ustring                   m_cam_projection_str;
-    float                           m_shutter[2];
-    float                           m_shutter_interval;
+    struct TextureEntry
+    {
+        enum Type
+        {
+            PTexTexture
+        };
+
+        TextureEntry();
+        TextureEntry(const Type type, const OIIO::ustring& filename);
+
+        Type                        m_type;
+        OIIO::ustring               m_filename;
+        size_t                      m_use_count;
+    };
+
+    typedef boost::unordered_map<OIIO::ustring, TextureEntry, OIIO::ustringHash> TextureEntriesMapType;
+
+    OIIO::TextureSystem&                m_texture_sys;
+    TextureEntriesMapType               m_texture_entries;
+    const Project&                      m_project;
+    AttrGetterMapType                   m_global_attr_getters;
+    UserDataGetterMapType               m_global_user_data_getters;
+    const Camera*                       m_camera;
+    TextureStore*                       m_texture_store;
+#ifdef APPLESEED_WITH_PTEX
+    Ptex::PtexCache*                    m_ptex_cache;
+#endif
+    OIIO::ustring                       m_cam_projection_str;
+    float                               m_shutter[2];
+    float                               m_shutter_interval;
+
+    bool lookup_texture(
+        const TextureEntry&         texture_entry,
+        TextureHandle*              texture_handle,
+        TexturePerthread*           texture_thread_info,
+        OSL::TextureOpt&            options,
+        OSL::ShaderGlobals*         sg,
+        float                       s,
+        float                       t,
+        float                       dsdx,
+        float                       dtdx,
+        float                       dsdy,
+        float                       dtdy,
+        int                         nchannels,
+        float*                      result,
+        float*                      dresultds,
+        float*                      dresultdt);
 
     #define DECLARE_ATTR_GETTER(name)           \
         bool get_attr_##name(                   \
@@ -386,6 +437,7 @@ class RendererServices
     DECLARE_USER_DATA_GETTER(bn);
     DECLARE_USER_DATA_GETTER(dndu);
     DECLARE_USER_DATA_GETTER(dndv);
+    DECLARE_USER_DATA_GETTER(faceid);
 
     #undef DECLARE_USER_DATA_GETTER
 

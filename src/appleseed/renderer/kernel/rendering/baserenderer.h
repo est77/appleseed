@@ -43,6 +43,7 @@
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
+#include "OpenImageIO/errorhandler.h"
 END_OIIO_INCLUDES
 #endif
 
@@ -54,10 +55,15 @@ BEGIN_OSL_INCLUDES
 END_OSL_INCLUDES
 #endif
 
+// Ptex headers.
+#ifdef APPLESEED_WITH_PTEX
+#include "Ptexture.h"
+#endif
+
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-#ifdef APPLESEED_WITH_OIIO
-namespace renderer      { class OIIOErrorHandler; }
+#ifdef APPLESEED_WITH_PTEX
+namespace renderer      { class AppleseedPtexErrorHandler; }
 #endif
 namespace renderer      { class Project; }
 #ifdef APPLESEED_WITH_OSL
@@ -92,13 +98,18 @@ class APPLESEED_DLLSYMBOL BaseRenderer
     ParamArray                      m_params;
 
 #ifdef APPLESEED_WITH_OIIO
-    OIIOErrorHandler*               m_error_handler;
+    OIIO::ErrorHandler*             m_oiio_error_handler;
     OIIO::TextureSystem*            m_texture_system;
 #endif
 
 #ifdef APPLESEED_WITH_OSL
     RendererServices*               m_renderer_services;
     OSL::ShadingSystem*             m_shading_system;
+#endif
+
+#ifdef APPLESEED_WITH_PTEX
+    AppleseedPtexErrorHandler*      m_ptex_error_handler;
+    Ptex::PtexPtr<Ptex::PtexCache>  m_ptex_cache;
 #endif
 
     // Constructor.
@@ -109,6 +120,10 @@ class APPLESEED_DLLSYMBOL BaseRenderer
   private:
 #ifdef APPLESEED_WITH_OIIO
     void initialize_oiio();
+#endif
+
+#ifdef APPLESEED_WITH_PTEX
+    void initialize_ptex();
 #endif
 
 #ifdef APPLESEED_WITH_OSL

@@ -31,9 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#ifdef APPLESEED_WITH_OIIO
-#include "renderer/kernel/rendering/oiioerrorhandler.h"
-#endif
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/closures.h"
@@ -43,6 +40,15 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/string.h"
+
+// OpenImageIO headers.
+#ifdef APPLESEED_WITH_OIIO
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
+#include "OpenImageIO/errorhandler.h"
+END_OIIO_INCLUDES
+#endif
 
 // Standard headers.
 #include <cassert>
@@ -54,6 +60,65 @@ using namespace std;
 
 namespace renderer
 {
+namespace
+{
+
+#ifdef APPLESEED_WITH_OIIO
+//
+// An OpenImageIO-to-appleseed error handler adapter.
+//
+
+class OIIOErrorHandler
+  : public OIIO::ErrorHandler
+{
+  public:
+    virtual void operator()(int errcode, const std::string& msg) APPLESEED_OVERRIDE
+    {
+        const string trimmed_msg = trim_right(msg, "\r\n");
+
+        switch (errcode)
+        {
+          case EH_WARNING:
+            RENDERER_LOG_WARNING("%s", trimmed_msg.c_str());
+            break;
+
+          case EH_ERROR:
+            RENDERER_LOG_ERROR("%s", trimmed_msg.c_str());
+            break;
+
+          case EH_SEVERE:
+            RENDERER_LOG_FATAL("%s", trimmed_msg.c_str());
+            break;
+
+          case EH_DEBUG:
+            RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
+            break;
+
+          default:
+            RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
+            break;
+        }
+    }
+};
+#endif
+
+}
+
+#ifdef APPLESEED_WITH_PTEX
+//
+// An Ptex-to-appleseed error handler adapter.
+//
+
+class AppleseedPtexErrorHandler
+  : public PtexErrorHandler
+{
+  public:
+    virtual void reportError(const char* error) APPLESEED_OVERRIDE
+    {
+        RENDERER_LOG_ERROR("%s", error);
+    }
+};
+#endif
 
 //
 // BaseRenderer class implementation.
@@ -66,11 +131,11 @@ BaseRenderer::BaseRenderer(
   , m_params(params)
 {
 #ifdef APPLESEED_WITH_OIIO
-    m_error_handler = new OIIOErrorHandler();
+    m_oiio_error_handler = new OIIOErrorHandler();
 
 #ifndef NDEBUG
     // While debugging, we want all possible outputs.
-    m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
+    m_oiio_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
 #endif
 
     RENDERER_LOG_DEBUG("creating OpenImageIO texture system...");
@@ -94,7 +159,7 @@ BaseRenderer::BaseRenderer(
 #endif
         m_renderer_services,
         m_texture_system,
-        m_error_handler);
+        m_oiio_error_handler);
 
     m_shading_system->attribute("lockgeom", 1);
     m_shading_system->attribute("colorspace", "Linear");
@@ -119,13 +184,18 @@ BaseRenderer::BaseRenderer(
     // Register appleseed's closures into OSL's shading system.
     register_closures(*m_shading_system);
 #endif
+
+#ifdef APPLESEED_WITH_PTEX
+    m_ptex_error_handler = new AppleseedPtexErrorHandler();
+#endif
 }
 
 BaseRenderer::~BaseRenderer()
 {
 #ifdef APPLESEED_WITH_OSL
     RENDERER_LOG_DEBUG("destroying OSL shading system...");
-    m_project.get_scene()->release_optimized_osl_shader_groups();
+    m_project.get_scene()->release_optimized_osl_shader_groups(
+        *m_renderer_services);
 
 #if OSL_LIBRARY_VERSION_CODE >= 10700
     delete m_shading_system;
@@ -143,7 +213,13 @@ BaseRenderer::~BaseRenderer()
 
     RENDERER_LOG_DEBUG("destroying OpenImageIO texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
-    delete m_error_handler;
+    delete m_oiio_error_handler;
+#endif
+
+#ifdef APPLESEED_WITH_PTEX
+    RENDERER_LOG_DEBUG("destroying Ptex texture system...");
+    m_ptex_cache.reset();
+    delete m_ptex_error_handler;
 #endif
 }
 
@@ -163,6 +239,10 @@ bool BaseRenderer::initialize_shading_system(
 {
 #ifdef APPLESEED_WITH_OIIO
     initialize_oiio();
+#endif
+
+#ifdef APPLESEED_WITH_PTEX
+    initialize_ptex();
 #endif
 
 #ifdef APPLESEED_WITH_OSL
@@ -206,10 +286,52 @@ void BaseRenderer::initialize_oiio()
 }
 #endif
 
+#ifdef APPLESEED_WITH_PTEX
+void BaseRenderer::initialize_ptex()
+{
+    const ParamArray& params = m_params.child("texture_store");
+
+    const size_t texture_cache_size_bytes =
+        params.get_optional<size_t>("ptex_max_size", 256 * 1024 * 1024);
+
+    RENDERER_LOG_INFO(
+        "setting Ptex texture cache size to %s.",
+        pretty_size(texture_cache_size_bytes).c_str());
+
+    const size_t ptex_max_files =
+        params.get_optional<size_t>("ptex_max_files", 100);
+
+    m_ptex_cache.reset(PtexCache::create(
+        ptex_max_files,
+        texture_cache_size_bytes,
+        false,
+        0,
+        m_ptex_error_handler));
+
+    const string prev_search_path = m_ptex_cache->getSearchPath();
+    const string new_search_path = m_project.make_search_path_string(':');
+
+    if (new_search_path != prev_search_path)
+    {
+        RENDERER_LOG_INFO(
+            "setting Ptex texture search path to %s.",
+            new_search_path.c_str());
+
+        m_project.get_scene()->release_optimized_osl_shader_groups(*m_renderer_services);
+        m_ptex_cache->setSearchPath(new_search_path.c_str());
+    }
+}
+#endif
+
 #ifdef APPLESEED_WITH_OSL
 bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abort_switch)
 {
-    m_renderer_services->initialize(texture_store);
+    m_renderer_services->initialize(
+        texture_store
+#ifdef APPLESEED_WITH_PTEX
+      , *m_ptex_cache
+#endif
+        );
 
     // search paths
     string prev_search_path;
@@ -222,7 +344,7 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
             "setting OSL shader search path to %s.",
             new_search_path.c_str());
 
-        m_project.get_scene()->release_optimized_osl_shader_groups();
+        m_project.get_scene()->release_optimized_osl_shader_groups(*m_renderer_services);
         m_shading_system->attribute("searchpath:shader", new_search_path);
     }
 

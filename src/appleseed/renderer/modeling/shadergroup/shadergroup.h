@@ -54,6 +54,7 @@ namespace renderer      { class LightSamper; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ObjectInstance; }
 namespace renderer      { class Project; }
+namespace renderer      { class RendererServices; }
 
 namespace renderer
 {
@@ -95,7 +96,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         foundation::IAbortSwitch*   abort_switch = 0);
 
     // Release internal OSL shader group.
-    void release_optimized_osl_shader_group();
+    void release_optimized_osl_shader_group(
+        RendererServices& renderer_services);
 
     // Access the shaders.
     const ShaderContainer& shaders() const;
@@ -174,6 +176,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
     void report_uses_global(const char* global_name, const Flags flag) const;
+
+    void get_shadergroup_textures(OSL::ShadingSystem& shading_system);
 
     void set_surface_area(
         const AssemblyInstance* ass,
