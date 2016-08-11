@@ -289,7 +289,7 @@ namespace
                 return;
 
             sample.m_mode = ScatteringMode::Glossy;
-            sample.m_incoming = Dual3d(backfacing_policy.transform_to_parent(wi));
+            sample.m_incoming = Dual3d(improve_normalization(backfacing_policy.transform_to_parent(wi)));
 
             if (is_refraction)
                 sample.compute_transmitted_differentials(values->m_eta);
