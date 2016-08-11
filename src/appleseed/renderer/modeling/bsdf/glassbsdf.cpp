@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/modeling/bsdf/backfacingpolicy.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
@@ -84,77 +85,6 @@ namespace
     //
 
     const char* Model = "glass_bsdf";
-
-    //
-    // The GlassBSDF is used in two different contexts,
-    // as an appleseed BSDF and as an OSL closure.
-    //
-    //  - When used as an appleseed BSDF, the normal is flipped
-    //    when shading a backfacing point.
-    //
-    //  - When used as an OSL closure, the normal is not flipped
-    //    when shading a backfacing point.
-    //
-    // To handle the two cases in an uniform way, the BSDF accepts a
-    // backfacing policy class as a template parameter.
-    //
-
-    struct AppleseedBackfacingPolicy
-    {
-        AppleseedBackfacingPolicy(
-            const Basis3d&  shading_basis,
-            const bool      backfacing)
-          : m_basis(
-                backfacing ? -shading_basis.get_normal() : shading_basis.get_normal(),
-                shading_basis.get_tangent_u(),
-                backfacing ? -shading_basis.get_tangent_v() : shading_basis.get_tangent_v())
-        {
-        }
-
-        const Vector3d& get_normal() const
-        {
-            return m_basis.get_normal();
-        }
-
-        const Vector3d transform_to_local(const Vector3d& v) const
-        {
-            return m_basis.transform_to_local(v);
-        }
-
-        const Vector3d transform_to_parent(const Vector3d& v) const
-        {
-            return m_basis.transform_to_parent(v);
-        }
-
-        const Basis3d     m_basis;
-    };
-
-    struct OSLBackfacingPolicy
-    {
-        OSLBackfacingPolicy(
-            const Basis3d&  shading_basis,
-            const bool      backfacing)
-          : m_basis(shading_basis)
-        {
-        }
-
-        const Vector3d& get_normal() const
-        {
-            return m_basis.get_normal();
-        }
-
-        const Vector3d transform_to_local(const Vector3d& v) const
-        {
-            return m_basis.transform_to_local(v);
-        }
-
-        const Vector3d transform_to_parent(const Vector3d& v) const
-        {
-            return m_basis.transform_to_parent(v);
-        }
-
-        const Basis3d&  m_basis;
-    };
 
     template <typename BackfacingPolicy>
     class GlassBSDFImpl
