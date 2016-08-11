@@ -222,7 +222,7 @@ namespace
                 is_refraction = false;
 
                 // Compute the reflected direction.
-                wi = reflect(wo, m);
+                wi = improve_normalization(reflect(wo, m));
 
                 // If incoming and outgoing are on different sides
                 // of the surface, this is not a reflection.
@@ -289,7 +289,7 @@ namespace
                 return;
 
             sample.m_mode = ScatteringMode::Glossy;
-            sample.m_incoming = Dual3d(improve_normalization(backfacing_policy.transform_to_parent(wi)));
+            sample.m_incoming = Dual3d(improve_normalization(backfacing_policy.transform_to_parent(wi));
 
             if (is_refraction)
                 sample.compute_transmitted_differentials(values->m_eta);
