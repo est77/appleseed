@@ -75,10 +75,10 @@
 
 using namespace appleseed::cli;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
@@ -149,7 +149,7 @@ namespace
 
         TestResult result;
 
-        const filesystem::path old_current_path =
+        const bf::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
 
         // Run test suites.
@@ -173,7 +173,7 @@ namespace
         }
 
         // Restore the current directory.
-        filesystem::current_path(old_current_path);
+        bf::current_path(old_current_path);
 
         print_unit_test_result(result);
 
@@ -204,8 +204,8 @@ namespace
         auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
             create_xmlfile_benchmark_listener());
         const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
-        const filesystem::path xmlfile_path =
-              filesystem::path(Application::get_tests_root_path())
+        const bf::path xmlfile_path =
+              bf::path(Application::get_tests_root_path())
             / "unit benchmarks" / "results" / xmlfile_name;
         if (xmlfile_listener->open(xmlfile_path.string().c_str()))
             result.add_listener(xmlfile_listener.get());
@@ -217,7 +217,7 @@ namespace
                 xmlfile_path.string().c_str());
         }
 
-        const filesystem::path old_current_path =
+        const bf::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
 
         // Run benchmark suites.
@@ -241,7 +241,7 @@ namespace
         }
 
         // Restore the current directory.
-        filesystem::current_path(old_current_path);
+        bf::current_path(old_current_path);
 
         // Print results.
         print_unit_benchmark_result(result);
@@ -457,8 +457,8 @@ namespace
     auto_release_ptr<Project> load_project(const string& project_filepath)
     {
         // Construct the schema file path.
-        const filesystem::path schema_filepath =
-              filesystem::path(Application::get_root_path())
+        const bf::path schema_filepath =
+              bf::path(Application::get_root_path())
             / "schemas"
             / "project.xsd";
 
@@ -511,17 +511,17 @@ namespace
         return value == "progressive";
     }
 
-    void render(const string& project_filename)
+    bool render(const string& project_filename)
     {
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
         if (project.get() == 0)
-            return;
+            return false;
 
         // Retrieve the rendering parameters.
         ParamArray params;
         if (!configure_project(project.ref(), params))
-            return;
+            return false;
 
         // Create the tile callback factory.
         auto_ptr<ITileCallbackFactory> tile_callback_factory;
@@ -573,13 +573,15 @@ namespace
         {
             ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
             stopwatch.start();
-            renderer.render();
+            if (!renderer.render())
+                return false;
             stopwatch.measure();
         }
         else
         {
             stopwatch.start();
-            renderer.render();
+            if (!renderer.render())
+                return false;
             stopwatch.measure();
         }
 
@@ -595,8 +597,8 @@ namespace
         if (params.get_optional<bool>("autosave", true))
         {
             // Construct the path to the archive directory.
-            const filesystem::path autosave_path =
-                  filesystem::path(Application::get_root_path())
+            const bf::path autosave_path =
+                  bf::path(Application::get_root_path())
                 / "images" / "autosave";
 
             // Archive the frame to disk.
@@ -645,9 +647,11 @@ namespace
 
         // Deallocate the memory used by the path to the archived image.
         free_string(archive_path);
+
+        return true;
     }
 
-    void benchmark_render(const string& project_filename)
+    bool benchmark_render(const string& project_filename)
     {
         // Configure our logger.
         SaveLogFormatterConfig save_g_logger_config(g_logger);
@@ -664,12 +668,12 @@ namespace
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
         if (project.get() == 0)
-            return;
+            return false;
 
         // Figure out the rendering parameters.
         ParamArray params;
         if (!configure_project(project.ref(), params))
-            return;
+            return false;
 
         // Create the master renderer.
         DefaultRendererController renderer_controller;
@@ -687,13 +691,13 @@ namespace
             // Render a first time.
             stopwatch.start();
             if (!renderer.render())
-                return;
+                return false;
             stopwatch.measure();
             total_time_seconds = stopwatch.get_seconds();
 
             // Render a second time.
             if (!renderer.render())
-                return;
+                return false;
             stopwatch.measure();
             render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
         }
@@ -711,6 +715,8 @@ namespace
         LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
         LOG_INFO(g_logger, "setup_time=%.6f", total_time_seconds - render_time_seconds);
         LOG_INFO(g_logger, "render_time=%.6f", render_time_seconds);
+
+        return true;
     }
 }
 
@@ -758,8 +764,8 @@ int main(int argc, const char* argv[])
         const string project_filename = g_cl.m_filename.value();
 
         if (g_cl.m_benchmark_mode.is_set())
-            benchmark_render(project_filename);
-        else render(project_filename);
+            success = success && benchmark_render(project_filename);
+        else success = success && render(project_filename);
     }
 
     return success ? 0 : 1;
