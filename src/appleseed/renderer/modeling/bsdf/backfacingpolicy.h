@@ -77,6 +77,7 @@ struct AppleseedBackfacingPolicy
         return m_basis.transform_to_parent(v);
     }
 
+  private:
     const foundation::Basis3d     m_basis;
 };
 
@@ -104,6 +105,7 @@ struct OSLBackfacingPolicy
         return m_basis.transform_to_parent(v);
     }
 
+  private:
     const foundation::Basis3d&  m_basis;
 };
 
