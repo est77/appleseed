@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BACKFACING_POLICY_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BACKFACING_POLICY_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_BACKFACINGPOLICY_H
+#define APPLESEED_RENDERER_MODELING_BSDF_BACKFACINGPOLICY_H
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -38,7 +38,7 @@ namespace renderer
 
 //
 //  Many appleseed BSDFs are used in two different contexts,
-//  as an appleseed BSDF and as an OSL closure.
+//  as appleseed BSDFs and as OSL closures.
 //
 //  - When used as appleseed BSDFs, the normal is flipped
 //    when shading a backfacing point.
@@ -46,19 +46,20 @@ namespace renderer
 //  - When used as OSL closures, the normal is not flipped
 //    when shading a backfacing point.
 //
-//  To handle the two cases in an uniform way, some BSDFs accept a
-//  backfacing policy class as a template parameter.
+//  To handle the two cases in an uniform way, some BSDFs accept
+//  a backfacing policy class as a template parameter.
 //
 
-struct AppleseedBackfacingPolicy
+class AppleseedBackfacingPolicy
 {
+  public:
     AppleseedBackfacingPolicy(
-        const foundation::Basis3d&  shading_basis,
+        const foundation::Basis3d&  basis,
         const bool                  backfacing)
-      : m_basis(
-            backfacing ? -shading_basis.get_normal() : shading_basis.get_normal(),
-            shading_basis.get_tangent_u(),
-            backfacing ? -shading_basis.get_tangent_v() : shading_basis.get_tangent_v())
+        : m_basis(
+            backfacing
+                ? foundation::Basis3d(-basis.get_normal(), basis.get_tangent_u(), -basis.get_tangent_v())
+                : basis)
     {
     }
 
@@ -78,15 +79,16 @@ struct AppleseedBackfacingPolicy
     }
 
   private:
-    const foundation::Basis3d     m_basis;
+    const foundation::Basis3d m_basis;
 };
 
-struct OSLBackfacingPolicy
+class OSLBackfacingPolicy
 {
+  public:
     OSLBackfacingPolicy(
-        const foundation::Basis3d&  shading_basis,
+        const foundation::Basis3d&  basis,
         const bool                  backfacing)
-      : m_basis(shading_basis)
+      : m_basis(basis)
     {
     }
 
@@ -109,6 +111,6 @@ struct OSLBackfacingPolicy
     const foundation::Basis3d&  m_basis;
 };
 
-}   // namespace renderer
+}       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BACKFACING_POLICY_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BACKFACINGPOLICY_H
