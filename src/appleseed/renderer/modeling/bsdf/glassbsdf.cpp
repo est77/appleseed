@@ -222,7 +222,7 @@ namespace
                 is_refraction = false;
 
                 // Compute the reflected direction.
-                wi = improve_normalization(reflect(wo, m));
+                wi = reflect(wo, m);
                 wi = improve_normalization(wi);
 
                 // If incoming and outgoing are on different sides
