@@ -189,6 +189,8 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(sample.get_shading_basis(), values->m_backfacing);
+            const Vector3d wo =
+                backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
             double alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -197,19 +199,15 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            const Vector3d wo = backfacing_policy.transform_to_local(
-                sample.m_outgoing.get_value());
-
             // Compute the microfacet normal by sampling the MDF.
             sampling_context.split_in_place(4, 1);
             const Vector4d s = sampling_context.next_vector2<4>();
-            Vector3d m = m_mdf->sample(wo, Vector3d(s[0], s[1], s[2]), alpha_x, alpha_y);
+            const Vector3d m = m_mdf->sample(wo, Vector3d(s[0], s[1], s[2]), alpha_x, alpha_y);
             assert(m.y > 0.0);
 
             const double cos_wom = dot(wo, m);
             double cos_theta_t;
             const double F = fresnel_reflectance(cos_wom, values->m_eta, cos_theta_t);
-
             const double r_probability = choose_reflection_probability(values, F);
 
             bool is_refraction;
