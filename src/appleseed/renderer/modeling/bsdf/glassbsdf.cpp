@@ -71,7 +71,7 @@ namespace
     //
     // Glass BSDF.
     //
-    //    A future version of this BSDF will support multiple-scattering.
+    //    A future version of this BSDF will support multiple scattering.
     //    For that reason, the only available microfacet distribution functions
     //    are those that support it (Beckmann and GGX).
     //
@@ -100,7 +100,7 @@ namespace
             m_inputs.declare("surface_transmittance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("reflection_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("refraction_tint", InputFormatSpectralReflectance, "1.0");
-            m_inputs.declare("roughness", InputFormatScalar, "0.15");
+            m_inputs.declare("roughness", InputFormatScalar, "0.0");
             m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
             m_inputs.declare("ior", InputFormatScalar, "1.5");
             m_inputs.declare("volume_transmittance", InputFormatSpectralReflectance, "1.0");
@@ -189,6 +189,8 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(sample.get_shading_basis(), values->m_backfacing);
+            const Vector3d wo =
+                backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
             double alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -197,19 +199,15 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            const Vector3d wo = backfacing_policy.transform_to_local(
-                sample.m_outgoing.get_value());
-
             // Compute the microfacet normal by sampling the MDF.
             sampling_context.split_in_place(4, 1);
             const Vector4d s = sampling_context.next_vector2<4>();
-            Vector3d m = m_mdf->sample(wo, Vector3d(s[0], s[1], s[2]), alpha_x, alpha_y);
+            const Vector3d m = m_mdf->sample(wo, Vector3d(s[0], s[1], s[2]), alpha_x, alpha_y);
             assert(m.y > 0.0);
 
             const double cos_wom = dot(wo, m);
             double cos_theta_t;
             const double F = fresnel_reflectance(cos_wom, values->m_eta, cos_theta_t);
-
             const double r_probability = choose_reflection_probability(values, F);
 
             bool is_refraction;
@@ -222,7 +220,8 @@ namespace
                 is_refraction = false;
 
                 // Compute the reflected direction.
-                wi = improve_normalization(reflect(wo, m));
+                wi = reflect(wo, m);
+                wi = improve_normalization(wi);
 
                 // If incoming and outgoing are on different sides
                 // of the surface, this is not a reflection.
@@ -239,13 +238,9 @@ namespace
                     F,
                     sample.m_value);
 
-                sample.m_probability = reflection_pdf(
-                    r_probability,
-                    wo,
-                    m,
-                    cos_wom,
-                    alpha_x,
-                    alpha_y);
+                sample.m_probability =
+                    r_probability *
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y);
             }
             else
             {
@@ -253,6 +248,9 @@ namespace
                 is_refraction = true;
 
                 // Compute the refracted direction.
+                // This is the same as calling
+                //   refract(wo, m', values->m_eta, wi);
+                // where m' is m but flipped to always be in the same hemisphere as wo.
                 wi =
                     cos_wom > 0.0
                         ? (values->m_eta * cos_wom - cos_theta_t) * m - values->m_eta * wo
@@ -275,17 +273,12 @@ namespace
                     1.0 - F,
                     sample.m_value);
 
-                sample.m_probability = refraction_pdf(
-                    1.0 - r_probability,
-                    wi,
-                    wo,
-                    m,
-                    alpha_x,
-                    alpha_y,
-                    values->m_eta);
+                sample.m_probability =
+                    (1.0 - r_probability) *
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
             }
 
-            if (sample.m_probability < 1e-10)
+            if (sample.m_probability < 1.0e-10)
                 return;
 
             sample.m_mode = ScatteringMode::Glossy;
@@ -343,13 +336,9 @@ namespace
                     F,
                     value);
 
-                pdf = reflection_pdf(
-                    choose_reflection_probability(values, F),
-                    wo,
-                    m,
-                    cos_wom,
-                    alpha_x,
-                    alpha_y);
+                pdf =
+                    choose_reflection_probability(values, F) *
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y);
             }
             else
             {
@@ -369,14 +358,9 @@ namespace
                     1.0 - F,
                     value);
 
-                pdf = refraction_pdf(
-                    1.0 - choose_reflection_probability(values, F),
-                    wi,
-                    wo,
-                    m,
-                    alpha_x,
-                    alpha_y,
-                    values->m_eta);
+                pdf =
+                    (1.0 - choose_reflection_probability(values, F)) *
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
             }
 
             return pdf;
@@ -415,13 +399,9 @@ namespace
                 const double cos_wom = dot(wo, m);
                 const double F = fresnel_reflectance(cos_wom, values->m_eta);
 
-                return reflection_pdf(
-                    choose_reflection_probability(values, F),
-                    wo,
-                    m,
-                    cos_wom,
-                    alpha_x,
-                    alpha_y);
+                return
+                    choose_reflection_probability(values, F) *
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y);
             }
             else
             {
@@ -430,14 +410,9 @@ namespace
                 const double cos_wom = dot(wo, m);
                 const double F = fresnel_reflectance(cos_wom, values->m_eta);
 
-                return refraction_pdf(
-                    1.0 - choose_reflection_probability(values, F),
-                    wi,
-                    wo,
-                    m,
-                    alpha_x,
-                    alpha_y,
-                    values->m_eta);
+                return
+                    (1.0 - choose_reflection_probability(values, F)) *
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
             }
         }
 
@@ -476,13 +451,11 @@ namespace
         auto_ptr<MDF<double> > m_mdf;
 
         static double choose_reflection_probability(
-            const InputValues   *values,
+            const InputValues*  values,
             const double        F)
         {
-            const double r_probability =
-                F * values->m_reflection_weight;
-            const double t_probability =
-                (1.0 - F) * values->m_refraction_weight;
+            const double r_probability = values->m_reflection_weight * F;
+            const double t_probability = values->m_refraction_weight * (1.0 - F);
 
             const double sum_probabilities = r_probability + t_probability;
             if (sum_probabilities <= 0.0)
@@ -523,26 +496,30 @@ namespace
             return fresnel_reflectance(cos_theta_i, eta, cos_theta_t);
         }
 
+        //
+        // Reflection.
+        //
+
+        // [1] eq. 13.
         static Vector3d half_reflection_vector(
             const Vector3d&     wi,
             const Vector3d&     wo)
         {
-            // [1] eq. 13
             const Vector3d h = normalize(wi + wo);
             return h.y < 0.0 ? -h : h;
         }
 
+        // [1] eq. 20.
         void evaluate_reflection(
             const InputValues*  values,
             const Vector3d&     wi,
             const Vector3d&     wo,
-            const Vector3d&     m,
+            const Vector3d&     h,
             const double        alpha_x,
             const double        alpha_y,
             const double        F,
             Spectrum&           value) const
         {
-            // [1] eq. 20.
             const double denom = abs(4.0 * wo.y * wi.y);
             if (denom == 0.0)
             {
@@ -550,52 +527,54 @@ namespace
                 return;
             }
 
+            const double G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
+            const double D = m_mdf->D(h, alpha_x, alpha_y);
             value = values->m_reflection_color;
-            const double D = m_mdf->D(m, alpha_x, alpha_y);
-            const double G = m_mdf->G(wi, wo, m, alpha_x, alpha_y);
-            value *= static_cast<float>(F * D * G / denom);
+            value *= static_cast<float>(F * G * D / denom);
         }
 
+        // [1] eq. 14.
         double reflection_pdf(
-            const double        choose_reflection_probability,
             const Vector3d&     wo,
-            const Vector3d&     m,
-            const double        cos_wom,
+            const Vector3d&     h,
+            const double        cos_oh,
             const double        alpha_x,
             const double        alpha_y) const
         {
-            // [1] eq. 14.
-            if (cos_wom == 0.0)
+            if (cos_oh == 0.0)
                 return 0.0;
-
-            const double jacobian = 1.0 / (4.0 * abs(cos_wom));
-            return choose_reflection_probability * jacobian * m_mdf->pdf(wo, m, alpha_x, alpha_y);
+            const double jacobian = 1.0 / (4.0 * abs(cos_oh));
+            return jacobian * m_mdf->pdf(wo, h, alpha_x, alpha_y);
         }
 
+        //
+        // Refraction.
+        //
+
+        // [1] eq. 16.
         static Vector3d half_refraction_vector(
             const Vector3d&     wi,
             const Vector3d&     wo,
             const double        eta)
         {
-            // [1] eq. 13
             const Vector3d h = normalize(wi + eta * wo);
             return h.y < 0.0 ? -h : h;
         }
 
+        // [1] eq. 21.
         void evaluate_refraction(
             const InputValues*  values,
             const bool          adjoint,
             const Vector3d&     wi,
             const Vector3d&     wo,
-            const Vector3d&     m,
+            const Vector3d&     h,
             const double        alpha_x,
             const double        alpha_y,
             const double        T,
             Spectrum&           value) const
         {
-            // [1] eq. 21
-            const double cos_ih = dot(m, wi);
-            const double cos_oh = dot(m, wo);
+            const double cos_ih = dot(h, wi);
+            const double cos_oh = dot(h, wo);
             const double dots = (cos_ih * cos_oh) / (wi.y * wo.y);
 
             const double sqrt_denom = cos_ih + values->m_eta * cos_oh;
@@ -605,45 +584,45 @@ namespace
                 return;
             }
 
+            const double G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
+            const double D = m_mdf->D(h, alpha_x, alpha_y);
+
             value = values->m_refraction_color;
-            const double D = m_mdf->D(m, alpha_x, alpha_y);
-            const double G = m_mdf->G(wi, wo, m, alpha_x, alpha_y);
             value *= static_cast<float>(
-                abs(dots) * square(values->m_eta / sqrt_denom) * T * D * G);
+                abs(dots) * square(values->m_eta / sqrt_denom) * T * G * D);
 
             if (adjoint)
                 value *= static_cast<float>(square(values->m_eta));
         }
 
+        // [1] eq. 17.
         double refraction_pdf(
-            const double        choose_refraction_probability,
             const Vector3d&     wi,
             const Vector3d&     wo,
-            const Vector3d&     m,
+            const Vector3d&     h,
             const double        alpha_x,
             const double        alpha_y,
             const double        eta) const
         {
-            // [1] eq. 17
-            const double cos_ih = dot(m, wi);
-            const double cos_oh = dot(m, wo);
+            const double cos_ih = dot(h, wi);
+            const double cos_oh = dot(h, wo);
 
             const double sqrt_denom = cos_ih + eta * cos_oh;
             if (sqrt_denom == 0.0)
                 return 0.0;
 
             const double jacobian = abs(cos_oh) * square(eta / sqrt_denom);
-            return choose_refraction_probability * jacobian * m_mdf->pdf(wo, m, alpha_x, alpha_y);
+            return jacobian * m_mdf->pdf(wo, h, alpha_x, alpha_y);
         }
     };
 
-    typedef
-        BSDFWrapper<
-            GlassBSDFImpl<AppleseedBackfacingPolicy> > AppleseedGlassBSDF;
+    typedef BSDFWrapper<
+        GlassBSDFImpl<AppleseedBackfacingPolicy>
+    > AppleseedGlassBSDF;
 
-    typedef
-        BSDFWrapper<
-            GlassBSDFImpl<OSLBackfacingPolicy> > OSLGlassBSDF;
+    typedef BSDFWrapper<
+        GlassBSDFImpl<OSLBackfacingPolicy>
+    > OSLGlassBSDF;
 }
 
 
@@ -690,7 +669,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.85"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
@@ -748,7 +727,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
-            .insert("default", "0.15"));
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
