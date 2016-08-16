@@ -250,6 +250,9 @@ namespace
                 is_refraction = true;
 
                 // Compute the refracted direction.
+                // This is the same as calling
+                //   refract(wo, m', values->m_eta, wi);
+                // where m' is m but flipped to always be in the same hemisphere as wo.
                 wi =
                     cos_wom > 0.0
                         ? (values->m_eta * cos_wom - cos_theta_t) * m - values->m_eta * wo
