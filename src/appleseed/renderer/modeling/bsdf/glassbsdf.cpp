@@ -277,16 +277,10 @@ namespace
 
                 sample.m_probability =
                     (1.0 - r_probability) *
-                    refraction_pdf(
-                        wi,
-                        wo,
-                        m,
-                        alpha_x,
-                        alpha_y,
-                        values->m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
             }
 
-            if (sample.m_probability < 1e-10)
+            if (sample.m_probability < 1.0e-10)
                 return;
 
             sample.m_mode = ScatteringMode::Glossy;
