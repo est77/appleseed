@@ -63,11 +63,17 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
     float       m_highlight_falloff;
     float       m_anisotropy;
 
+    float       m_thin_film_ior;
+    float       m_thin_film_thickness;
+    float       m_thin_film_min_thickness;
+    float       m_thin_film_max_thickness;
+
     struct Precomputed
     {
         Spectrum m_n;
         Spectrum m_k;
         float    m_outside_ior;
+        float    m_dinc;
     };
 
     Precomputed m_precomputed;

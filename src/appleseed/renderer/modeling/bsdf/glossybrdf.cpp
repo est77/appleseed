@@ -35,6 +35,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
+#include "renderer/modeling/bsdf/iridiscence.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/messagecontext.h"
@@ -45,6 +46,7 @@
 #include "foundation/math/microfacet.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -87,6 +89,8 @@ namespace
     class GlossyBRDFImpl
       : public BSDF
     {
+        typedef GlossyBRDFInputValues InputValues;
+
       public:
         GlossyBRDFImpl(
             const char*             name,
@@ -99,6 +103,7 @@ namespace
             m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
+            declare_iridiscence_inputs(m_inputs);
         }
 
         virtual void release() override
@@ -124,6 +129,17 @@ namespace
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
             values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+
+            compute_thin_film_thickness_and_ior(
+                values->m_thin_film_min_thickness,
+                values->m_thin_film_max_thickness,
+                values->m_thin_film_thickness,
+                values->m_precomputed.m_outside_ior,
+                values->m_precomputed.m_dinc,
+                values->m_thin_film_ior);
+
+            if (values->m_thin_film_ior != values->m_precomputed.m_outside_ior)
+                Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
         }
 
         virtual bool on_frame_begin(
@@ -170,13 +186,38 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const FresnelDielectricFun f(
-                values->m_reflectance,
-                values->m_reflectance_multiplier,
-                values->m_precomputed.m_outside_ior / values->m_ior);
+            if (values->m_thin_film_ior == values->m_precomputed.m_outside_ior)
+            {
+                const FresnelDielectricFun f(
+                    values->m_reflectance,
+                    values->m_reflectance_multiplier,
+                    values->m_precomputed.m_outside_ior / values->m_ior);
+                do_sample(sampling_context, *values, modes, cos_on, f, sample);
+            }
+            else
+            {
+                const IridescenceDielectricFun i(
+                    values->m_ior,
+                    values->m_thin_film_ior,
+                    values->m_precomputed.m_dinc,
+                    values->m_precomputed.m_outside_ior,
+                    values->m_reflectance,
+                    values->m_reflectance_multiplier);
+                do_sample(sampling_context, *values, modes, cos_on, i, sample);
+            }
+        }
 
+        template <typename FresnelFun>
+        void do_sample(
+            SamplingContext&        sampling_context,
+            const InputValues&      values,
+            const int               modes,
+            const float             cos_on,
+            const FresnelFun&       f,
+            BSDFSample&             sample) const
+        {
             // If roughness is zero use reflection.
-            if (values->m_roughness == 0.0f)
+            if (values.m_roughness == 0.0f)
             {
                 if (ScatteringMode::has_specular(modes))
                     SpecularBRDFHelper::sample(f, sample);
@@ -189,11 +230,11 @@ namespace
             {
                 float alpha_x, alpha_y;
                 microfacet_alpha_from_roughness(
-                    values->m_roughness,
-                    values->m_anisotropy,
+                    values.m_roughness,
+                    values.m_anisotropy,
                     alpha_x,
                     alpha_y);
-                const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
+                const float gamma = highlight_falloff_to_gama(values.m_highlight_falloff);
 
                 MicrofacetBRDFHelper::sample(
                     sampling_context,
@@ -232,20 +273,63 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            if (values->m_thin_film_ior == values->m_precomputed.m_outside_ior)
+            {
+                const FresnelDielectricFun f(
+                    values->m_reflectance,
+                    values->m_reflectance_multiplier,
+                    values->m_precomputed.m_outside_ior / values->m_ior);
+                return do_evaluate(
+                    *values,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    cos_in,
+                    cos_on,
+                    f,
+                    value);
+            }
+            else
+            {
+                const IridescenceDielectricFun i(
+                    values->m_ior,
+                    values->m_thin_film_ior,
+                    values->m_precomputed.m_dinc,
+                    values->m_precomputed.m_outside_ior,
+                    values->m_reflectance,
+                    values->m_reflectance_multiplier);
+                return do_evaluate(
+                    *values,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    cos_in,
+                    cos_on,
+                    i,
+                    value);
+            }
+        }
+
+        template <typename FresnelFun>
+        float do_evaluate(
+            const InputValues&      values,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
+            const float             cos_in,
+            const float             cos_on,
+            const FresnelFun&       f,
+            ShadingComponents&      value) const
+        {
             value.set(0.0f);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                values->m_roughness,
-                values->m_anisotropy,
+                values.m_roughness,
+                values.m_anisotropy,
                 alpha_x,
                 alpha_y);
-            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
-
-            const FresnelDielectricFun f(
-                values->m_reflectance,
-                values->m_reflectance_multiplier,
-                values->m_precomputed.m_outside_ior / values->m_ior);
+            const float gamma = highlight_falloff_to_gama(values.m_highlight_falloff);
 
             const float pdf = MicrofacetBRDFHelper::evaluate(
                 *m_mdf,
@@ -302,8 +386,6 @@ namespace
         }
 
       private:
-        typedef GlossyBRDFInputValues InputValues;
-
         auto_ptr<MDF> m_mdf;
     };
 
@@ -439,6 +521,7 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("use", "required")
             .insert("default", "1.5"));
 
+    add_iridiscence_metadata(metadata);
     return metadata;
 }
 

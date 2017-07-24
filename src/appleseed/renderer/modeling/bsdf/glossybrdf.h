@@ -63,9 +63,15 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     float       m_anisotropy;
     float       m_ior;
 
+    float       m_thin_film_ior;
+    float       m_thin_film_thickness;
+    float       m_thin_film_min_thickness;
+    float       m_thin_film_max_thickness;
+
     struct Precomputed
     {
-        float   m_outside_ior;
+        float    m_outside_ior;
+        float    m_dinc;
     };
 
     Precomputed m_precomputed;

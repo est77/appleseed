@@ -144,6 +144,17 @@ void normal_reflectance_dielectric(
 //       https://seblagarde.wordpress.com/2013/04/29/memo-on-fresnel-equations
 //
 
+// Compute the parallel and perpendicular components of the
+// Fresnel reflectance for a conductor for unpolarized light.
+template <typename SpectrumType, typename T>
+inline void fresnel_reflectance_conductor_components(
+    SpectrumType&           Rs,
+    SpectrumType&           Rp,
+    const SpectrumType&     nt,
+    const SpectrumType&     kt,
+    const T                 ni,
+    const T                 cos_theta_i);
+
 // Compute the Fresnel reflectance for a conductor for unpolarized light.
 template <typename SpectrumType, typename T>
 void fresnel_reflectance_conductor(
@@ -445,8 +456,9 @@ void normal_reflectance_dielectric(
 }
 
 template <typename SpectrumType, typename T>
-inline void fresnel_reflectance_conductor(
-    SpectrumType&           reflectance,
+inline void fresnel_reflectance_conductor_components(
+    SpectrumType&           Rs,
+    SpectrumType&           Rp,
     const SpectrumType&     nt,
     const SpectrumType&     kt,
     const T                 ni,
@@ -484,8 +496,8 @@ inline void fresnel_reflectance_conductor(
     t2 *= T(2.0) * cos_theta;
 
     tmp = t1 + t2;
-    reflectance = t1 - t2;
-    reflectance /= tmp;
+    Rs = t1 - t2;
+    Rs /= tmp;
 
     SpectrumType t3 = a2plusb2;
     t3 *= cos_theta2;
@@ -495,9 +507,22 @@ inline void fresnel_reflectance_conductor(
     t4 *= sin_theta2;
 
     tmp = t3 + t4;
-    SpectrumType Rp = t3 - t4;
+    Rp = t3 - t4;
     Rp /= tmp;
-    Rp *= reflectance;
+    Rp *= Rs;
+}
+
+template <typename SpectrumType, typename T>
+inline void fresnel_reflectance_conductor(
+    SpectrumType&           reflectance,
+    const SpectrumType&     nt,
+    const SpectrumType&     kt,
+    const T                 ni,
+    const T                 cos_theta_i)
+{
+    SpectrumType Rp;
+    fresnel_reflectance_conductor_components(
+        reflectance, Rp, nt, kt, ni, cos_theta_i);
 
     reflectance += Rp;
     reflectance *= T(0.5);
