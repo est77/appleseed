@@ -75,8 +75,8 @@ class IntersectionFilter
 
     bool accept(
         const TriangleKey&      triangle_key,
-        const double            u,
-        const double            v) const;
+        const float             u,
+        const float             v) const;
 
   private:
     class AlphaMask
@@ -143,7 +143,7 @@ class IntersectionFilter
     static AlphaMask* create_alpha_mask(
         const Source*           alpha_map,
         TextureCache&           texture_cache,
-        double&                 transparency);
+        float&                  transparency);
 };
 
 
@@ -153,8 +153,8 @@ class IntersectionFilter
 
 inline bool IntersectionFilter::accept(
     const TriangleKey&          triangle_key,
-    const double                u,
-    const double                v) const
+    const float                 u,
+    const float                 v) const
 {
     // Don't use the alpha mask if the UV coordinates are indefinite.
     // This can happen in rare circumstances, when hitting degenerate

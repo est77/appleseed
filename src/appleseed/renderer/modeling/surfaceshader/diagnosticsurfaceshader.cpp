@@ -140,10 +140,10 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
 struct DiagnosticSurfaceShader::Impl
 {
     ShadingMode m_shading_mode;
-    double      m_ao_max_distance;
+    float       m_ao_max_distance;
     size_t      m_ao_samples;
-    Vector3d    m_scene_aabb_min;
-    Vector3d    m_rcp_scene_aabb_extent;
+    Vector3f    m_scene_aabb_min;
+    Vector3f    m_rcp_scene_aabb_extent;
 
     explicit Impl(const ParamArray& params)
     {
@@ -165,7 +165,7 @@ struct DiagnosticSurfaceShader::Impl
         if (m_shading_mode == AmbientOcclusion)
         {
             const ParamArray& ao_params = params.child("ambient_occlusion");
-            m_ao_max_distance = ao_params.get_optional<double>("max_distance", 1.0);
+            m_ao_max_distance = ao_params.get_optional<float>("max_distance", 1.0f);
             m_ao_samples = ao_params.get_optional<size_t>("samples", 16);
         }
     }
@@ -203,9 +203,9 @@ bool DiagnosticSurfaceShader::on_render_begin(
     if (!Entity::on_render_begin(project, parent, recorder, abort_switch))
         return false;
 
-    const AABB3d scene_aabb(project.get_scene()->get_render_data().m_bbox);
+    const AABB3f scene_aabb(project.get_scene()->get_render_data().m_bbox);
     impl->m_scene_aabb_min = scene_aabb.min;
-    impl->m_rcp_scene_aabb_extent = Vector3d(1.0) / scene_aabb.extent();
+    impl->m_rcp_scene_aabb_extent = Vector3f(1.0) / scene_aabb.extent();
 
     return true;
 }
@@ -316,7 +316,7 @@ void DiagnosticSurfaceShader::evaluate(
                 if (material_data.m_bsdf != nullptr)
                 {
                     const ShadingRay& ray = shading_point.get_ray();
-                    const Dual3d outgoing(
+                    const Dual3f outgoing(
                         -ray.m_dir,
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
@@ -372,7 +372,7 @@ void DiagnosticSurfaceShader::evaluate(
                 }
             }
 
-            const Vector3d v =
+            const Vector3f v =
                 impl->m_shading_mode == ShadingNormal ? shading_point.get_shading_basis().get_normal() :
                 impl->m_shading_mode == Tangent ? shading_point.get_shading_basis().get_tangent_u() :
                 shading_point.get_shading_basis().get_tangent_v();
@@ -395,23 +395,23 @@ void DiagnosticSurfaceShader::evaluate(
 
       case WorldSpacePosition:
         {
-            const Vector3d p =
+            const Vector3f p =
                 saturate(
                     (shading_point.get_point() - impl->m_scene_aabb_min) * impl->m_rcp_scene_aabb_extent);
             set_shading_result(
                 shading_result,
-                Color3f(Color3d(p.x, p.y, p.z)));
+                Color3f(Color3f(p.x, p.y, p.z)));
         }
         break;
 
       case WorldSpaceVelocity:
         {
-            const Vector3d& v = shading_point.get_world_space_point_velocity();
-            const double vn = norm(v);
+            const Vector3f& v = shading_point.get_world_space_point_velocity();
+            const float vn = norm(v);
             set_shading_result(
                 shading_result,
-                vn > 0.0
-                    ? vector3_to_color(v / vn) * static_cast<float>(vn)
+                vn > 0.0f
+                    ? vector3_to_color(v / vn) * vn
                     : Color3f(0.0f));
         }
         break;
@@ -440,7 +440,7 @@ void DiagnosticSurfaceShader::evaluate(
               case ShadingPoint::PrimitiveTriangle:
                 {
                     // Film space thickness of the wires.
-                    const double SquareWireThickness = square(0.00025);
+                    const float SquareWireThickness = square(0.00025f);
 
                     // Retrieve the time, the scene and the camera.
                     const float time = shading_point.get_time().m_absolute;
@@ -448,7 +448,7 @@ void DiagnosticSurfaceShader::evaluate(
                     const Camera& camera = *scene.get_active_camera();
 
                     // Compute the film space coordinates of the intersection point.
-                    Vector2d point_ndc;
+                    Vector2f point_ndc;
                     camera.project_point(time, shading_point.get_point(), point_ndc);
 
                     // Loop over the triangle edges.
@@ -456,16 +456,16 @@ void DiagnosticSurfaceShader::evaluate(
                     {
                         // Retrieve the end points of this edge.
                         const size_t j = (i + 1) % 3;
-                        const Vector3d vi = shading_point.get_vertex(i);
-                        const Vector3d vj = shading_point.get_vertex(j);
+                        const Vector3f vi = shading_point.get_vertex(i);
+                        const Vector3f vj = shading_point.get_vertex(j);
 
                         // Compute the film space coordinates of the edge's end points.
-                        Vector2d vi_ndc, vj_ndc;
+                        Vector2f vi_ndc, vj_ndc;
                         if (!camera.project_segment(time, vi, vj, vi_ndc, vj_ndc))
                             continue;
 
                         // Compute the film space distance from the intersection point to the edge.
-                        const double d = square_distance_point_segment(point_ndc, vi_ndc, vj_ndc);
+                        const float d = square_distance_point_segment(point_ndc, vi_ndc, vj_ndc);
 
                         // Shade with the wire's color if the hit point is close enough to the edge.
                         if (d < SquareWireThickness)
@@ -501,21 +501,21 @@ void DiagnosticSurfaceShader::evaluate(
               case ShadingPoint::PrimitiveTriangle:
                 {
                     // World space thickness of the wires.
-                    const double SquareWireThickness = square(0.0015);
+                    const float SquareWireThickness = square(0.0015f);
 
                     // Retrieve the world space intersection point.
-                    const Vector3d& point = shading_point.get_point();
+                    const Vector3f& point = shading_point.get_point();
 
                     // Loop over the triangle edges.
                     for (size_t i = 0; i < 3; ++i)
                     {
                         // Retrieve the end points of this edge.
                         const size_t j = (i + 1) % 3;
-                        const Vector3d& vi = shading_point.get_vertex(i);
-                        const Vector3d& vj = shading_point.get_vertex(j);
+                        const Vector3f& vi = shading_point.get_vertex(i);
+                        const Vector3f& vj = shading_point.get_vertex(j);
 
                         // Compute the world space distance from the intersection point to the edge.
-                        const double d = square_distance_point_segment(point, vi, vj);
+                        const float d = square_distance_point_segment(point, vi, vj);
 
                         // Shade with the wire's color if the hit point is close enough to the edge.
                         if (d < SquareWireThickness)
@@ -544,10 +544,10 @@ void DiagnosticSurfaceShader::evaluate(
       case AmbientOcclusion:
         {
             // Compute the occlusion.
-            const double occlusion =
+            const float occlusion =
                 compute_ambient_occlusion(
                     sampling_context,
-                    sample_hemisphere_uniform<double>,
+                    sample_hemisphere_uniform<float>,
                     shading_context.get_intersector(),
                     shading_point,
                     impl->m_ao_max_distance,
@@ -611,7 +611,7 @@ void DiagnosticSurfaceShader::evaluate(
 
                 if (material_data.m_bsdf)
                 {
-                    const Dual3d outgoing(
+                    const Dual3f outgoing(
                         -ray.m_dir,
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
@@ -629,10 +629,10 @@ void DiagnosticSurfaceShader::evaluate(
                         break;
 
                     // The 3.0 factor is chosen so that ray spread from Lambertian BRDFs is approximately 1.
-                    const double spread =
+                    const float spread =
                         max(
                             norm(sample.m_incoming.get_dx()),
-                            norm(sample.m_incoming.get_dy())) * 3.0;
+                            norm(sample.m_incoming.get_dy())) * 3.0f;
                     set_shading_result(
                         shading_result,
                         Color3f(static_cast<float>(spread)));
@@ -644,9 +644,9 @@ void DiagnosticSurfaceShader::evaluate(
 
       case FacingRatio:
         {
-            const Vector3d& normal = shading_point.get_shading_normal();
-            const Vector3d& view = shading_point.get_ray().m_dir;
-            const double facing = abs(dot(normal, view));
+            const Vector3f& normal = shading_point.get_shading_normal();
+            const Vector3f& view = shading_point.get_ray().m_dir;
+            const float facing = abs(dot(normal, view));
             set_shading_result(
                 shading_result,
                 Color3f(static_cast<float>(facing)));

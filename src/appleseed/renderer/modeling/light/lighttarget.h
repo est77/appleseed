@@ -45,21 +45,21 @@ class LightTarget
   public:
     // Constructors.
     LightTarget();
-    explicit LightTarget(const foundation::AABB3d& bbox);
+    explicit LightTarget(const foundation::AABB3f& bbox);
 
     // Comparison operators.
     bool operator==(const LightTarget& rhs) const;
     bool operator!=(const LightTarget& rhs) const;
 
     // Getters.
-    const foundation::AABB3d& get_bbox() const;
-    const foundation::Vector3d& get_center() const;
-    double get_radius() const;
+    const foundation::AABB3f& get_bbox() const;
+    const foundation::Vector3f& get_center() const;
+    float get_radius() const;
 
   private:
-    foundation::AABB3d      m_bbox;     // world space
-    foundation::Vector3d    m_center;   // world space
-    double                  m_radius;   // world space
+    foundation::AABB3f      m_bbox;     // world space
+    foundation::Vector3f    m_center;   // world space
+    float                   m_radius;   // world space
 };
 
 APPLESEED_DECLARE_APIARRAY(LightTargetArray, LightTarget);
@@ -73,7 +73,7 @@ inline LightTarget::LightTarget()
 {
 }
 
-inline LightTarget::LightTarget(const foundation::AABB3d& bbox)
+inline LightTarget::LightTarget(const foundation::AABB3f& bbox)
   : m_bbox(bbox)
   , m_center(bbox.center())
   , m_radius(bbox.radius())
@@ -90,17 +90,17 @@ inline bool LightTarget::operator!=(const LightTarget& rhs) const
     return m_bbox != rhs.m_bbox;
 }
 
-inline const foundation::AABB3d& LightTarget::get_bbox() const
+inline const foundation::AABB3f& LightTarget::get_bbox() const
 {
     return m_bbox;
 }
 
-inline const foundation::Vector3d& LightTarget::get_center() const
+inline const foundation::Vector3f& LightTarget::get_center() const
 {
     return m_center;
 }
 
-inline double LightTarget::get_radius() const
+inline float LightTarget::get_radius() const
 {
     return m_radius;
 }

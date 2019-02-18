@@ -214,7 +214,7 @@ void ShadingEngine::shade_environment(
     {
         // There is an environment shader: execute it.
         const ShadingRay& ray = shading_point.get_ray();
-        const Vector3d direction = normalize(ray.m_dir);
+        const Vector3f direction = normalize(ray.m_dir);
         AOVComponents aov_value;
         ShadingComponents value;
         Alpha alpha;

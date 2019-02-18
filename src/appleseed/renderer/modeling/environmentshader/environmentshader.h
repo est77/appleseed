@@ -71,7 +71,7 @@ class APPLESEED_DLLSYMBOL EnvironmentShader
     virtual void evaluate(
         const ShadingContext&           shading_context,
         const PixelContext&             pixel_context,
-        const foundation::Vector3d&     direction,                      // world space direction, pointing toward the environment
+        const foundation::Vector3f&     direction,                      // world space direction, pointing toward the environment
         Spectrum&                       value,
         Alpha&                          alpha) const = 0;
 };

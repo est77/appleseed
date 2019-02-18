@@ -170,7 +170,7 @@ bool AnimationPath::load(const char* filename, const Format format)
             orientation.v = from_3ds_max(orientation.v);
 
             m_keyframes.push_back(
-                Transformd::from_local_to_parent(
+                Transformf::from_local_to_parent(
                     Matrix4d::make_translation(position) *
                     Matrix4d::make_rotation(orientation) *
                     Matrix4d::make_rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi<double>())));
@@ -178,7 +178,7 @@ bool AnimationPath::load(const char* filename, const Format format)
         else
         {
             m_keyframes.push_back(
-                Transformd::from_local_to_parent(
+                Transformf::from_local_to_parent(
                     Matrix4d::make_translation(position) *
                     Matrix4d::make_rotation(orientation)));
         }
@@ -201,7 +201,7 @@ size_t AnimationPath::size() const
     return m_keyframes.size();
 }
 
-const Transformd& AnimationPath::operator[](const size_t i) const
+const Transformf& AnimationPath::operator[](const size_t i) const
 {
     assert(i < m_keyframes.size());
     return m_keyframes[i];

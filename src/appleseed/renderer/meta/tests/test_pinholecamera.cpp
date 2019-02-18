@@ -56,10 +56,10 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
         const ProjectPoints proj(camera, Vector2u(512, 512));
         ASSERT_TRUE(proj.is_initialized());
 
-        Vector2d projected;
-        const bool success = proj.project_point(0.0f, Vector3d(0.0, 0.0, -1.0), projected);
+        Vector2f projected;
+        const bool success = proj.project_point(0.0f, Vector3f(0.0f, 0.0f, -1.0f), projected);
 
         ASSERT_TRUE(success);
-        EXPECT_FEQ(Vector2d(0.5, 0.5), projected);
+        EXPECT_FEQ(Vector2f(0.5f, 0.5f), projected);
     }
 }

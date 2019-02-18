@@ -124,12 +124,12 @@ namespace
         void evaluate(
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
-            const Vector3d&         direction,
+            const Vector3f&         direction,
             Spectrum&               value,
             Alpha&                  alpha) const override
         {
             // Evaluate the environment EDF and store the radiance into the shading result.
-            m_env_edf->evaluate(shading_context, Vector3f(direction), value);
+            m_env_edf->evaluate(shading_context, direction, value);
             alpha = Alpha(m_alpha_value);
         }
 

@@ -93,11 +93,11 @@ class APPLESEED_DLLSYMBOL EDF
     float get_uncached_importance_multiplier() const;
 
     // Retrieve the light near start value.
-    double get_uncached_light_near_start() const;
+    float get_uncached_light_near_start() const;
 
     // Get the cached light near start value.
-    double get_light_near_start() const;
-    
+    float get_light_near_start() const;
+
     // Retrieve the approximate contribution.
     virtual float get_uncached_max_contribution() const = 0;
 
@@ -166,7 +166,7 @@ class APPLESEED_DLLSYMBOL EDF
 
   private:
     int    m_flags;
-    double m_light_near_start;
+    float  m_light_near_start;
     float  m_max_contribution;
 };
 
@@ -180,7 +180,7 @@ inline int EDF::get_flags() const
     return m_flags;
 }
 
-inline double EDF::get_light_near_start() const
+inline float EDF::get_light_near_start() const
 {
     return m_light_near_start;
 }

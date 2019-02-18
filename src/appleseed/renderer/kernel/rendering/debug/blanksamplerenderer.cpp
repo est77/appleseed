@@ -69,7 +69,7 @@ namespace
         void render_sample(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
-            const Vector2d&             image_point,
+            const Vector2f&             image_point,
             AOVAccumulatorContainer&    aov_accumulators,
             ShadingResult&              shading_result) override
         {

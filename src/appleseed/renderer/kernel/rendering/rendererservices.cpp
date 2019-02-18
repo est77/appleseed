@@ -245,8 +245,8 @@ bool RendererServices::get_matrix(
 {
     if (from == g_camera_ustr)
     {
-        Transformd scratch;
-        const Transformd& transform =
+        Transformf scratch;
+        const Transformf& transform =
             m_camera->transform_sequence().evaluate(time, scratch);
         result = Matrix4f(transform.get_local_to_parent());
         return true;
@@ -263,8 +263,8 @@ bool RendererServices::get_inverse_matrix(
 {
     if (to == g_camera_ustr)
     {
-        Transformd scratch;
-        const Transformd& transform =
+        Transformf scratch;
+        const Transformf& transform =
             m_camera->transform_sequence().evaluate(time, scratch);
         result = Matrix4f(transform.get_parent_to_local());
         return true;
@@ -287,7 +287,7 @@ bool RendererServices::get_matrix(
         if (m_camera->transform_sequence().size() > 1)
             return false;
 
-        const Transformd& scratch =
+        const Transformf& scratch =
             m_camera->transform_sequence().get_earliest_transform();
         result = Matrix4f(scratch.get_local_to_parent());
         return true;
@@ -306,7 +306,7 @@ bool RendererServices::get_inverse_matrix(
         if (m_camera->transform_sequence().size() > 1)
             return false;
 
-        const Transformd& scratch =
+        const Transformf& scratch =
             m_camera->transform_sequence().get_earliest_transform();
         result = Matrix4f(scratch.get_parent_to_local());
         return true;
@@ -380,13 +380,13 @@ bool RendererServices::transform_points(
         // Transform to NDC.
         if (vectype == OSL::TypeDesc::VECTOR)
         {
-            Vector2d ndc_p(-1.0, -1.0);
+            Vector2f ndc_p(-1.0f, -1.0f);
 
             if (sg)
             {
                 m_camera->project_point(
                     time,
-                    Vector3d(sg->P.x, sg->P.y, sg->P.z),
+                    Vector3f(sg->P.x, sg->P.y, sg->P.z),
                     ndc_p);
             }
 
@@ -394,8 +394,8 @@ bool RendererServices::transform_points(
             {
                 const OSL::Vec3 Q = sg->P + Pout[i];
 
-                Vector2d ndc_q(-1.0, -1.0);
-                m_camera->project_point(time, Vector3d(Q.x, Q.y, Q.z), ndc_q);
+                Vector2f ndc_q(-1.0, -1.0);
+                m_camera->project_point(time, Vector3f(Q.x, Q.y, Q.z), ndc_q);
                 Pout[i] = OSL::Vec3(
                     static_cast<float>(ndc_q[0] - ndc_p[0]),
                     static_cast<float>(ndc_q[1] - ndc_p[1]),
@@ -408,8 +408,8 @@ bool RendererServices::transform_points(
 
             for (int i = 0; i < npoints; ++i)
             {
-                Vector2d ndc(-1.0, -1.0);
-                m_camera->project_point(time, Vector3d(Pout[i].x, Pout[i].y, Pout[i].z), ndc);
+                Vector2f ndc(-1.0, -1.0);
+                m_camera->project_point(time, Vector3f(Pout[i].x, Pout[i].y, Pout[i].z), ndc);
                 Pout[i] = OSL::Vec3(
                     static_cast<float>(ndc[0]),
                     static_cast<float>(ndc[1]),
@@ -448,13 +448,13 @@ bool RendererServices::trace(
     const ShadingPoint* parent =
         reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-    Vector3d pos;
+    Vector3f pos;
     const ShadingPoint* origin_shading_point;
 
     if (P == sg->P)
     {
-        Vector3d front(P);
-        Vector3d back = front;
+        Vector3f front(P);
+        Vector3f back = front;
 
         Intersector::fixed_offset(
             parent->get_point(),
@@ -467,11 +467,11 @@ bool RendererServices::trace(
     }
     else
     {
-        pos = Vector3d(P);
+        pos = Vector3f(P);
         origin_shading_point = nullptr;
     }
 
-    const Vector3d dir(R);
+    const Vector3f dir(R);
     const ShadingRay ray(
         pos,
         normalize(dir),
@@ -499,10 +499,10 @@ bool RendererServices::trace(
     if (shading_point.hit_surface())
     {
         trace_data->m_hit = true;
-        trace_data->m_P = Imath::V3d(shading_point.get_point());
-        trace_data->m_hit_distance = static_cast<float>(shading_point.get_distance());
-        trace_data->m_N = Imath::V3d(shading_point.get_shading_normal());
-        trace_data->m_Ng = Imath::V3d(shading_point.get_geometric_normal());
+        trace_data->m_P = OSL::Vec3(shading_point.get_point());
+        trace_data->m_hit_distance = shading_point.get_distance();
+        trace_data->m_N = OSL::Vec3(shading_point.get_shading_normal());
+        trace_data->m_Ng = OSL::Vec3(shading_point.get_geometric_normal());
         const Vector2f& uv = shading_point.get_uv(0);
         trace_data->m_u = uv[0];
         trace_data->m_v = uv[1];
@@ -1119,7 +1119,7 @@ IMPLEMENT_USER_DATA_GETTER(tn)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        const Vector3d& tn = shading_point->get_shading_basis().get_tangent_u();
+        const Vector3f& tn = shading_point->get_shading_basis().get_tangent_u();
         OSL::Vec3 v(
             static_cast<float>(tn.x),
             static_cast<float>(tn.y),
@@ -1145,7 +1145,7 @@ IMPLEMENT_USER_DATA_GETTER(bn)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        const Vector3d& bn = shading_point->get_shading_basis().get_tangent_v();
+        const Vector3f& bn = shading_point->get_shading_basis().get_tangent_v();
         OSL::Vec3 v(
             static_cast<float>(bn.x),
             static_cast<float>(bn.y),
@@ -1175,7 +1175,7 @@ IMPLEMENT_USER_DATA_GETTER(dndu)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        const Vector3d& dndu = shading_point->get_dndu(0);
+        const Vector3f& dndu = shading_point->get_dndu(0);
         reinterpret_cast<float*>(val)[0] = static_cast<float>(dndu.x);
         reinterpret_cast<float*>(val)[1] = static_cast<float>(dndu.y);
         reinterpret_cast<float*>(val)[2] = static_cast<float>(dndu.z);
@@ -1196,7 +1196,7 @@ IMPLEMENT_USER_DATA_GETTER(dndv)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        const Vector3d& dndv = shading_point->get_dndv(0);
+        const Vector3f& dndv = shading_point->get_dndv(0);
         reinterpret_cast<float*>(val)[0] = static_cast<float>(dndv.x);
         reinterpret_cast<float*>(val)[1] = static_cast<float>(dndv.y);
         reinterpret_cast<float*>(val)[2] = static_cast<float>(dndv.z);

@@ -74,23 +74,23 @@ class Intersector
         const bool                          report_self_intersections = false);
 
     // Refine the location of a point on a surface.
-    static foundation::Vector3d refine(
+    static foundation::Vector3f refine(
         const TriangleSupportPlaneType&     support_plane,
-        const foundation::Vector3d&         point,
-        const foundation::Vector3d&         direction);     // incoming or outgoing direction
+        const foundation::Vector3f&         point,
+        const foundation::Vector3f&         direction);     // incoming or outgoing direction
 
     // Offset a point away from a surface represented by its normal.
     static void fixed_offset(
-        const foundation::Vector3d&         p,
-        foundation::Vector3d                n,
-        foundation::Vector3d&               front,
-        foundation::Vector3d&               back);
+        const foundation::Vector3f&         p,
+        foundation::Vector3f                n,
+        foundation::Vector3f&               front,
+        foundation::Vector3f&               back);
     static void adaptive_offset(
         const TriangleSupportPlaneType&     support_plane,
-        const foundation::Vector3d&         p,
-        foundation::Vector3d                n,
-        foundation::Vector3d&               front,
-        foundation::Vector3d&               back);
+        const foundation::Vector3f&         p,
+        foundation::Vector3f                n,
+        foundation::Vector3f&               front,
+        foundation::Vector3f&               back);
 
     // Trace a world space ray through the scene.
     bool trace(
@@ -112,7 +112,7 @@ class Intersector
         const ShadingPoint::PrimitiveType   primitive_type,
         const foundation::Vector2f&         bary,
         const AssemblyInstance*             assembly_instance,
-        const foundation::Transformd&       assembly_instance_transform,
+        const foundation::Transformf&       assembly_instance_transform,
         const size_t                        object_instance_index,
         const size_t                        primitive_index,
         const TriangleSupportPlaneType&     triangle_support_plane) const;
@@ -123,7 +123,7 @@ class Intersector
     void make_volume_shading_point(
         ShadingPoint&                       shading_point,
         const ShadingRay&                   volume_ray,
-        const double                        distance) const;
+        const float                         distance) const;
 
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;

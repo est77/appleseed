@@ -149,7 +149,7 @@ namespace
 
         void spawn_ray(
             SamplingContext&        sampling_context,
-            const Dual2d&           ndc,
+            const Dual2f&           ndc,
             ShadingRay&             ray) const override
         {
             //
@@ -163,8 +163,8 @@ namespace
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform =
+            Transformf scratch;
+            const Transformf& transform =
                 m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
@@ -174,8 +174,8 @@ namespace
             // Compute ray derivatives.
             if (ndc.has_derivatives())
             {
-                const Vector2d px(ndc.get_value() + ndc.get_dx());
-                const Vector2d py(ndc.get_value() + ndc.get_dy());
+                const Vector2f px(ndc.get_value() + ndc.get_dx());
+                const Vector2f py(ndc.get_value() + ndc.get_dy());
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
                 ray.m_rx.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(px)));
@@ -187,9 +187,9 @@ namespace
         bool connect_vertex(
             SamplingContext&        sampling_context,
             const float             time,
-            const Vector3d&         point,
-            Vector2d&               ndc,
-            Vector3d&               outgoing,
+            const Vector3f&         point,
+            Vector2f&               ndc,
+            Vector3f&               outgoing,
             float&                  importance) const override
         {
             // Project the point onto the film plane.
@@ -197,24 +197,24 @@ namespace
                 return false;
 
             // The connection is impossible if the projected point lies outside the film.
-            if (ndc[0] < 0.0 || ndc[0] >= 1.0 ||
-                ndc[1] < 0.0 || ndc[1] >= 1.0)
+            if (ndc[0] < 0.0f || ndc[0] >= 1.0f ||
+                ndc[1] < 0.0f || ndc[1] >= 1.0f)
                 return false;
 
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Compute the outgoing direction vector in world space.
             outgoing = point - transform.get_local_to_parent().extract_translation();
 
             // Compute the emitted importance.
-            const Vector3d film_point = ndc_to_camera(ndc);
-            const double square_dist_film_lens = square_norm(film_point);
-            const double dist_film_lens = sqrt(square_dist_film_lens);
-            const double cos_theta = m_focal_length / dist_film_lens;
-            const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
-            importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
+            const Vector3f film_point = ndc_to_camera(ndc);
+            const float square_dist_film_lens = square_norm(film_point);
+            const float dist_film_lens = sqrt(square_dist_film_lens);
+            const float cos_theta = m_focal_length / dist_film_lens;
+            const float solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
+            importance = 1.0f / (square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;

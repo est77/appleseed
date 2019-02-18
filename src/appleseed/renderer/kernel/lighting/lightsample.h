@@ -99,13 +99,13 @@ class LightSample
     // Data for a light-emitting triangle sample.
     const EmittingTriangle*     m_triangle;
     foundation::Vector2f        m_bary;                         // barycentric coordinates of the sample
-    foundation::Vector3d        m_point;                        // world space position of the sample
-    foundation::Vector3d        m_shading_normal;               // world space shading normal at the sample, unit-length
-    foundation::Vector3d        m_geometric_normal;             // world space geometric normal at the sample, unit-length
+    foundation::Vector3f        m_point;                        // world space position of the sample
+    foundation::Vector3f        m_shading_normal;               // world space shading normal at the sample, unit-length
+    foundation::Vector3f        m_geometric_normal;             // world space geometric normal at the sample, unit-length
 
     // Data for a non-physical light sample.
     const Light*                m_light;
-    foundation::Transformd      m_light_transform;              // light space to world space transform
+    foundation::Transformf      m_light_transform;              // light space to world space transform
 
     // Data common to all sample types.
     float                       m_probability;                  // probability density of this sample
@@ -113,7 +113,7 @@ class LightSample
     // Construct a shading point out of this light sample and a given direction.
     void make_shading_point(
         ShadingPoint&                   shading_point,
-        const foundation::Vector3d&     direction,
+        const foundation::Vector3f&     direction,
         const Intersector&              intersector) const;
 };
 

@@ -46,9 +46,9 @@ class IBasisModifier
   public:
     virtual ~IBasisModifier() {}
 
-    virtual foundation::Basis3d modify(
+    virtual foundation::Basis3f modify(
         TextureCache&               texture_cache,
-        const foundation::Basis3d&  basis,
+        const foundation::Basis3f&  basis,
         const ShadingPoint&         shading_point) const = 0;
 };
 

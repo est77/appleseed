@@ -120,8 +120,8 @@ namespace
             const Vector3f local_outgoing = sample_sphere_uniform(s);
             probability = RcpFourPi<float>();
 
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             value =
@@ -137,9 +137,9 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
-            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Transformf::MatrixType& parent_to_local = transform.get_parent_to_local();
             const float local_outgoing_y =
                 static_cast<float>(parent_to_local[ 4]) * outgoing.x +
                 static_cast<float>(parent_to_local[ 5]) * outgoing.y +
@@ -159,9 +159,9 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
-            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Transformf::MatrixType& parent_to_local = transform.get_parent_to_local();
             const float local_outgoing_y =
                 static_cast<float>(parent_to_local[ 4]) * outgoing.x +
                 static_cast<float>(parent_to_local[ 5]) * outgoing.y +

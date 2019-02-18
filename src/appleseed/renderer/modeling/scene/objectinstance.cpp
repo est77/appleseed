@@ -133,7 +133,7 @@ UniqueID ObjectInstance::get_class_uid()
 struct ObjectInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
-    Transformd              m_transform;
+    Transformf              m_transform;
     string                  m_object_name;
     StringDictionary        m_front_material_mappings;
     StringDictionary        m_back_material_mappings;
@@ -144,7 +144,7 @@ ObjectInstance::ObjectInstance(
     const char*             name,
     const ParamArray&       params,
     const char*             object_name,
-    const Transformd&       transform,
+    const Transformf&       transform,
     const StringDictionary& front_material_mappings,
     const StringDictionary& back_material_mappings)
   : Entity(g_class_uid, params)
@@ -181,7 +181,7 @@ ObjectInstance::ObjectInstance(
     else m_ray_bias_method = RayBiasMethodOutgoingDirection;
 
     // Retrieve ray bias distance.
-    m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
+    m_ray_bias_distance = params.get_optional<float>("ray_bias_distance", 0.0f);
 
     // Retrieve SSS set ID.
     impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
@@ -229,7 +229,7 @@ bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
     return impl->m_sss_set_identifier == other.impl->m_sss_set_identifier;
 }
 
-const Transformd& ObjectInstance::get_transform() const
+const Transformf& ObjectInstance::get_transform() const
 {
     return impl->m_transform;
 }
@@ -567,7 +567,7 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
     const char*             name,
     const ParamArray&       params,
     const char*             object_name,
-    const Transformd&       transform,
+    const Transformf&       transform,
     const StringDictionary& front_material_mappings,
     const StringDictionary& back_material_mappings)
 {

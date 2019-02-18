@@ -72,7 +72,7 @@ namespace renderer
 CurveTree::Arguments::Arguments(
     const Scene&            scene,
     const UniqueID          curve_tree_uid,
-    const GAABB3&           bbox,
+    const AABB3f&           bbox,
     const Assembly&         assembly)
   : m_scene(scene)
   , m_curve_tree_uid(curve_tree_uid)
@@ -90,7 +90,7 @@ CurveTree::CurveTree(const Arguments& arguments)
         format("while building curve tree for assembly \"{0}\"", m_arguments.m_assembly.get_path()));
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
-    const double time = params.get_optional<double>("time", 0.5);
+    const float time = params.get_optional<float>("time", 0.5f);
 
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -111,7 +111,7 @@ CurveTree::CurveTree(const Arguments& arguments)
             statistics).to_string().c_str());
 }
 
-void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
+void CurveTree::collect_curves(vector<AABB3f>& curve_bboxes)
 {
     const ObjectInstanceContainer& object_instances = m_arguments.m_assembly.object_instances();
 
@@ -131,7 +131,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
         const CurveObject& curve_object = static_cast<const CurveObject&>(object);
 
         // Retrieve the object instance transform.
-        const Transformd::MatrixType& transform =
+        const Transformf::MatrixType& transform =
             object_instance->get_transform().get_local_to_parent();
 
         // Store degree-1 curves, curve keys and curve bounding boxes.
@@ -146,8 +146,8 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
                 0,                  // for now we assume all the curves have the same material
                 1);                 // curve degree
 
-            GAABB3 curve_bbox = curve.compute_bbox();
-            curve_bbox.grow(GVector3(GScalar(0.5) * curve.compute_max_width()));
+            AABB3f curve_bbox = curve.compute_bbox();
+            curve_bbox.grow(Vector3f(0.5f * curve.compute_max_width()));
 
             m_curves1.push_back(curve);
             m_curve_keys.push_back(curve_key);
@@ -166,8 +166,8 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
                 0,                  // for now we assume all the curves have the same material
                 3);                 // curve degree
 
-            GAABB3 curve_bbox = curve.compute_bbox();
-            curve_bbox.grow(GVector3(GScalar(0.5) * curve.compute_max_width()));
+            AABB3f curve_bbox = curve.compute_bbox();
+            curve_bbox.grow(Vector3f(0.5f * curve.compute_max_width()));
 
             m_curves3.push_back(curve);
             m_curve_keys.push_back(curve_key);
@@ -178,7 +178,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
 
 void CurveTree::build_bvh(
     const ParamArray&       params,
-    const double            time,
+    const float             time,
     Statistics&             statistics)
 {
     // Collect curves for this tree.
@@ -186,7 +186,7 @@ void CurveTree::build_bvh(
         "collecting geometry for curve tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_curve_tree_uid,
         m_arguments.m_assembly.get_path().c_str());
-    vector<GAABB3> curve_bboxes;
+    vector<AABB3f> curve_bboxes;
     collect_curves(curve_bboxes);
 
     // Print statistics about the input geometry.
@@ -197,7 +197,7 @@ void CurveTree::build_bvh(
         plural(m_curve_keys.size(), "curve").c_str());
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<GAABB3>> Partitioner;
+    typedef bvh::SAHPartitioner<vector<AABB3f>> Partitioner;
     Partitioner partitioner(
         curve_bboxes,
         CurveTreeDefaultMaxLeafSize,

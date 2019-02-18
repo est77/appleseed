@@ -57,7 +57,7 @@ class IMaterialSampler
   public:
     virtual ~IMaterialSampler() {}
 
-    virtual const foundation::Vector3d& get_point() const = 0;
+    virtual const foundation::Vector3f& get_point() const = 0;
 
     virtual const ShadingPoint& get_shading_point() const = 0;
 
@@ -75,12 +75,12 @@ class IMaterialSampler
 
     virtual void trace_between(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position,
+        const foundation::Vector3f&     target_position,
         Spectrum&                       transmission) const = 0;
 
     virtual bool sample(
         SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,
+        const foundation::Dual3f&       outgoing,
         foundation::Dual3f&             incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const = 0;
@@ -102,7 +102,7 @@ class BSDFSampler
         const int                       bsdf_sampling_modes,
         const ShadingPoint&             shading_point);
 
-    const foundation::Vector3d& get_point() const override;
+    const foundation::Vector3f& get_point() const override;
 
     const ShadingPoint& get_shading_point() const override;
 
@@ -120,12 +120,12 @@ class BSDFSampler
 
     void trace_between(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position,
+        const foundation::Vector3f&     target_position,
         Spectrum&                       transmission) const override;
 
     bool sample(
         SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,
+        const foundation::Dual3f&       outgoing,
         foundation::Dual3f&             incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const override;
@@ -140,8 +140,8 @@ class BSDFSampler
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;
     const int                           m_bsdf_sampling_modes;
-    const foundation::Basis3d&          m_shading_basis;
-    const foundation::Vector3d&         m_geometric_normal;
+    const foundation::Basis3f&          m_shading_basis;
+    const foundation::Vector3f&         m_geometric_normal;
     const ShadingPoint&                 m_shading_point;
 };
 
@@ -156,7 +156,7 @@ class VolumeSampler
         const float                     distance,
         const ShadingPoint&             shading_point);
 
-    const foundation::Vector3d& get_point() const override;
+    const foundation::Vector3f& get_point() const override;
 
     const ShadingPoint& get_shading_point() const override;
 
@@ -174,12 +174,12 @@ class VolumeSampler
 
     void trace_between(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position,
+        const foundation::Vector3f&     target_position,
         Spectrum&                       transmission) const override;
 
     bool sample(
         SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,
+        const foundation::Dual3f&       outgoing,
         foundation::Dual3f&             incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const override;
@@ -196,7 +196,7 @@ class VolumeSampler
     const void*                         m_volume_data;
     const float                         m_distance;
     const ShadingPoint&                 m_shading_point;
-    const foundation::Vector3d          m_point;
+    const foundation::Vector3f          m_point;
 };
 
 }   // namespace renderer

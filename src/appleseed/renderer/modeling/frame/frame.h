@@ -137,15 +137,15 @@ class APPLESEED_DLLSYMBOL Frame
         foundation::IAbortSwitch*                       abort_switch = nullptr) override;
 
     // Return the normalized device coordinates of a given sample.
-    foundation::Vector2d get_sample_position(
+    foundation::Vector2f get_sample_position(
         const double                                    sample_x,           // x coordinate of the sample in the image, in [0,width)
         const double                                    sample_y) const;    // y coordinate of the sample in the image, in [0,height)
-    foundation::Vector2d get_sample_position(
+    foundation::Vector2f get_sample_position(
         const size_t                                    pixel_x,            // x coordinate of the pixel in the image
         const size_t                                    pixel_y,            // y coordinate of the pixel in the image
         const double                                    sample_x,           // x coordinate of the sample in the pixel, in [0,1)
         const double                                    sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
-    foundation::Vector2d get_sample_position(
+    foundation::Vector2f get_sample_position(
         const size_t                                    tile_x,             // x coordinate of the tile in the image
         const size_t                                    tile_y,             // y coordinate of the tile in the image
         const size_t                                    pixel_x,            // x coordinate of the pixel in the tile
@@ -261,17 +261,17 @@ class APPLESEED_DLLSYMBOL FrameFactory
 // Frame class implementation.
 //
 
-inline foundation::Vector2d Frame::get_sample_position(
+inline foundation::Vector2f Frame::get_sample_position(
     const double    sample_x,
     const double    sample_y) const
 {
     return
-        foundation::Vector2d(
+        foundation::Vector2f(
             sample_x * m_props.m_rcp_canvas_width,
             sample_y * m_props.m_rcp_canvas_height);
 }
 
-inline foundation::Vector2d Frame::get_sample_position(
+inline foundation::Vector2f Frame::get_sample_position(
     const size_t    pixel_x,
     const size_t    pixel_y,
     const double    sample_x,
@@ -283,7 +283,7 @@ inline foundation::Vector2d Frame::get_sample_position(
             pixel_y + sample_y);
 }
 
-inline foundation::Vector2d Frame::get_sample_position(
+inline foundation::Vector2f Frame::get_sample_position(
     const size_t    tile_x,
     const size_t    tile_y,
     const size_t    pixel_x,

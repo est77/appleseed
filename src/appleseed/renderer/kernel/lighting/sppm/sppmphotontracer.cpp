@@ -165,7 +165,7 @@ namespace
                     vertex.m_sampling_context.split_in_place(1, 1);
                     const uint32 wavelength =
                         truncate<uint32>(
-                            vertex.m_sampling_context.next2<double>() * Spectrum::size());
+                            vertex.m_sampling_context.next2<float>() * Spectrum::size());
 
                     // Create and store a new photon.
                     SPPMMonoPhoton photon;
@@ -409,14 +409,14 @@ namespace
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                Vector3d(emission_direction),
+                emission_direction,
                 m_intersector);
 
             // Build the photon ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 light_sample.m_point,
-                Vector3d(emission_direction),
+                emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next2<float>(),
                     m_shutter_open_begin_time,
@@ -458,13 +458,13 @@ namespace
         {
             // Sample the light.
             sampling_context.split_in_place(2, 1);
-            Vector3d emission_position, emission_direction;
+            Vector3f emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
                 shading_context,
                 light_sample.m_light_transform,
-                sampling_context.next2<Vector2d>(),
+                sampling_context.next2<Vector2f>(),
                 m_photon_targets,
                 emission_position,
                 emission_direction,
@@ -558,7 +558,7 @@ namespace
           , m_abort_switch(abort_switch)
         {
             const Scene::RenderData& scene_data = m_scene.get_render_data();
-            m_scene_center = Vector3d(scene_data.m_center);
+            m_scene_center = scene_data.m_center;
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
@@ -625,9 +625,9 @@ namespace
         float                       m_shutter_open_begin_time;
         float                       m_shutter_close_end_time;
 
-        Vector3d                    m_scene_center;         // world space
-        double                      m_scene_radius;         // world space
-        double                      m_safe_scene_diameter;  // world space
+        Vector3f                    m_scene_center;         // world space
+        float                       m_scene_radius;         // world space
+        float                       m_safe_scene_diameter;  // world space
 
         void trace_env_photon(
             const ShadingContext&   shading_context,
@@ -647,15 +647,15 @@ namespace
 
             // Generate a uniform sample in [0,1)^2.
             sampling_context.split_in_place(2, 1);
-            Vector2d s = sampling_context.next2<Vector2d>();
+            Vector2f s = sampling_context.next2<Vector2f>();
 
             // Compute the center and radius of the target disk.
-            Vector3d disk_center;
-            double disk_radius;
+            Vector3f disk_center;
+            float disk_radius;
             const size_t target_count = m_photon_targets.size();
             if (target_count > 0)
             {
-                const double x = s[0] * target_count;
+                const float x = s[0] * target_count;
                 const size_t target_index = truncate<size_t>(x);
                 s[0] = x - target_index;
 
@@ -670,9 +670,9 @@ namespace
             }
 
             // Compute the origin of the photon ray.
-            const Basis3d basis(-Vector3d(outgoing));
-            const Vector2d p = sample_disk_uniform(s);
-            const Vector3d ray_origin =
+            const Basis3f basis(-outgoing);
+            const Vector2f p = sample_disk_uniform(s);
+            const Vector3f ray_origin =
                   disk_center
                 - m_safe_scene_diameter * basis.get_normal()
                 + disk_radius * p[0] * basis.get_tangent_u() +
@@ -687,7 +687,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 ray_origin,
-                -Vector3d(outgoing),
+                -outgoing,
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next2<float>(),
                     m_shutter_open_begin_time,
@@ -752,7 +752,7 @@ namespace
 {
     void collect_photon_targets(
         const Assembly&                     assembly,
-        const Transformd&                   assembly_inst_transform,
+        const Transformf&                   assembly_inst_transform,
         LightTargetArray&                   photon_targets)
     {
         for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
@@ -761,7 +761,7 @@ namespace
 
             if (object_instance.get_parameters().get_optional<bool>("photon_target", false))
             {
-                const Transformd object_inst_transform =
+                const Transformf object_inst_transform =
                     object_instance.get_transform() * assembly_inst_transform;
 
                 const LightTarget target(
@@ -775,7 +775,7 @@ namespace
 
     void collect_photon_targets(
         const AssemblyInstanceContainer&    assembly_instances,
-        const Transformd&                   parent_transform,
+        const Transformf&                   parent_transform,
         LightTargetArray&                   photon_targets)
     {
         for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
@@ -788,7 +788,7 @@ namespace
 
             // Compute the cumulated transform sequence of this assembly instance.
             // todo: consider the photon targets throughout the entire time interval.
-            const Transformd cumulated_transform =
+            const Transformf cumulated_transform =
                 assembly_instance.transform_sequence().get_earliest_transform() * parent_transform;
 
             // Recurse into child assembly instances.
@@ -820,7 +820,7 @@ void SPPMPhotonTracer::trace_photons(
     LightTargetArray photon_targets;
     collect_photon_targets(
         m_scene.assembly_instances(),
-        Transformd::identity(),
+        Transformf::identity(),
         photon_targets);
 
     // Schedule photon tracing jobs.

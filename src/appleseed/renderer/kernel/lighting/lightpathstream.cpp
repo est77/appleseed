@@ -77,7 +77,7 @@ void LightPathStream::clear()
 void LightPathStream::begin_path(
     const PixelContext&     pixel_context,
     const Camera*           camera,
-    const Vector3d&         camera_vertex_position)
+    const Vector3f&         camera_vertex_position)
 {
     assert(m_events.empty());
     assert(m_hit_reflector_data.empty());
@@ -133,7 +133,7 @@ void LightPathStream::hit_emitter(
 
 void LightPathStream::sampled_emitting_triangle(
     const EmittingTriangle& triangle,
-    const Vector3d&         emission_position,
+    const Vector3f&         emission_position,
     const Spectrum&         material_value,
     const Spectrum&         emitted_radiance)
 {
@@ -146,7 +146,7 @@ void LightPathStream::sampled_emitting_triangle(
     data.m_entity =
         triangle.m_assembly_instance->get_assembly().object_instances().get_by_index(
             triangle.m_object_instance_index);
-    data.m_vertex_position = Vector3f(emission_position);
+    data.m_vertex_position = emission_position;
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
@@ -154,7 +154,7 @@ void LightPathStream::sampled_emitting_triangle(
 
 void LightPathStream::sampled_non_physical_light(
     const Light&            light,
-    const Vector3d&         emission_position,
+    const Vector3f&         emission_position,
     const Spectrum&         material_value,
     const Spectrum&         emitted_radiance)
 {
@@ -165,7 +165,7 @@ void LightPathStream::sampled_non_physical_light(
 
     SampledEmitterData data;
     data.m_entity = &light;
-    data.m_vertex_position = Vector3f(emission_position);
+    data.m_vertex_position = emission_position;
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);

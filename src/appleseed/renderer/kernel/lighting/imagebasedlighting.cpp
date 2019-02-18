@@ -58,7 +58,7 @@ void compute_ibl_combined_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     const IMaterialSampler&     material_sampler,
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
@@ -99,7 +99,7 @@ void compute_ibl_material_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     const IMaterialSampler&     material_sampler,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
@@ -121,7 +121,7 @@ void compute_ibl_material_sampling(
         float material_prob;
         if (!material_sampler.sample(
                 sampling_context,
-                Dual3d(outgoing),
+                Dual3f(outgoing),
                 incoming,
                 material_value,
                 material_prob))
@@ -167,7 +167,7 @@ void compute_ibl_environment_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     const IMaterialSampler&     material_sampler,
     const int                   env_sampling_modes,
     const size_t                material_sample_count,

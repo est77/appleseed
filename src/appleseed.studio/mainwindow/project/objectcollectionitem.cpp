@@ -180,7 +180,7 @@ void ObjectCollectionItem::insert_objects(const string& path) const
                 object_instance_name.c_str(),
                 ParamArray(),
                 object->get_name(),
-                Transformd::identity(),
+                Transformf::identity(),
                 StringDictionary()));
 
         m_parent_item->add_item(object_instance.get());

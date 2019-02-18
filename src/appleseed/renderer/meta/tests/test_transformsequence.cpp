@@ -48,7 +48,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     TEST_CASE(Clear_GivenSequenceWithOneTransform_RemovesTransform)
     {
         TransformSequence sequence;
-        sequence.set_transform(1.0f, Transformd::identity());
+        sequence.set_transform(1.0f, Transformf::identity());
 
         sequence.clear();
 
@@ -57,15 +57,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
     TEST_CASE(SetTransform_GivenTimeAtWhichNoTransformExists_AddsTransform)
     {
-        const Transformd ExpectedTransform(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
+        const Transformf ExpectedTransform(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
 
         TransformSequence sequence;
         sequence.set_transform(1.0f, ExpectedTransform);
 
         float time;
-        Transformd transform;
+        Transformf transform;
         sequence.get_transform(0, time, transform);
 
         EXPECT_EQ(1.0f, time);
@@ -74,19 +74,19 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
     TEST_CASE(SetTransform_GivenTimeOfExistingTransform_ReplacesTransform)
     {
-        const Transformd OldTransform(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
-        const Transformd NewTransform(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(4.0, 5.0, 6.0))));
+        const Transformf OldTransform(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
+        const Transformf NewTransform(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(4.0, 5.0, 6.0))));
 
         TransformSequence sequence;
         sequence.set_transform(1.0f, OldTransform);
         sequence.set_transform(1.0f, NewTransform);
 
         float time;
-        Transformd transform;
+        Transformf transform;
         sequence.get_transform(0, time, transform);
 
         EXPECT_EQ(1.0f, time);
@@ -97,17 +97,17 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     {
         const TransformSequence sequence;
 
-        EXPECT_EQ(Transformd::identity(), sequence.get_earliest_transform());
+        EXPECT_EQ(Transformf::identity(), sequence.get_earliest_transform());
     }
 
     TEST_CASE(GetEarliestTransform_EarliestTransformIsFirst)
     {
-        const Transformd Transform1(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
-        const Transformd Transform2(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(4.0, 5.0, 6.0))));
+        const Transformf Transform1(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
+        const Transformf Transform2(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(4.0, 5.0, 6.0))));
 
         TransformSequence sequence;
         sequence.set_transform(1.0f, Transform1);
@@ -118,12 +118,12 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
     TEST_CASE(GetEarliestTransform_EarliestTransformIsLast)
     {
-        const Transformd Transform1(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
-        const Transformd Transform2(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(4.0, 5.0, 6.0))));
+        const Transformf Transform1(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
+        const Transformf Transform2(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(4.0, 5.0, 6.0))));
 
         TransformSequence sequence;
         sequence.set_transform(2.0f, Transform2);
@@ -142,7 +142,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     TEST_CASE(Empty_AfterSettingOneTransform_ReturnsFalse)
     {
         TransformSequence sequence;
-        sequence.set_transform(1.0f, Transformd::identity());
+        sequence.set_transform(1.0f, Transformf::identity());
 
         EXPECT_FALSE(sequence.empty());
     }
@@ -157,7 +157,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     TEST_CASE(Size_AfterSettingOneTransform_ReturnsOne)
     {
         TransformSequence sequence;
-        sequence.set_transform(1.0f, Transformd::identity());
+        sequence.set_transform(1.0f, Transformf::identity());
 
         EXPECT_EQ(1, sequence.size());
     }
@@ -165,8 +165,8 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     TEST_CASE(Size_AfterSettingTwoTransformsAtDistinctTimes_ReturnsTwo)
     {
         TransformSequence sequence;
-        sequence.set_transform(1.0f, Transformd::identity());
-        sequence.set_transform(3.0f, Transformd::identity());
+        sequence.set_transform(1.0f, Transformf::identity());
+        sequence.set_transform(3.0f, Transformf::identity());
 
         EXPECT_EQ(2, sequence.size());
     }
@@ -174,29 +174,29 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     TEST_CASE(Size_AfterSettingTwoTransformsAtSameTime_ReturnsOne)
     {
         TransformSequence sequence;
-        sequence.set_transform(1.0f, Transformd::identity());
-        sequence.set_transform(1.0f, Transformd::identity());
+        sequence.set_transform(1.0f, Transformf::identity());
+        sequence.set_transform(1.0f, Transformf::identity());
 
         EXPECT_EQ(1, sequence.size());
     }
 
-    static const Transformd A = Transformd::identity();
-    static const Transformd B =
-        Transformd::from_local_to_parent(
-            Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0)));
+    static const Transformf A = Transformf::identity();
+    static const Transformf B =
+        Transformf::from_local_to_parent(
+            Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0)));
 
     float get_time(const TransformSequence& sequence, const size_t index)
     {
         float time;
-        Transformd transform;
+        Transformf transform;
         sequence.get_transform(index, time, transform);
         return time;
     }
 
-    Transformd get_transform(const TransformSequence& sequence, const size_t index)
+    Transformf get_transform(const TransformSequence& sequence, const size_t index)
     {
         float time;
-        Transformd transform;
+        Transformf transform;
         sequence.get_transform(index, time, transform);
         return transform;
     }
@@ -307,7 +307,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
     TEST_CASE(Evaluate_GivenNoTransform_ReturnsIdentityTransformRegardlessOfTime)
     {
-        const Transformd ExpectedTransform(Transformd::identity());
+        const Transformf ExpectedTransform(Transformf::identity());
 
         TransformSequence sequence;
         sequence.prepare();
@@ -319,9 +319,9 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
     TEST_CASE(Evaluate_GivenSingleTransform_ReturnsTransformRegardlessOfTime)
     {
-        const Transformd ExpectedTransform(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
+        const Transformf ExpectedTransform(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
 
         TransformSequence sequence;
         sequence.set_transform(1.0f, ExpectedTransform);
@@ -334,17 +334,17 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
     struct TwoTransformsFixture
     {
-        const Transformd    m_expected_first_transform;
-        const Transformd    m_expected_second_transform;
+        const Transformf    m_expected_first_transform;
+        const Transformf    m_expected_second_transform;
         TransformSequence   m_sequence;
 
         TwoTransformsFixture()
           : m_expected_first_transform(
-              Transformd::from_local_to_parent(
-                  Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))))
+              Transformf::from_local_to_parent(
+                  Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))))
           , m_expected_second_transform(
-              Transformd::from_local_to_parent(
-                  Matrix4d::make_translation(Vector3d(4.0, 5.0, 6.0))))
+              Transformf::from_local_to_parent(
+                  Matrix4f::make_translation(Vector3f(4.0, 5.0, 6.0))))
         {
             m_sequence.set_transform(1.0f, m_expected_first_transform);
             m_sequence.set_transform(3.0f, m_expected_second_transform);
@@ -371,38 +371,38 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
     TEST_CASE_F(Evaluate_GivenTwoTransforms_WhenTimeBetweenTwoTransforms_ReturnsInterpolatedTransform, TwoTransformsFixture)
     {
-        const TransformInterpolatord interpolator(
+        const TransformInterpolatorf interpolator(
             m_expected_first_transform,
             m_expected_second_transform);
 
-        Transformd expected;
-        interpolator.evaluate(0.5, expected);
+        Transformf expected;
+        interpolator.evaluate(0.5f, expected);
 
-        EXPECT_FEQ(expected, m_sequence.evaluate(2.0));
+        EXPECT_FEQ(expected, m_sequence.evaluate(2.0f));
     }
 
     TEST_CASE(Evaluate_GivenTwoTransformsSetInReverseOrder_ReturnsCorrectlyInterpolatedTransform)
     {
-        const Transformd ExpectedFirstTransform(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
-        const Transformd ExpectedSecondTransform(
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(4.0, 5.0, 6.0))));
+        const Transformf ExpectedFirstTransform(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
+        const Transformf ExpectedSecondTransform(
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(4.0, 5.0, 6.0))));
 
         TransformSequence sequence;
         sequence.set_transform(3.0f, ExpectedSecondTransform);
         sequence.set_transform(1.0f, ExpectedFirstTransform);
         sequence.prepare();
 
-        const TransformInterpolatord interpolator(
+        const TransformInterpolatorf interpolator(
             ExpectedFirstTransform,
             ExpectedSecondTransform);
 
-        Transformd expected;
-        interpolator.evaluate(0.5, expected);
+        Transformf expected;
+        interpolator.evaluate(0.5f, expected);
 
-        EXPECT_FEQ(expected, sequence.evaluate(2.0));
+        EXPECT_FEQ(expected, sequence.evaluate(2.0f));
     }
 
     TEST_CASE(CompositionOperator_GivenTwoEmptyTransformSequences_ReturnsEmptyTransformSequence)
@@ -419,8 +419,8 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence seq1;
         seq1.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
 
         TransformSequence seq2;
 
@@ -429,12 +429,12 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         ASSERT_EQ(1, result.size());
 
         float time;
-        Transformd transform;
+        Transformf transform;
         result.get_transform(0, time, transform);
 
         EXPECT_EQ(1.0f, time);
         EXPECT_EQ(
-            Transformd::from_local_to_parent(Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))),
+            Transformf::from_local_to_parent(Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))),
             transform);
     }
 
@@ -443,27 +443,27 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence seq1;
         seq1.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(1.0, 0, 0), HalfPi<double>())));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(1.0, 0, 0), HalfPi<float>())));
 
         TransformSequence seq2;
         seq2.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
 
         const TransformSequence result = seq1 * seq2;
 
         ASSERT_EQ(1, result.size());
 
         float time;
-        Transformd transform;
+        Transformf transform;
         result.get_transform(0, time, transform);
 
         EXPECT_EQ(1.0f, time);
         EXPECT_EQ(
-              Transformd::from_local_to_parent(Matrix4d::make_rotation(Vector3d(1.0, 0, 0), HalfPi<double>()))
-            * Transformd::from_local_to_parent(Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))),
+              Transformf::from_local_to_parent(Matrix4f::make_rotation(Vector3f(1.0, 0, 0), HalfPi<float>()))
+            * Transformf::from_local_to_parent(Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))),
             transform);
     }
 
@@ -472,14 +472,14 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence seq1;
         seq1.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(1.0, 0, 0), HalfPi<double>())));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(1.0, 0, 0), HalfPi<float>())));
 
         TransformSequence seq2;
         seq2.set_transform(
             2.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))));
 
         const TransformSequence result = seq1 * seq2;
 
@@ -487,25 +487,25 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
         {
             float time;
-            Transformd transform;
+            Transformf transform;
             result.get_transform(0, time, transform);
 
             EXPECT_EQ(1.0f, time);
             EXPECT_EQ(
-                  Transformd::from_local_to_parent(Matrix4d::make_rotation(Vector3d(1.0, 0, 0), HalfPi<double>()))
-                * Transformd::from_local_to_parent(Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))),
+                  Transformf::from_local_to_parent(Matrix4f::make_rotation(Vector3f(1.0, 0, 0), HalfPi<float>()))
+                * Transformf::from_local_to_parent(Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))),
                 transform);
         }
 
         {
             float time;
-            Transformd transform;
+            Transformf transform;
             result.get_transform(1, time, transform);
 
             EXPECT_EQ(2.0f, time);
             EXPECT_EQ(
-                  Transformd::from_local_to_parent(Matrix4d::make_rotation(Vector3d(1.0, 0, 0), HalfPi<double>()))
-                * Transformd::from_local_to_parent(Matrix4d::make_translation(Vector3d(1.0, 2.0, 3.0))),
+                  Transformf::from_local_to_parent(Matrix4f::make_rotation(Vector3f(1.0, 0, 0), HalfPi<float>()))
+                * Transformf::from_local_to_parent(Matrix4f::make_translation(Vector3f(1.0, 2.0, 3.0))),
                 transform);
         }
     }
@@ -515,18 +515,18 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
-        const AABB3d motion_bbox = sequence.to_parent(bbox);
+        const AABB3f bbox(Vector3f(1.0, 1.0, 0.0), Vector3f(1.0, 1.0, 0.0));
+        const AABB3f motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_FEQ_EPS(AABB3d(Vector3d(0.54119610014619690, 1.0, 0.0), Vector3d(1.0, 1.3065629648763766, 0.0)), motion_bbox, 1.0e-3);
+        EXPECT_FEQ_EPS(AABB3f(Vector3f(0.54119610014619690, 1.0, 0.0), Vector3f(1.0, 1.3065629648763766, 0.0)), motion_bbox, 1.0e-3f);
     }
 
     TEST_CASE(ToParent_SmallNegativeRotation)
@@ -534,18 +534,18 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), -Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), -Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
-        const AABB3d motion_bbox = sequence.to_parent(bbox);
+        const AABB3f bbox(Vector3f(1.0, 1.0, 0.0), Vector3f(1.0, 1.0, 0.0));
+        const AABB3f motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_FEQ_EPS(AABB3d(Vector3d(1.0, 0.54119610014619690, 0.0), Vector3d(1.3065629648763766, 1.0, 0.0)), motion_bbox, 1.0e-3);
+        EXPECT_FEQ_EPS(AABB3f(Vector3f(1.0, 0.54119610014619690, 0.0), Vector3f(1.3065629648763766, 1.0, 0.0)), motion_bbox, 1.0e-3f);
     }
 
     TEST_CASE(ToParent_LargePositiveRotation)
@@ -553,18 +553,18 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() - Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() - Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
-        const AABB3d motion_bbox = sequence.to_parent(bbox);
+        const AABB3f bbox(Vector3f(1.0, 1.0, 0.0), Vector3f(1.0, 1.0, 0.0));
+        const AABB3f motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_FEQ_EPS(AABB3d(Vector3d(-1.4142135623730949, -0.54119610014619690, 0.0), Vector3d(1.0, 1.4142135623730949, 0.0)), motion_bbox, 1.0e-3);
+        EXPECT_FEQ_EPS(AABB3f(Vector3f(-1.4142135623730949, -0.54119610014619690, 0.0), Vector3f(1.0, 1.4142135623730949, 0.0)), motion_bbox, 1.0e-3f);
     }
 
     TEST_CASE(ToParent_LargeNegativeRotation)
@@ -572,29 +572,29 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), -Pi<double>() + Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), -Pi<float>() + Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
-        const AABB3d motion_bbox = sequence.to_parent(bbox);
+        const AABB3f bbox(Vector3f(1.0, 1.0, 0.0), Vector3f(1.0, 1.0, 0.0));
+        const AABB3f motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_FEQ_EPS(AABB3d(Vector3d(-0.54119610014619690, -1.4142135623730951, 0.0), Vector3d(1.4142135623730949, 1.0, 0.0)), motion_bbox, 1.0e-3);
+        EXPECT_FEQ_EPS(AABB3f(Vector3f(-0.54119610014619690, -1.4142135623730951, 0.0), Vector3f(1.4142135623730949, 1.0, 0.0)), motion_bbox, 1.0e-3f);
     }
 
     void visualize(
         const char*                 filename,
         const TransformSequence&    sequence,
-        const AABB3d&               bbox)
+        const AABB3f&               bbox)
     {
         const double Width = 0.01;
         const size_t Steps = 10;
 
-        const AABB3d motion_bbox = sequence.to_parent(bbox);
+        const AABB3f motion_bbox = sequence.to_parent(bbox);
 
         VPythonFile file(filename);
 
@@ -603,11 +603,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         for (size_t i = 0; i < Steps; ++i)
         {
             const float t = fit<size_t, float>(i, 0, Steps - 1, 0.0f, 1.0f);
-            const Transformd transform = sequence.evaluate(t);
+            const Transformf transform = sequence.evaluate(t);
             const char* color = i == 0 ? "color.yellow" : i == Steps - 1 ? "color.white" : "color.blue";
 
             file.draw_aabb(transform.to_parent(bbox), color, Width);
-            file.draw_arrow(Vector3d(0.0), transform.point_to_parent(bbox.center()), color, Width);
+            file.draw_arrow(
+                Vector3d(0.0),
+                Vector3d(transform.point_to_parent(bbox.center())),
+                color,
+                Width);
         }
 
         file.draw_aabb(motion_bbox, "color.magenta", Width);
@@ -618,15 +622,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+        const AABB3f bbox(Vector3f(1.0, 1.0, 0.0), Vector3f(1.0, 1.0, 0.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenpoint_smallpositiverotation.py",
@@ -639,15 +643,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), -Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), -Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+        const AABB3f bbox(Vector3f(1.0, 1.0, 0.0), Vector3f(1.0, 1.0, 0.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenpoint_smallnegativerotation.py",
@@ -660,15 +664,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() - Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() - Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-1.0, -1.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
+        const AABB3f bbox(Vector3f(-1.0, -1.0, 0.0), Vector3f(-1.0, -1.0, 0.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenpoint_largepositiverotation.py",
@@ -681,15 +685,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), -Pi<double>() + Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), -Pi<float>() + Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-1.0, -1.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
+        const AABB3f bbox(Vector3f(-1.0, -1.0, 0.0), Vector3f(-1.0, -1.0, 0.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenpoint_largenegativerotation.py",
@@ -702,15 +706,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() - Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() - Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-2.0, -2.0, -0.5), Vector3d(-1.0, -1.0, 0.5));
+        const AABB3f bbox(Vector3f(-2.0, -2.0, -0.5), Vector3f(-1.0, -1.0, 0.5));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_largepositiverotationwithunitscaling.py",
@@ -723,17 +727,17 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0) *
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0) *
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() - Pi<double>() / 8) *
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() - Pi<float>() / 8) *
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0));
+        const AABB3f bbox(Vector3f(-20.0, -20.0, -5.0), Vector3f(-10.0, -10.0, 5.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_largepositiverotationwithconstantscaling.py",
@@ -746,17 +750,17 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0) *
-                Matrix4d::make_scaling(Vector3d(0.1))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0) *
+                Matrix4f::make_scaling(Vector3f(0.1))));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() - Pi<double>() / 8) *
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() - Pi<float>() / 8) *
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0));
+        const AABB3f bbox(Vector3f(-20.0, -20.0, -5.0), Vector3f(-10.0, -10.0, 5.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_largepositiverotationwithvaryingscaling.py",
@@ -769,18 +773,18 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0) *
-                Matrix4d::make_scaling(Vector3d(0.1))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0) *
+                Matrix4f::make_scaling(Vector3f(0.1))));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_translation(Vector3d(20.0, 0.0, 0.0)) *
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>() - Pi<double>() / 8) *
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_translation(Vector3f(20.0, 0.0, 0.0)) *
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), Pi<float>() - Pi<float>() / 8) *
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0));
+        const AABB3f bbox(Vector3f(-20.0, -20.0, -5.0), Vector3f(-10.0, -10.0, 5.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_largepositiverotationwithvaryingscalingandtranslation.py",
@@ -793,15 +797,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0)));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), -Pi<double>() + Pi<double>() / 8)));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), -Pi<float>() + Pi<float>() / 8)));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-2.0, -2.0, -0.5), Vector3d(-1.0, -1.0, 0.5));
+        const AABB3f bbox(Vector3f(-2.0, -2.0, -0.5), Vector3f(-1.0, -1.0, 0.5));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_largenegativerotationwithunitscaling.py",
@@ -814,17 +818,17 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0) *
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0) *
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), -Pi<double>() + Pi<double>() / 8) *
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), -Pi<float>() + Pi<float>() / 8) *
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0));
+        const AABB3f bbox(Vector3f(-20.0, -20.0, -5.0), Vector3f(-10.0, -10.0, 5.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_largenegativerotationwithconstantscaling.py",
@@ -837,17 +841,17 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0) *
-                Matrix4d::make_scaling(Vector3d(0.1))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), 0.0) *
+                Matrix4f::make_scaling(Vector3f(0.1))));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(Vector3d(0.0, 0.0, 1.0), -Pi<double>() + Pi<double>() / 8) *
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(Vector3f(0.0, 0.0, 1.0), -Pi<float>() + Pi<float>() / 8) *
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0));
+        const AABB3f bbox(Vector3f(-20.0, -20.0, -5.0), Vector3f(-10.0, -10.0, 5.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_largenegativerotationwithvaryingscaling.py",
@@ -860,15 +864,15 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         TransformSequence sequence;
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_scaling(Vector3d(0.1))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_scaling(Vector3f(0.1))));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(
-                Matrix4d::make_scaling(Vector3d(0.2))));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_scaling(Vector3f(0.2))));
         sequence.prepare();
 
-        const AABB3d bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0));
+        const AABB3f bbox(Vector3f(-20.0, -20.0, -5.0), Vector3f(-10.0, -10.0, 5.0));
 
         visualize(
             "unit tests/outputs/test_transformsequence_toparent_givenaabb_scalingonly.py",
@@ -880,24 +884,24 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     {
         TransformSequence sequence;
 
-        Matrix4d m =
-              Matrix4d::make_rotation_x(Pi<double>() / 4.0)
-            * Matrix4d::make_scaling(Vector3d(1.0, 1.0, 0.5));
+        Matrix4f m =
+              Matrix4f::make_rotation_x(Pi<float>() / 4.0)
+            * Matrix4f::make_scaling(Vector3f(1.0, 1.0, 0.5));
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(m));
+            Transformf::from_local_to_parent(m));
 
         m =
-              Matrix4d::make_rotation_x(Pi<double>() / 2.0)
-            * Matrix4d::make_scaling(Vector3d(2.0, -3.0, 0.5));
+              Matrix4f::make_rotation_x(Pi<float>() / 2.0)
+            * Matrix4f::make_scaling(Vector3f(2.0, -3.0, 0.5));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(m));
+            Transformf::from_local_to_parent(m));
 
         sequence.prepare();
         EXPECT_TRUE(sequence.can_swap_handedness());
 
-        const Transformd xform = sequence.evaluate(0.5);
+        const Transformf xform = sequence.evaluate(0.5);
         EXPECT_EQ(xform.swaps_handedness(), sequence.swaps_handedness(xform));
     }
 
@@ -905,24 +909,24 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     {
         TransformSequence sequence;
 
-        Matrix4d m =
-              Matrix4d::make_rotation_y(Pi<double>() / 2.0)
-            * Matrix4d::make_scaling(Vector3d(-1.0, -2.0, 0.5));
+        Matrix4f m =
+              Matrix4f::make_rotation_y(Pi<float>() / 2.0)
+            * Matrix4f::make_scaling(Vector3f(-1.0, -2.0, 0.5));
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(m));
+            Transformf::from_local_to_parent(m));
 
         m =
-              Matrix4d::make_rotation_z(Pi<double>() / 3.0)
-            * Matrix4d::make_scaling(Vector3d(-1.0, -1.0, 1.5));
+              Matrix4f::make_rotation_z(Pi<float>() / 3.0)
+            * Matrix4f::make_scaling(Vector3f(-1.0, -1.0, 1.5));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(m));
+            Transformf::from_local_to_parent(m));
 
         sequence.prepare();
         EXPECT_FALSE(sequence.can_swap_handedness());
 
-        const Transformd xform = sequence.evaluate(0.5);
+        const Transformf xform = sequence.evaluate(0.5);
         EXPECT_EQ(xform.swaps_handedness(), sequence.swaps_handedness(xform));
     }
 
@@ -930,24 +934,24 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     {
         TransformSequence sequence;
 
-        Matrix4d m =
-              Matrix4d::make_rotation_y(Pi<double>() / 2.0)
-            * Matrix4d::make_scaling(Vector3d(1.0, 2.0, 0.5));
+        Matrix4f m =
+              Matrix4f::make_rotation_y(Pi<float>() / 2.0)
+            * Matrix4f::make_scaling(Vector3f(1.0, 2.0, 0.5));
         sequence.set_transform(
             0.0f,
-            Transformd::from_local_to_parent(m));
+            Transformf::from_local_to_parent(m));
 
         m =
-              Matrix4d::make_rotation_z(Pi<double>() / 3.0)
-            * Matrix4d::make_scaling(Vector3d(-1.0, 1.0, 1.5));
+              Matrix4f::make_rotation_z(Pi<float>() / 3.0)
+            * Matrix4f::make_scaling(Vector3f(-1.0, 1.0, 1.5));
         sequence.set_transform(
             1.0f,
-            Transformd::from_local_to_parent(m));
+            Transformf::from_local_to_parent(m));
 
         sequence.prepare();
         EXPECT_TRUE(sequence.can_swap_handedness());
 
-        const Transformd xform = sequence.evaluate(0.5);
+        const Transformf xform = sequence.evaluate(0.5);
         EXPECT_EQ(xform.swaps_handedness(), sequence.swaps_handedness(xform));
     }
 }

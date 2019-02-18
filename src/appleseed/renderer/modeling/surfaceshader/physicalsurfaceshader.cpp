@@ -119,7 +119,7 @@ namespace
             // When using more than 1 lighting sample, we need to save and restore
             // the basis for each sample.
 
-            const Basis3d basis = shading_point.get_shading_basis();
+            const Basis3f basis = shading_point.get_shading_basis();
             shading_context.get_lighting_engine()->compute_lighting(
                 sampling_context,
                 pixel_context,

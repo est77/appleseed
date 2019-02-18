@@ -65,8 +65,8 @@ const double AssemblyTreeTriangleIntersectionCost = 10.0;
 typedef foundation::TriangleMT<GScalar> GTriangleType;
 
 // Triangle format used for intersection.
-typedef foundation::TriangleMT<double> TriangleType;
-typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
+typedef foundation::TriangleMT<float> TriangleType;
+typedef foundation::TriangleMTSupportPlane<float> TriangleSupportPlaneType;
 
 // Maximum number of triangles per leaf.
 const size_t TriangleTreeDefaultMaxLeafSize = 2;

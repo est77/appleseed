@@ -52,9 +52,9 @@ NormalMappingModifier::NormalMappingModifier(
 {
 }
 
-Basis3d NormalMappingModifier::modify(
+Basis3f NormalMappingModifier::modify(
     TextureCache&           texture_cache,
-    const Basis3d&          basis,
+    const Basis3f&          basis,
     const ShadingPoint&     shading_point) const
 {
     const size_t UVSet = 0;
@@ -65,16 +65,16 @@ Basis3d NormalMappingModifier::modify(
     m_map->evaluate(texture_cache, SourceInputs(uv), normal_rgb);
 
     // Reconstruct the normal from the texel value.
-    const double x = static_cast<double>(normal_rgb[0]);
-    const double y = static_cast<double>(normal_rgb[m_y]);
-    const double z = static_cast<double>(normal_rgb[3 - m_y]);
-    const Vector3d normal(
-        x * 2.0 - 1.0,
-        y * 2.0 - 1.0,
-        z * 2.0 - 1.0);
+    const float x = normal_rgb[0];
+    const float y = normal_rgb[m_y];
+    const float z = normal_rgb[3 - m_y];
+    const Vector3f normal(
+        x * 2.0f - 1.0f,
+        y * 2.0f - 1.0f,
+        z * 2.0f - 1.0f);
 
     // Construct an orthonormal basis around the new normal.
-    return Basis3d(
+    return Basis3f(
         normalize(basis.transform_to_parent(normal)),
         basis.get_tangent_u());
 }

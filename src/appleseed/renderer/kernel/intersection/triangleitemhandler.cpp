@@ -52,29 +52,29 @@ namespace renderer
 TriangleItemHandler::TriangleItemHandler(
     const vector<TriangleVertexInfo>&   triangle_vertex_infos,
     const vector<GVector3>&             triangle_vertices,
-    const vector<AABB3d>&               triangle_bboxes)
+    const vector<AABB3f>&               triangle_bboxes)
   : m_triangle_vertex_infos(triangle_vertex_infos)
   , m_triangle_vertices(triangle_vertices)
   , m_triangle_bboxes(triangle_bboxes)
 {
 }
 
-double TriangleItemHandler::get_bbox_grow_eps() const
+float TriangleItemHandler::get_bbox_grow_eps() const
 {
-    return 2.0e-9;
+    return 2.0e-9f;
 }
 
-AABB3d TriangleItemHandler::clip(
+AABB3f TriangleItemHandler::clip(
     const size_t                        item_index,
     const size_t                        dimension,
-    const double                        slab_min,
-    const double                        slab_max) const
+    const float                         slab_min,
+    const float                         slab_max) const
 {
     const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
 
     if (vertex_info.m_motion_segment_count > 0)
     {
-        AABB3d triangle_bbox = m_triangle_bboxes[item_index];
+        AABB3f triangle_bbox = m_triangle_bboxes[item_index];
 
         if (triangle_bbox.min[dimension] < slab_min)
             triangle_bbox.min[dimension] = slab_min;
@@ -85,7 +85,8 @@ AABB3d TriangleItemHandler::clip(
         return triangle_bbox;
     }
 
-#ifdef APPLESEED_USE_SSE
+#if 0 // todo: fix me...
+//#ifdef APPLESEED_USE_SSE
 
     APPLESEED_SIMD4_ALIGN const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
     APPLESEED_SIMD4_ALIGN const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
@@ -256,7 +257,7 @@ AABB3d TriangleItemHandler::clip(
         }
     }
 
-    APPLESEED_SIMD4_ALIGN AABB3d bbox;
+    APPLESEED_SIMD4_ALIGN AABB3f bbox;
 
     _mm_store_pd(&bbox.min.x, bbox_min_xy);
     _mm_store_sd(&bbox.min.z, bbox_min_zz);
@@ -271,9 +272,9 @@ AABB3d TriangleItemHandler::clip(
 
 #else
 
-    const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
-    const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
-    const Vector3d v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
+    const Vector3f v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
+    const Vector3f v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
+    const Vector3f v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
 
     const int v0_ge_min = v0[dimension] >= slab_min ? 1 : 0;
     const int v0_le_max = v0[dimension] <= slab_max ? 1 : 0;
@@ -282,7 +283,7 @@ AABB3d TriangleItemHandler::clip(
     const int v2_ge_min = v2[dimension] >= slab_min ? 1 : 0;
     const int v2_le_max = v2[dimension] <= slab_max ? 1 : 0;
 
-    AABB3d bbox;
+    AABB3f bbox;
     bbox.invalidate();
 
     if (v0_ge_min & v0_le_max)
@@ -319,37 +320,37 @@ AABB3d TriangleItemHandler::clip(
 
 bool TriangleItemHandler::intersect(
     const size_t                        item_index,
-    const AABB3d&                       bbox) const
+    const AABB3f&                       bbox) const
 {
     const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
 
     return
         vertex_info.m_motion_segment_count > 0
-            ? AABB3d::overlap(bbox, m_triangle_bboxes[item_index])
+            ? AABB3f::overlap(bbox, m_triangle_bboxes[item_index])
             : foundation::intersect(
                     bbox,
-                    Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 0]),
-                    Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 1]),
-                    Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 2]));
+                    Vector3f(m_triangle_vertices[vertex_info.m_vertex_index + 0]),
+                    Vector3f(m_triangle_vertices[vertex_info.m_vertex_index + 1]),
+                    Vector3f(m_triangle_vertices[vertex_info.m_vertex_index + 2]));
 }
 
-Vector3d TriangleItemHandler::segment_plane_intersection(
-    const Vector3d&                     a,
-    const Vector3d&                     b,
+Vector3f TriangleItemHandler::segment_plane_intersection(
+    const Vector3f&                     a,
+    const Vector3f&                     b,
     const size_t                        d,
-    const double                        x)
+    const float                         x)
 {
-    const double ab = b[d] - a[d];
+    const float ab = b[d] - a[d];
 
-    if (ab == 0.0)
+    if (ab == 0.0f)
         return a;
 
-    const double t = (x - a[d]) / ab;
+    const float t = (x - a[d]) / ab;
 
-    assert(t >= 0.0 && t <= 1.0);
+    assert(t >= 0.0f && t <= 1.0f);
 
-    Vector3d result;
-    result = a * (1.0 - t) + b * t;
+    Vector3f result;
+    result = a * (1.0f - t) + b * t;
     result[d] = x;
 
     return result;

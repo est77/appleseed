@@ -105,9 +105,9 @@ void CameraController::set_enabled(const bool enabled)
     m_enabled = enabled;
 }
 
-Transformd CameraController::get_transform() const
+Transformf CameraController::get_transform() const
 {
-    return Transformd::from_local_to_parent(m_controller.get_transform());
+    return Transformf::from_local_to_parent(m_controller.get_transform());
 }
 
 void CameraController::update_camera_transform()
@@ -138,11 +138,11 @@ void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
             result.m_assembly_instance_transform.to_parent(
                 result.m_object_instance->compute_parent_bbox());
 
-        m_pivot = Vector3d(object_instance_world_bbox.center());
+        m_pivot = Vector3f(object_instance_world_bbox.center());
     }
     else
     {
-        m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
+        m_pivot = Vector3f(m_project.get_scene()->compute_bbox().center());
     }
 }
 
@@ -193,7 +193,7 @@ Camera* CameraController::fetch_camera()
 void CameraController::configure_controller()
 {
     // By default, the pivot point is the scene's center.
-    m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
+    m_pivot = Vector3f(m_project.get_scene()->compute_bbox().center());
 
     Camera* camera = fetch_camera();
 
@@ -208,10 +208,10 @@ void CameraController::configure_controller()
     {
         // Otherwise use a default orientation and position.
         m_controller.set_transform(
-            Matrix4d::make_lookat(
-                Vector3d(1.0, 1.0, 1.0),    // origin
-                Vector3d(0.0, 0.0, 0.0),    // target
-                Vector3d(0.0, 1.0, 0.0)));  // up
+            Matrix4f::make_lookat(
+                Vector3f(1.0f, 1.0f, 1.0f),    // origin
+                Vector3f(0.0f, 0.0f, 0.0f),    // target
+                Vector3f(0.0f, 1.0f, 0.0f)));  // up
     }
 
     // Check whether the camera has a controller target.
@@ -220,12 +220,12 @@ void CameraController::configure_controller()
         camera->get_parameters().strings().exist("controller_target");
 
     // Retrieve the controller target from the camera.
-    Vector3d controller_target;
+    Vector3f controller_target;
     if (has_target)
     {
         // The scene's camera has a controller target, retrieve it.
         controller_target =
-            camera->get_parameters().get<Vector3d>("controller_target");
+            camera->get_parameters().get<Vector3f>("controller_target");
     }
     else
     {
@@ -233,20 +233,20 @@ void CameraController::configure_controller()
         controller_target = m_pivot;
     }
 
-    const Matrix4d& m = m_controller.get_transform();
-    const Vector3d camera_position = m.extract_translation();
-    const Vector3d camera_direction = normalize(Vector3d(-m[2], -m[6], -m[10]));
-    const Vector3d to_target = controller_target - camera_position;
+    const Matrix4f& m = m_controller.get_transform();
+    const Vector3f camera_position = m.extract_translation();
+    const Vector3f camera_direction = normalize(Vector3f(-m[2], -m[6], -m[10]));
+    const Vector3f to_target = controller_target - camera_position;
 
-    const double target_to_viewing_vector_distance =
+    const float target_to_viewing_vector_distance =
         square_distance_point_line(
             controller_target,
             camera_position,
             camera_direction);
 
     // Check whether the target is on the viewing vector and in front of the camera.
-    const bool target_is_behind = dot(to_target, camera_direction) < 0.0;
-    const bool target_is_off = target_to_viewing_vector_distance > 1.0e-7;
+    const bool target_is_behind = dot(to_target, camera_direction) < 0.0f;
+    const bool target_is_off = target_to_viewing_vector_distance > 1.0e-7f;
     if (has_target && (target_is_behind || target_is_off))
         RENDERER_LOG_WARNING("camera's controller target is off the viewing direction, realigning it.");
 
@@ -273,15 +273,15 @@ void CameraController::configure_controller()
         save_camera_target();
 }
 
-Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const
+Vector2f CameraController::get_mouse_position(const QMouseEvent* event) const
 {
     const int width = m_widget->width();
     const int height = m_widget->height();
 
-    const double x =  static_cast<double>(event->x()) / width;
-    const double y = -static_cast<double>(event->y()) / height;
+    const float x =  static_cast<float>(event->x()) / width;
+    const float y = -static_cast<float>(event->y()) / height;
 
-    return Vector2d(x, y);
+    return Vector2f(x, y);
 }
 
 bool CameraController::handle_mouse_button_press_event(const QMouseEvent* event)
@@ -292,7 +292,7 @@ bool CameraController::handle_mouse_button_press_event(const QMouseEvent* event)
     if (!(event->modifiers() & Qt::ControlModifier))
         return false;
 
-    const Vector2d position = get_mouse_position(event);
+    const Vector2f position = get_mouse_position(event);
 
     switch (event->button())
     {
@@ -333,7 +333,7 @@ bool CameraController::handle_mouse_move_event(const QMouseEvent* event)
     if (!m_controller.is_dragging())
         return false;
 
-    const Vector2d position = get_mouse_position(event);
+    const Vector2f position = get_mouse_position(event);
 
     m_controller.update_drag(position);
     emit signal_camera_changed();

@@ -82,17 +82,17 @@ vector<size_t> LightTree::build()
         const Light* light = m_non_physical_lights[i].m_light;
 
         // Retrieve the exact position of the light.
-        const Vector3d position = light->get_transform()
+        const Vector3f position = light->get_transform()
                                     .get_local_to_parent()
                                     .extract_translation();
 
         // Non physical light has no real size - hence some arbitrary small
         // value is assigned.
-        const double BboxSize = 0.001f;
-        const AABB3d bbox = AABB3d(Vector3d(position[0] - BboxSize,
+        const float BboxSize = 0.001f;
+        const AABB3f bbox = AABB3f(Vector3f(position[0] - BboxSize,
                                             position[1] - BboxSize,
                                             position[2] - BboxSize),
-                                   Vector3d(position[0] + BboxSize,
+                                   Vector3f(position[0] + BboxSize,
                                             position[1] + BboxSize,
                                             position[2] + BboxSize));
         light_bboxes.push_back(bbox);
@@ -105,7 +105,7 @@ vector<size_t> LightTree::build()
     {
         const EmittingTriangle& triangle = m_emitting_triangles[i];
 
-        AABB3d bbox;
+        AABB3f bbox;
         bbox.invalidate();
         bbox.insert(triangle.m_v0);
         bbox.insert(triangle.m_v1);
@@ -154,7 +154,7 @@ vector<size_t> LightTree::build()
             StatisticsVector::make(
                 "light tree statistics",
                 statistics).to_string().c_str());
-        
+
         return tri_index_to_node_index;
     }
 
@@ -169,7 +169,7 @@ bool LightTree::is_built() const
 
 float LightTree::recursive_node_update(
     const size_t    parent_index,
-    const size_t    node_index, 
+    const size_t    node_index,
     const size_t    node_level,
     IndexLUT&       tri_index_to_node_index)
 {
@@ -194,7 +194,7 @@ float LightTree::recursive_node_update(
         if (m_items[item_index].m_light_type == NonPhysicalLightType)
         {
             const Light* light = m_non_physical_lights[light_index].m_light;
-            
+
             // Retrieve the non-physical light importance.
             Spectrum spectrum;
             light->get_inputs().find("intensity").source()->evaluate_uniform(spectrum);
@@ -216,11 +216,11 @@ float LightTree::recursive_node_update(
             // we can't compute the max_contribution easily (ex: textured lights)
             // In such cases, we can use a default importance value of 1.0 to avoid
             // infinite importance values in the light tree nodes.
-            if (max_contribution == numeric_limits<float>::max()) 
+            if (max_contribution == numeric_limits<float>::max())
                 importance = 1.0f;
             else
                 importance = max_contribution * edf->get_uncached_importance_multiplier();
-    
+
             // Save the index of the light tree node containing the EMT in the look up table.
             tri_index_to_node_index[light_index] = node_index;
         }
@@ -288,7 +288,7 @@ float LightTree::evaluate_node_pdf(
 
     do
     {
-        const LightTreeNode<AABB3d>& node = m_nodes[parent_index];
+        const LightTreeNode<AABB3f>& node = m_nodes[parent_index];
 
         float p1, p2;
         child_node_probabilites(node, shading_point, p1, p2);
@@ -304,10 +304,10 @@ float LightTree::evaluate_node_pdf(
     return pdf;
 }
 
-Vector3d LightTree::emitting_triangle_centroid(const size_t triangle_index) const
+Vector3f LightTree::emitting_triangle_centroid(const size_t triangle_index) const
 {
     const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
-    return (triangle.m_v0 + triangle.m_v1 + triangle.m_v2) * (1.0 / 3.0);
+    return (triangle.m_v0 + triangle.m_v1 + triangle.m_v2) * (1.0f/ 3.0f);
 }
 
 namespace
@@ -316,7 +316,7 @@ namespace
     float sub_hemispherical_light_source_contribution(
         const float     cos_omega,
         const float     cos_sigma)
-    {   
+    {
         assert(cos_omega >= -1.0f && cos_omega <= 1.0f);
         assert(cos_sigma >= 0.0f && cos_sigma <= 1.0f);
 
@@ -334,7 +334,7 @@ namespace
                     - asin(sin_gamma)
                     + sin_gamma * cos_gamma;
 
-        const float h = 
+        const float h =
             cos_omega * (
                 cos_gamma * sqrt(sin_sigma2 - cos_gamma2)
                 + sin_sigma2 * asin(cos_gamma / sin_sigma));
@@ -361,8 +361,8 @@ namespace
 }
 
 float LightTree::compute_node_probability(
-    const LightTreeNode<AABB3d>&    node,
-    const AABB3d&                   bbox,
+    const LightTreeNode<AABB3f>&    node,
+    const AABB3f&                   bbox,
     const ShadingPoint&             shading_point) const
 {
     // Calculate probability of a single node based on its contribution over solid angle.
@@ -370,7 +370,7 @@ float LightTree::compute_node_probability(
     const float rcp_surface_area = 1.0f / r2;
 
     // Triangle centroid is a more precise position than the center of the bbox.
-    Vector3d position;
+    Vector3f position;
     if (node.is_leaf())
     {
         const Item& item = m_items[node.get_item_index()];
@@ -380,7 +380,7 @@ float LightTree::compute_node_probability(
     }
     else position = bbox.center();
 
-    const Vector3d& surface_point = shading_point.get_point();
+    const Vector3f& surface_point = shading_point.get_point();
 
     const float distance2 =
         static_cast<float>(square_distance(surface_point, position));
@@ -397,26 +397,26 @@ float LightTree::compute_node_probability(
     //  [1] Area Light Sources for Real-Time Graphics
     //      https://www.microsoft.com/en-us/research/wp-content/uploads/1996/03/arealights.pdf
     //
-    const Vector3d outcoming_light_direction = normalize(bbox.center() - surface_point);
+    const Vector3f outcoming_light_direction = normalize(bbox.center() - surface_point);
     const float sin_sigma2 = min(1.0f, (r2 / distance2));
     const float cos_sigma = sqrt(1.0f - sin_sigma2);
 
-    const Vector3d& incoming_light_direction = shading_point.get_ray().m_dir;
+    const Vector3f& incoming_light_direction = shading_point.get_ray().m_dir;
 
     // [1] "Arbitrary direction D receives light only if dot(D,L) >= 0".
-    const Vector3d& N = (dot(shading_point.get_geometric_normal(), incoming_light_direction) <= 0.0f)
+    const Vector3f& N = (dot(shading_point.get_geometric_normal(), incoming_light_direction) <= 0.0f)
         ? shading_point.get_shading_normal()
         : -shading_point.get_shading_normal();
 
     const float cos_omega = clamp(static_cast<float>(dot(N, outcoming_light_direction)), -1.0f, 1.0f);
     const float approx_contribution = sub_hemispherical_light_source_contribution(cos_omega, cos_sigma);
-    
+
     assert(approx_contribution > 0.0f);
     return node.get_importance() * rcp_surface_area * approx_contribution;
 }
 
 void LightTree::child_node_probabilites(
-    const LightTreeNode<AABB3d>&    node,
+    const LightTreeNode<AABB3f>&    node,
     const ShadingPoint&             shading_point,
     float&                          p1,
     float&                          p2) const
@@ -451,12 +451,12 @@ void LightTree::child_node_probabilites(
 
 void LightTree::draw_tree_structure(
     const string&       filename_base,
-    const AABB3d&       root_bbox,
+    const AABB3f&       root_bbox,
     const bool          separate_by_levels) const
 {
     // todo: add a possibility to shift each level of bboxes along the z-axis.
 
-    const double Width = 0.1;
+    const float Width = 0.1f;
 
     if (separate_by_levels)
     {

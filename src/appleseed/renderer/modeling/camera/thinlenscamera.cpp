@@ -124,7 +124,7 @@ namespace
     //                                        Z = 0
     //
 
-    typedef ImageImportanceSampler<Vector2d, float> ImageImportanceSamplerType;
+    typedef ImageImportanceSampler<Vector2f, float> ImageImportanceSamplerType;
 
     class ImageSampler
     {
@@ -138,18 +138,18 @@ namespace
           , m_source(source)
           , m_width(width)
           , m_height(height)
-          , m_range(sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
+          , m_range(sqrt(1.0 + static_cast<float>(m_height * m_height) / (m_width * m_width)))
         {
         }
 
-        void sample(const size_t x, const size_t y, Vector2d& payload, float& importance) const
+        void sample(const size_t x, const size_t y, Vector2f& payload, float& importance) const
         {
-            payload = Vector2d(
-                (2.0 * x + 1.0 - m_width) / (m_width - 1.0),
-                (2.0 * y + 1.0 - m_height) / (m_height - 1.0));
+            payload = Vector2f(
+                (2.0f * x + 1.0f - m_width) / (m_width - 1.0f),
+                (2.0f * y + 1.0f - m_height) / (m_height - 1.0f));
 
             if (m_height != m_width)
-                payload.y *= static_cast<double>(m_height) / m_width;
+                payload.y *= static_cast<float>(m_height) / m_width;
 
             payload /= m_range;     // scale to fit in a unit disk
 
@@ -168,7 +168,7 @@ namespace
         const Source*       m_source;
         const size_t        m_width;
         const size_t        m_height;
-        const double        m_range;
+        const float         m_range;
     };
 
     const char* Model = "thinlens_camera";
@@ -306,7 +306,7 @@ namespace
 
         void spawn_ray(
             SamplingContext&        sampling_context,
-            const Dual2d&           ndc,
+            const Dual2f&           ndc,
             ShadingRay&             ray) const override
         {
             //
@@ -326,12 +326,12 @@ namespace
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform =
+            Transformf scratch;
+            const Transformf& transform =
                 m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute lens point in world space.
-            const Vector3d lens_point = transform.point_to_parent(sample_lens(sampling_context));
+            const Vector3f lens_point = transform.point_to_parent(sample_lens(sampling_context));
 
             // Compute ray origin and direction.
             ray.m_org = lens_point;
@@ -340,8 +340,8 @@ namespace
             // Compute ray derivatives.
             if (ndc.has_derivatives())
             {
-                const Vector2d px(ndc.get_value() + ndc.get_dx());
-                const Vector2d py(ndc.get_value() + ndc.get_dy());
+                const Vector2f px(ndc.get_value() + ndc.get_dx());
+                const Vector2f py(ndc.get_value() + ndc.get_dy());
 
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
@@ -356,46 +356,46 @@ namespace
         bool connect_vertex(
             SamplingContext&        sampling_context,
             const float             time,
-            const Vector3d&         point,
-            Vector2d&               ndc,
-            Vector3d&               outgoing,
+            const Vector3f&         point,
+            Vector2f&               ndc,
+            Vector3f&               outgoing,
             float&                  importance) const override
         {
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Compute lens point in camera space.
-            const Vector3d lens_point = sample_lens(sampling_context);
+            const Vector3f lens_point = sample_lens(sampling_context);
 
             // Transform input point to camera space.
-            const Vector3d p = transform.point_to_local(point);
+            const Vector3f p = transform.point_to_local(point);
 
             // Compute the outgoing direction vector in camera space.
             outgoing = p - lens_point;
 
             // Compute intersection of ray with plane of focus in camera space.
-            const Vector3d focus_point = lens_point - (m_focal_distance / p.z) * outgoing;
+            const Vector3f focus_point = lens_point - (m_focal_distance / p.z) * outgoing;
 
             // Compute film point in camera space.
-            const Vector3d film_point = -m_rcp_focal_ratio * focus_point;
+            const Vector3f film_point = -m_rcp_focal_ratio * focus_point;
 
             // Convert film point to normalized device coordinates.
             ndc = camera_to_ndc(film_point);
 
             // The connection is impossible if the film point lies outside the film.
-            if (ndc[0] < 0.0 || ndc[0] >= 1.0 ||
-                ndc[1] < 0.0 || ndc[1] >= 1.0)
+            if (ndc[0] < 0.0f || ndc[0] >= 1.0f ||
+                ndc[1] < 0.0f || ndc[1] >= 1.0f)
                 return false;
 
             // Transform the outgoing direction vector to world space.
             outgoing = transform.vector_to_parent(outgoing);
 
             // Compute the emitted importance.
-            const double square_dist_film_lens = square_norm(film_point);
-            const double dist_film_lens = sqrt(square_dist_film_lens);
-            const double cos_theta = m_focal_length / dist_film_lens;
-            const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
+            const float square_dist_film_lens = square_norm(film_point);
+            const float dist_film_lens = sqrt(square_dist_film_lens);
+            const float cos_theta = m_focal_length / dist_film_lens;
+            const float solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
             importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
@@ -404,21 +404,21 @@ namespace
 
       private:
         // Parameters.
-        double              m_f_number;                 // F-number
+        float               m_f_number;                 // F-number
         bool                m_autofocus_enabled;        // is autofocus enabled?
-        Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
-        double              m_focal_distance;           // focal distance in camera space
+        Vector2f            m_autofocus_target;         // autofocus target on film plane, in NDC
+        float               m_focal_distance;           // focal distance in camera space
         bool                m_diaphragm_map_bound;      // is a diaphragm map bound to the camera
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
-        double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
+        float               m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
         // Precomputed values.
-        double              m_lens_radius;              // radius of the lens in camera space
-        double              m_focal_ratio;              // focal distance / focal length
-        double              m_rcp_focal_ratio;          // focal length / focal distance
+        float               m_lens_radius;              // radius of the lens in camera space
+        float               m_focal_ratio;              // focal distance / focal length
+        float               m_rcp_focal_ratio;          // focal length / focal distance
 
         // Vertices of the diaphragm polygon.
-        vector<Vector2d>    m_diaphragm_vertices;
+        vector<Vector2f>    m_diaphragm_vertices;
 
         // Importance sampler to sample the diaphragm map.
         unique_ptr<ImageImportanceSamplerType>
@@ -445,16 +445,16 @@ namespace
 
         void extract_focal_distance(
             const bool              autofocus_enabled,
-            Vector2d&               autofocus_target,
-            double&                 focal_distance) const
+            Vector2f&               autofocus_target,
+            float&                  focal_distance) const
         {
-            const Vector2d DefaultAFTarget(0.5);        // in NDC
-            const double DefaultFocalDistance = 1.0;    // in meters
+            const Vector2f DefaultAFTarget(0.5f);        // in NDC
+            const float DefaultFocalDistance = 1.0f;    // in meters
 
             if (autofocus_enabled)
             {
                 if (has_param("autofocus_target"))
-                    autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
+                    autofocus_target = m_params.get_required<Vector2f>("autofocus_target", DefaultAFTarget);
                 else
                 {
                     RENDERER_LOG_ERROR(
@@ -471,7 +471,7 @@ namespace
             else
             {
                 if (has_param("focal_distance"))
-                    focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
+                    focal_distance = m_params.get_required<float>("focal_distance", DefaultFocalDistance);
                 else
                 {
                     RENDERER_LOG_ERROR(
@@ -486,9 +486,9 @@ namespace
             }
         }
 
-        double extract_f_number() const
+        float extract_f_number() const
         {
-            const double DefaultFNumber = 8.0;
+            const float DefaultFNumber = 8.0f;
 
             return get_greater_than_zero("f_stop", DefaultFNumber);
         }
@@ -496,7 +496,7 @@ namespace
         void extract_diaphragm_tilt_angle()
         {
             m_diaphragm_tilt_angle =
-                deg_to_rad(m_params.get_optional<double>("diaphragm_tilt_angle", 0.0));
+                deg_to_rad(m_params.get_optional<float>("diaphragm_tilt_angle", 0.0f));
         }
 
         bool build_diaphragm_importance_sampler(const Scene& scene)
@@ -524,18 +524,18 @@ namespace
             return true;
         }
 
-        double get_autofocus_focal_distance(const Intersector& intersector) const
+        float get_autofocus_focal_distance(const Intersector& intersector) const
         {
             // The autofocus considers the scene at the middle of the shutter interval.
             const float time = get_shutter_middle_time();
-            const Transformd transform = m_transform_sequence.evaluate(time);
+            const Transformf transform = m_transform_sequence.evaluate(time);
 
             // Create a ray that goes through the center of the lens.
             ShadingRay ray;
             ray.m_org = transform.get_local_to_parent().extract_translation();
             ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(m_autofocus_target)));
             ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
+            ray.m_tmax = numeric_limits<float>::max();
             ray.m_time =
                 ShadingRay::Time::create_with_normalized_time(
                     0.5f,
@@ -551,8 +551,8 @@ namespace
             if (shading_point.hit_surface())
             {
                 // Hit: compute the focal distance.
-                const Vector3d v = shading_point.get_point() - ray.m_org;
-                const double af_focal_distance = -transform.vector_to_local(v).z;
+                const Vector3f v = shading_point.get_point() - ray.m_org;
+                const float af_focal_distance = -transform.vector_to_local(v).z;
 
                 RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to %f (using camera position at time=%.1f).",
@@ -574,7 +574,7 @@ namespace
             }
         }
 
-        Vector3d sample_lens(SamplingContext& sampling_context) const
+        Vector3f sample_lens(SamplingContext& sampling_context) const
         {
             if (m_diaphragm_map_bound)
             {
@@ -582,44 +582,44 @@ namespace
                 const Vector2f s = sampling_context.next2<Vector2f>();
 
                 size_t x, y;
-                Vector2d payload;
+                Vector2f payload;
                 float prob_xy;
                 m_importance_sampler->sample(s, x, y, payload, prob_xy);
 
-                const Vector2d lens_point = m_lens_radius * payload;
-                return Vector3d(lens_point.x, lens_point.y, 0.0);
+                const Vector2f lens_point = m_lens_radius * payload;
+                return Vector3f(lens_point.x, lens_point.y, 0.0f);
             }
             else if (m_diaphragm_blade_count == 0)
             {
                 sampling_context.split_in_place(2, 1);
-                const Vector2d s = sampling_context.next2<Vector2d>();
-                const Vector2d lens_point = m_lens_radius * sample_disk_uniform(s);
-                return Vector3d(lens_point.x, lens_point.y, 0.0);
+                const Vector2f s = sampling_context.next2<Vector2f>();
+                const Vector2f lens_point = m_lens_radius * sample_disk_uniform(s);
+                return Vector3f(lens_point.x, lens_point.y, 0.0f);
             }
             else
             {
                 sampling_context.split_in_place(3, 1);
-                const Vector3d s = sampling_context.next2<Vector3d>();
-                const Vector2d lens_point =
+                const Vector3f s = sampling_context.next2<Vector3f>();
+                const Vector2f lens_point =
                     m_lens_radius *
                     sample_regular_polygon_uniform(
                         s,
                         m_diaphragm_vertices.size(),
                         &m_diaphragm_vertices.front());
-                return Vector3d(lens_point.x, lens_point.y, 0.0);
+                return Vector3f(lens_point.x, lens_point.y, 0.0);
             }
         }
 
-        Vector3d compute_ray_direction(
-            const Vector2d&         film_point,         // NDC
-            const Vector3d&         lens_point,         // world space
-            const Transformd&       transform) const
+        Vector3f compute_ray_direction(
+            const Vector2f&         film_point,         // NDC
+            const Vector3f&         lens_point,         // world space
+            const Transformf&       transform) const
         {
             // Compute film point in camera space.
-            const Vector3d film_point_cs = ndc_to_camera(film_point);
+            const Vector3f film_point_cs = ndc_to_camera(film_point);
 
             // Compute focal point in world space.
-            const Vector3d focal_point = transform.point_to_parent(-m_focal_ratio * film_point_cs);
+            const Vector3f focal_point = transform.point_to_parent(-m_focal_ratio * film_point_cs);
 
             // Return ray direction in world space.
             return normalize(focal_point - lens_point);

@@ -97,7 +97,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     const char* get_object_name() const;
 
     // Return the transform of this instance.
-    const foundation::Transformd& get_transform() const;
+    const foundation::Transformf& get_transform() const;
 
     // Return true if the transform of this instance swaps handedness.
     bool transform_swaps_handedness() const;
@@ -122,7 +122,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     // Return the ray bias settings. The bias distance is expressed in world space.
     RayBiasMethod get_ray_bias_method() const;
-    double get_ray_bias_distance() const;
+    float get_ray_bias_distance() const;
 
     // Check if this object instance is in the same SSS set as another.
     bool is_in_same_sss_set(const ObjectInstance& other) const;
@@ -204,7 +204,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     foundation::uint32  m_vis_flags;
     foundation::int8    m_medium_priority;
     RayBiasMethod       m_ray_bias_method;
-    double              m_ray_bias_distance;
+    float               m_ray_bias_distance;
     bool                m_transform_swaps_handedness;
     bool                m_flip_normals;
 
@@ -217,7 +217,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         const char*                         name,
         const ParamArray&                   params,
         const char*                         object_name,
-        const foundation::Transformd&       transform,
+        const foundation::Transformf&       transform,
         const foundation::StringDictionary& front_material_mappings,
         const foundation::StringDictionary& back_material_mappings);
 
@@ -241,7 +241,7 @@ class APPLESEED_DLLSYMBOL ObjectInstanceFactory
         const char*                         name,
         const ParamArray&                   params,
         const char*                         object_name,
-        const foundation::Transformd&       transform,
+        const foundation::Transformf&       transform,
         const foundation::StringDictionary& front_material_mappings,
         const foundation::StringDictionary& back_material_mappings = foundation::StringDictionary());
 };
@@ -281,7 +281,7 @@ inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const
     return m_ray_bias_method;
 }
 
-inline double ObjectInstance::get_ray_bias_distance() const
+inline float ObjectInstance::get_ray_bias_distance() const
 {
     return m_ray_bias_distance;
 }

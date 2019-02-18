@@ -163,12 +163,12 @@ void LightSamplerBase::collect_emitting_triangles(
 
         // Compute the object space to world space transformation.
         // todo: add support for moving light-emitters.
-        const Transformd& object_instance_transform = object_instance->get_transform();
-        const Transformd& assembly_instance_transform = transform_sequence.get_earliest_transform();
-        const Transformd global_transform = assembly_instance_transform * object_instance_transform;
+        const Transformf& object_instance_transform = object_instance->get_transform();
+        const Transformf& assembly_instance_transform = transform_sequence.get_earliest_transform();
+        const Transformf global_transform = assembly_instance_transform * object_instance_transform;
 
         // Loop over the triangles of the region.
-        double object_area = 0.0;
+        float object_area = 0.0f;
         for (size_t triangle_index = 0, triangle_count = tess.m_primitives.size();
              triangle_index < triangle_count; ++triangle_index)
         {
@@ -207,18 +207,18 @@ void LightSamplerBase::collect_emitting_triangles(
             triangle_support_plane.initialize(TriangleType(triangle_geometry));
 
             // Transform triangle vertices to world space.
-            const Vector3d v0(assembly_instance_transform.point_to_parent(v0_as));
-            const Vector3d v1(assembly_instance_transform.point_to_parent(v1_as));
-            const Vector3d v2(assembly_instance_transform.point_to_parent(v2_as));
+            const Vector3f v0(assembly_instance_transform.point_to_parent(v0_as));
+            const Vector3f v1(assembly_instance_transform.point_to_parent(v1_as));
+            const Vector3f v2(assembly_instance_transform.point_to_parent(v2_as));
 
             // Compute the geometric normal to the triangle and the area of the triangle.
-            Vector3d geometric_normal = compute_triangle_normal(v0, v1, v2);
-            const double geometric_normal_norm = norm(geometric_normal);
-            if (geometric_normal_norm == 0.0)
+            Vector3f geometric_normal = compute_triangle_normal(v0, v1, v2);
+            const float geometric_normal_norm = norm(geometric_normal);
+            if (geometric_normal_norm == 0.0f)
                 continue;
-            const double rcp_geometric_normal_norm = 1.0 / geometric_normal_norm;
-            const double rcp_area = 2.0 * rcp_geometric_normal_norm;
-            const double area = 0.5 * geometric_normal_norm;
+            const float rcp_geometric_normal_norm = 1.0f / geometric_normal_norm;
+            const float rcp_area = 2.0f * rcp_geometric_normal_norm;
+            const float area = 0.5f * geometric_normal_norm;
             geometric_normal *= rcp_geometric_normal_norm;
             assert(is_normalized(geometric_normal));
 
@@ -226,16 +226,16 @@ void LightSamplerBase::collect_emitting_triangles(
             if (object_instance->must_flip_normals())
                 geometric_normal = -geometric_normal;
 
-            Vector3d n0, n1, n2;
+            Vector3f n0, n1, n2;
 
             if (triangle.m_n0 != Triangle::None &&
                 triangle.m_n1 != Triangle::None &&
                 triangle.m_n2 != Triangle::None)
             {
                 // Retrieve object instance space vertex normals.
-                const Vector3d n0_os = Vector3d(tess.m_vertex_normals[triangle.m_n0]);
-                const Vector3d n1_os = Vector3d(tess.m_vertex_normals[triangle.m_n1]);
-                const Vector3d n2_os = Vector3d(tess.m_vertex_normals[triangle.m_n2]);
+                const Vector3f n0_os = Vector3f(tess.m_vertex_normals[triangle.m_n0]);
+                const Vector3f n1_os = Vector3f(tess.m_vertex_normals[triangle.m_n1]);
+                const Vector3f n2_os = Vector3f(tess.m_vertex_normals[triangle.m_n2]);
 
                 // Transform vertex normals to world space.
                 n0 = normalize(global_transform.normal_to_parent(n0_os));
@@ -395,11 +395,11 @@ void LightSamplerBase::sample_emitting_triangle(
     light_sample.m_triangle = &emitting_triangle;
 
     // Uniformly sample the surface of the triangle.
-    const Vector3d bary = sample_triangle_uniform(Vector2d(s));
+    const Vector3f bary = sample_triangle_uniform(s);
 
     // Set the barycentric coordinates.
-    light_sample.m_bary[0] = static_cast<float>(bary[0]);
-    light_sample.m_bary[1] = static_cast<float>(bary[1]);
+    light_sample.m_bary[0] = bary[0];
+    light_sample.m_bary[1] = bary[1];
 
     // Compute the world space position of the sample.
     light_sample.m_point =

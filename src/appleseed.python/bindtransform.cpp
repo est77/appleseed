@@ -89,9 +89,9 @@ namespace
     void transform_seq_set_transform(
         TransformSequence*              seq,
         const float                     time,
-        const UnalignedTransformd&      transform)
+        const UnalignedTransformf&      transform)
     {
-        const Transformd xform(
+        const Transformf xform(
             transform.get_local_to_parent().as_foundation_matrix(),
             transform.get_parent_to_local().as_foundation_matrix());
 
@@ -103,9 +103,9 @@ namespace
         const size_t                    index)
     {
         float time;
-        Transformd xform;
+        Transformf xform;
         seq->get_transform(index, time, xform);
-        return bpy::make_tuple(time, UnalignedTransformd(xform));
+        return bpy::make_tuple(time, UnalignedTransformf(xform));
     }
 
     bpy::list transform_seq_as_list(const TransformSequence* seq)
@@ -115,19 +115,19 @@ namespace
         for (size_t i = 0, e = seq->size(); i < e; ++i)
         {
             float time;
-            Transformd xform;
+            Transformf xform;
             seq->get_transform(i, time, xform);
-            bpy::tuple t = bpy::make_tuple(time, UnalignedTransformd(xform));
+            bpy::tuple t = bpy::make_tuple(time, UnalignedTransformf(xform));
             result.append(t);
         }
 
         return result;
     }
 
-    UnalignedTransformd transform_seq_get_earliest(const TransformSequence* seq)
+    UnalignedTransformf transform_seq_get_earliest(const TransformSequence* seq)
     {
-        const Transformd xform(seq->get_earliest_transform());
-        return UnalignedTransformd(xform);
+        const Transformf xform(seq->get_earliest_transform());
+        return UnalignedTransformf(xform);
     }
 }
 

@@ -87,7 +87,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
                 .insert("film_dimensions", "0.01024 0.00576")
                 .insert("focal_length", "0.035")));
     camera->transform_sequence().set_transform(0.0f,
-        Transformd(
+        Transformf(
             Matrix4d::make_lookat(
                 Vector3d(1.0, 1.0, 1.0),        // origin
                 Vector3d(0.0, 0.0, 0.0),        // target

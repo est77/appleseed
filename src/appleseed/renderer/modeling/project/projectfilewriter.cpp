@@ -242,17 +242,17 @@ namespace
             if (transform_sequence.size() == 1)
             {
                 float time;
-                Transformd transform;
+                Transformf transform;
                 transform_sequence.get_transform(0, time, transform);
 
-                if (transform.get_local_to_parent() == Matrix4d::identity())
+                if (transform.get_local_to_parent() == Matrix4f::identity())
                     return;
             }
 
             for (size_t i = 0, e = transform_sequence.size(); i < e; ++i)
             {
                 float time;
-                Transformd transform;
+                Transformf transform;
                 transform_sequence.get_transform(i, time, transform);
 
                 XMLElement element("transform", m_file, m_indenter);

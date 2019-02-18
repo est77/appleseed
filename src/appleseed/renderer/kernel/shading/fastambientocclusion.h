@@ -107,12 +107,12 @@ class AOVoxelTreeIntersector
     bool trace(
         ShadingRay::RayType ray,
         const bool          solid,
-        double&             distance) const;
+        float&              distance) const;
 
   private:
     // Types.
     typedef foundation::voxel::Intersector<
-        double,
+        float,
         AOVoxelTree::TreeType
     > IntersectorType;
 
@@ -132,15 +132,15 @@ class AOVoxelTreeIntersector
 // todo: implement optional computation of the mean unoccluded direction.
 //
 
-double compute_fast_ambient_occlusion(
+float compute_fast_ambient_occlusion(
     const SamplingContext&          sampling_context,
     const AOVoxelTreeIntersector&   intersector,
-    const foundation::Vector3d&     point,
-    const foundation::Vector3d&     geometric_normal,
-    const foundation::Basis3d&      shading_basis,
-    const double                    max_distance,
+    const foundation::Vector3f&     point,
+    const foundation::Vector3f&     geometric_normal,
+    const foundation::Basis3f&      shading_basis,
+    const float                     max_distance,
     const size_t                    sample_count,
-    double&                         min_distance);
+    float&                          min_distance);
 
 
 //

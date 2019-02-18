@@ -55,7 +55,7 @@ void ShadingPointBuilder::set_primitive_type(const ShadingPoint::PrimitiveType p
     m_shading_point.m_primitive_type = primitive_type;
 }
 
-void ShadingPointBuilder::set_distance(const double distance)
+void ShadingPointBuilder::set_distance(const float distance)
 {
     m_shading_point.m_ray.m_tmax = distance;
 }
@@ -65,13 +65,13 @@ void ShadingPointBuilder::set_bary(const foundation::Vector2f& bary)
     m_shading_point.m_bary = bary;
 }
 
-void ShadingPointBuilder::set_point(const Vector3d& point)
+void ShadingPointBuilder::set_point(const Vector3f& point)
 {
     m_shading_point.m_point = point;
     m_shading_point.m_members |= ShadingPoint::HasPoint;
 }
 
-void ShadingPointBuilder::set_geometric_normal(const Vector3d& n)
+void ShadingPointBuilder::set_geometric_normal(const Vector3f& n)
 {
     m_shading_point.m_geometric_normal = n;
     m_shading_point.m_members |= ShadingPoint::HasGeometricNormal;
@@ -82,7 +82,7 @@ void ShadingPointBuilder::set_side(const ObjectInstance::Side side)
     m_shading_point.m_side = side;
 }
 
-void ShadingPointBuilder::set_shading_basis(const Basis3d& basis)
+void ShadingPointBuilder::set_shading_basis(const Basis3f& basis)
 {
     m_shading_point.m_shading_basis = basis;
     m_shading_point.m_members |= ShadingPoint::HasShadingBasis;

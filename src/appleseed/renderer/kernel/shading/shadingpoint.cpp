@@ -83,7 +83,7 @@ void ShadingPoint::flip_side()
     //      if they are needed.
     //
 
-    const double t = 2.0 * m_ray.m_tmax;
+    const float t = 2.0f * m_ray.m_tmax;
 
     m_ray.m_org = m_ray.point_at(t);
     m_ray.m_rx.m_org = m_ray.m_rx.point_at(t);
@@ -131,7 +131,7 @@ void ShadingPoint::flip_side()
     if (m_members & HasShadingBasis)
     {
         // todo: add a more efficient flip() method to foundation::Basis.
-        m_shading_basis = Basis3d(
+        m_shading_basis = Basis3f(
             -m_shading_basis.get_normal(),
             -m_shading_basis.get_tangent_u(),
              m_shading_basis.get_tangent_v());
@@ -195,7 +195,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
     // Compute motion interpolation parameters.
     const size_t motion_segment_count = tess.get_motion_segment_count();
-    const double base_time = m_ray.m_time.m_normalized * motion_segment_count;
+    const float base_time = m_ray.m_time.m_normalized * motion_segment_count;
     const size_t base_index = truncate<size_t>(base_time);
     const GScalar frac = static_cast<GScalar>(base_time - base_index);
     const GScalar one_minus_frac = GScalar(1.0) - frac;
@@ -386,7 +386,7 @@ void ShadingPoint::refine_and_offset() const
 
             // Compute the geometric normal to the hit triangle in assembly instance space.
             // Note that it doesn't need to be normalized at this point.
-            m_asm_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
+            m_asm_geo_normal = compute_triangle_normal(m_v0, m_v1, m_v2);
             m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
             m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
 
@@ -421,7 +421,7 @@ void ShadingPoint::refine_and_offset() const
             m_asm_geo_normal = normalize(-local_ray.m_dir);
 
             // todo: this does not look correct, considering the flat ribbon nature of curves.
-            const double Eps = 1.0e-6;
+            const float Eps = 1.0e-6;
             m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
             m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
         }
@@ -434,7 +434,7 @@ void ShadingPoint::refine_and_offset() const
     m_members |= ShadingPoint::HasRefinedPoints;
 }
 
-Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
+Vector3f ShadingPoint::get_biased_point(const Vector3f& direction) const
 {
     assert(hit_surface());
 
@@ -453,16 +453,16 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 
           case ObjectInstance::RayBiasMethodNormal:
             {
-                const Vector3d& p = get_point();
-                const Vector3d& n = get_geometric_normal();
-                const double bias = m_object_instance->get_ray_bias_distance();
-                return dot(direction, n) > 0.0 ? p + bias * n : p - bias * n;
+                const Vector3f& p = get_point();
+                const Vector3f& n = get_geometric_normal();
+                const float bias = m_object_instance->get_ray_bias_distance();
+                return dot(direction, n) > 0.0f ? p + bias * n : p - bias * n;
             }
 
           case ObjectInstance::RayBiasMethodIncomingDirection:
             {
-                const Vector3d& p = get_point();
-                const double bias = m_object_instance->get_ray_bias_distance();
+                const Vector3f& p = get_point();
+                const float bias = m_object_instance->get_ray_bias_distance();
                 m_biased_point = p + bias * m_ray.m_dir;
                 m_members |= HasBiasedPoint;
                 return m_biased_point;
@@ -470,8 +470,8 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 
           case ObjectInstance::RayBiasMethodOutgoingDirection:
             {
-                const Vector3d& p = get_point();
-                const double bias = m_object_instance->get_ray_bias_distance();
+                const Vector3f& p = get_point();
+                const float bias = m_object_instance->get_ray_bias_distance();
                 return p + bias * normalize(direction);
             }
 
@@ -496,21 +496,21 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             //   Physically Based Rendering, first edition, pp. 128-129
             //
 
-            const Vector3d& n = get_original_shading_normal();
+            const Vector3f& n = get_original_shading_normal();
 
-            const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
-            const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
-            const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
-            const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
-            const double det = du0 * dv1 - dv0 * du1;
+            const float du0 = m_v0_uv[0] - m_v2_uv[0];
+            const float dv0 = m_v0_uv[1] - m_v2_uv[1];
+            const float du1 = m_v1_uv[0] - m_v2_uv[0];
+            const float dv1 = m_v1_uv[1] - m_v2_uv[1];
+            const float det = du0 * dv1 - dv0 * du1;
 
-            if (det != 0.0)
+            if (det != 0.0f)
             {
-                const Vector3d& v2 = get_vertex(2);
-                const Vector3d dp0 = get_vertex(0) - v2;
-                const Vector3d dp1 = get_vertex(1) - v2;
+                const Vector3f& v2 = get_vertex(2);
+                const Vector3f dp0 = get_vertex(0) - v2;
+                const Vector3f dp1 = get_vertex(1) - v2;
 
-                const double rcp_det = 1.0 / det;
+                const float rcp_det = 1.0f / det;
 
                 m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
                 m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
@@ -531,14 +531,14 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
 
                 if (m_members & HasTriangleVertexNormals)
                 {
-                    const Vector3d dn0(m_n0 - m_n2);
-                    const Vector3d dn1(m_n1 - m_n2);
+                    const Vector3f dn0(m_n0 - m_n2);
+                    const Vector3f dn1(m_n1 - m_n2);
 
                     m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
                     m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
 
                     // Transform the normal derivatives to world space.
-                    const Transformd& obj_instance_transform = m_object_instance->get_transform();
+                    const Transformf& obj_instance_transform = m_object_instance->get_transform();
                     m_dndu =
                         m_assembly_instance_transform.normal_to_parent(
                             obj_instance_transform.normal_to_parent(m_dndu));
@@ -548,15 +548,15 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                 }
                 else
                 {
-                    m_dndu = m_dndv = Vector3d(0.0);
+                    m_dndu = m_dndv = Vector3f(0.0f);
                 }
             }
             else
             {
-                const Basis3d basis(n);
+                const Basis3f basis(n);
                 m_dpdu = basis.get_tangent_u();
                 m_dpdv = basis.get_tangent_v();
-                m_dndu = m_dndv = Vector3d(0.0);
+                m_dndu = m_dndv = Vector3f(0.0f);
             }
         }
         break;
@@ -564,10 +564,10 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
       case PrimitiveProceduralSurface:
         {
             // todo: fix.
-            const Basis3d basis(m_original_shading_normal);
+            const Basis3f basis(m_original_shading_normal);
             m_dpdu = basis.get_tangent_u();
             m_dpdv = basis.get_tangent_v();
-            m_dndu = m_dndv = Vector3d(0.0);
+            m_dndu = m_dndv = Vector3f(0.0f);
         }
         break;
 
@@ -584,11 +584,11 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                     ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
                     : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
 
-            const Vector3d& sn = get_original_shading_normal();
+            const Vector3f& sn = get_original_shading_normal();
 
-            m_dpdu = normalize(Vector3d(tangent));
+            m_dpdu = normalize(Vector3f(tangent));
             m_dpdv = normalize(cross(sn, m_dpdu));
-            m_dndu = m_dndv = Vector3d(0.0);
+            m_dndu = m_dndv = Vector3f(0.0f);
         }
         break;
 
@@ -608,22 +608,22 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
 
     if (!ray.m_has_differentials)
     {
-        m_dpdx = Vector3d(0.0);
-        m_dpdy = Vector3d(0.0);
+        m_dpdx = Vector3f(0.0f);
+        m_dpdy = Vector3f(0.0f);
         m_duvdx = Vector2f(0.0f);
         m_duvdy = Vector2f(0.0f);
         return;
     }
 
-    const Vector3d& p = get_point();
-    const Vector3d& n = get_original_shading_normal();
+    const Vector3f& p = get_point();
+    const Vector3f& n = get_original_shading_normal();
 
-    double tx, ty;
+    float tx, ty;
     if (!intersect(ray.m_rx, p, n, tx) ||
         !intersect(ray.m_ry, p, n, ty))
     {
-        m_dpdx = Vector3d(0.0);
-        m_dpdy = Vector3d(0.0);
+        m_dpdx = Vector3f(0.0);
+        m_dpdy = Vector3f(0.0);
         m_duvdx = Vector2f(0.0f);
         m_duvdy = Vector2f(0.0f);
         return;
@@ -638,8 +638,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     const size_t axis0 = Axes[max_index][0];
     const size_t axis1 = Axes[max_index][1];
 
-    const Vector3d& dpdu = get_dpdu(0);
-    const Vector3d& dpdv = get_dpdv(0);
+    const Vector3f& dpdu = get_dpdu(0);
+    const Vector3f& dpdv = get_dpdv(0);
 
     const Vector2f plane_dpdu(
         static_cast<float>(dpdu[axis0]),
@@ -741,9 +741,9 @@ void ShadingPoint::compute_triangle_normals() const
     else
     {
         // Compute the object instance space geometric normal.
-        const Vector3d v0(m_v0);
-        const Vector3d v1(m_v1);
-        const Vector3d v2(m_v2);
+        const Vector3f v0(m_v0);
+        const Vector3f v1(m_v1);
+        const Vector3f v2(m_v2);
         m_geometric_normal = compute_triangle_normal(v0, v1, v2);
 
         // Transform the geometric normal to world space.
@@ -762,9 +762,9 @@ void ShadingPoint::compute_triangle_normals() const
     {
         // Compute the object instance space shading normal.
         m_original_shading_normal =
-              Vector3d(m_n0) * static_cast<double>(1.0 - m_bary[0] - m_bary[1])
-            + Vector3d(m_n1) * static_cast<double>(m_bary[0])
-            + Vector3d(m_n2) * static_cast<double>(m_bary[1]);
+              Vector3f(m_n0) * static_cast<float>(1.0f - m_bary[0] - m_bary[1])
+            + Vector3f(m_n1) * static_cast<float>(m_bary[0])
+            + Vector3f(m_n2) * static_cast<float>(m_bary[1]);
 
         // Transform the shading normal to world space.
         m_original_shading_normal =
@@ -790,22 +790,22 @@ void ShadingPoint::compute_curve_normals() const
 void ShadingPoint::compute_shading_basis() const
 {
     // Compute the unperturbed shading normal.
-    const Vector3d sn = get_original_shading_normal();
+    const Vector3f sn = get_original_shading_normal();
 
     // Retrieve or compute the first tangent direction (non-normalized).
     // Reference: Physically Based Rendering, first edition, pp. 133
-    const Vector3d tangent =
+    const Vector3f tangent =
         (m_members & HasTriangleVertexTangents) != 0
             ? m_assembly_instance_transform.vector_to_parent(
                   m_object_instance->get_transform().vector_to_parent(
-                        Vector3d(m_t0) * static_cast<double>(1.0f - m_bary[0] - m_bary[1])
-                      + Vector3d(m_t1) * static_cast<double>(m_bary[0])
-                      + Vector3d(m_t2) * static_cast<double>(m_bary[1])))
+                        Vector3f(m_t0) * (1.0f - m_bary[0] - m_bary[1])
+                      + Vector3f(m_t1) * m_bary[0]
+                      + Vector3f(m_t2) * m_bary[1]))
             : get_dpdu(0);
 
     // Construct an orthonormal basis.
-    const Vector3d t = normalize(cross(tangent, sn));
-    const Vector3d s = normalize(cross(sn, t));
+    const Vector3f t = normalize(cross(tangent, sn));
+    const Vector3f s = normalize(cross(sn, t));
     m_shading_basis.build(sn, s, t);
 
     // Apply the basis modifier if the material has one.
@@ -832,10 +832,10 @@ void ShadingPoint::compute_world_space_triangle_vertices() const
     cache_source_geometry();
 
     // Transform vertices to assembly space.
-    const Transformd& obj_instance_transform = m_object_instance->get_transform();
-    m_v0_w = obj_instance_transform.point_to_parent(Vector3d(m_v0));
-    m_v1_w = obj_instance_transform.point_to_parent(Vector3d(m_v1));
-    m_v2_w = obj_instance_transform.point_to_parent(Vector3d(m_v2));
+    const Transformf& obj_instance_transform = m_object_instance->get_transform();
+    m_v0_w = obj_instance_transform.point_to_parent(Vector3f(m_v0));
+    m_v1_w = obj_instance_transform.point_to_parent(Vector3f(m_v1));
+    m_v2_w = obj_instance_transform.point_to_parent(Vector3f(m_v2));
 
     // Transform vertices to world space.
     m_v0_w = m_assembly_instance_transform.point_to_parent(m_v0_w);
@@ -845,8 +845,8 @@ void ShadingPoint::compute_world_space_triangle_vertices() const
 
 void ShadingPoint::compute_world_space_point_velocity() const
 {
-    Vector3d p0 = get_point();
-    Vector3d p1 = p0;
+    Vector3f p0 = get_point();
+    Vector3f p1 = p0;
 
     if (m_primitive_type == PrimitiveTriangle)
     {
@@ -882,13 +882,13 @@ void ShadingPoint::compute_world_space_point_velocity() const
             const float u = 1.0f - v - w;
 
             // Compute positions at shutter open and close times.
-            p0 = Vector3d(first_v0 * u + first_v1 * v + first_v2 * w);
-            p1 = Vector3d( last_v0 * u +  last_v1 * v +  last_v2 * w);
+            p0 = Vector3f(first_v0 * u + first_v1 * v + first_v2 * w);
+            p1 = Vector3f( last_v0 * u +  last_v1 * v +  last_v2 * w);
         }
     }
 
     // Transform positions to assembly space.
-    const Transformd& obj_instance_transform = m_object_instance->get_transform();
+    const Transformf& obj_instance_transform = m_object_instance->get_transform();
     p0 = obj_instance_transform.point_to_parent(p0);
     p1 = obj_instance_transform.point_to_parent(p1);
 
@@ -896,15 +896,15 @@ void ShadingPoint::compute_world_space_point_velocity() const
     if (m_assembly_instance_transform_seq->size() > 1)
     {
         const Camera* camera = m_scene->get_active_camera();
-        Transformd scratch;
+        Transformf scratch;
 
-        const Transformd& assembly_instance_transform0 =
+        const Transformf& assembly_instance_transform0 =
             m_assembly_instance_transform_seq->evaluate(
                 camera->get_shutter_open_begin_time(),
                 scratch);
         p0 = assembly_instance_transform0.point_to_parent(p0);
 
-        const Transformd& assembly_instance_transform1 =
+        const Transformf& assembly_instance_transform1 =
             m_assembly_instance_transform_seq->evaluate(
                 camera->get_shutter_close_end_time(),
                 scratch);
@@ -952,7 +952,7 @@ void ShadingPoint::compute_alpha() const
         {
             assert(is_curve_primitive());
             const GScalar v = m_bary[1];
-            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
+            const CurveObject *curves = static_cast<const CurveObject*>(&get_object());
             m_alpha *= Alpha(curves->get_curve1(m_primitive_index).evaluate_opacity(v));
         }
         break;
@@ -961,7 +961,7 @@ void ShadingPoint::compute_alpha() const
         {
             assert(is_curve_primitive());
             const GScalar v = m_bary[1];
-            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
+            const CurveObject *curves = static_cast<const CurveObject*>(&get_object());
             m_alpha *= Alpha(curves->get_curve3(m_primitive_index).evaluate_opacity(v));
         }
         break;
@@ -984,7 +984,7 @@ void ShadingPoint::compute_per_vertex_color() const
         {
             assert(is_curve_primitive());
             const GScalar v = m_bary[1];
-            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
+            const CurveObject *curves = static_cast<const CurveObject*>(&get_object());
             m_color = Color3f(curves->get_curve1(m_primitive_index).evaluate_color(v));
         }
         break;
@@ -1131,8 +1131,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
 {
     assert(!is_animated());
 
-    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
-    const Transformd::MatrixType m(
+    const Transformf& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
+    const Transformf::MatrixType m(
         m_object_instance_transform->get_local_to_parent() *
         assembly_xform.get_local_to_parent());
 
@@ -1141,8 +1141,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
 
 OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(const float t) const
 {
-    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
-    const Transformd::MatrixType m(
+    const Transformf assembly_xform = m_assembly_instance_transform->evaluate(t);
+    const Transformf::MatrixType m(
         m_object_instance_transform->get_local_to_parent() *
         assembly_xform.get_local_to_parent());
 
@@ -1153,8 +1153,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() cons
 {
     assert(!is_animated());
 
-    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
-    const Transformd::MatrixType m(
+    const Transformf& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
+    const Transformf::MatrixType m(
         m_object_instance_transform->get_parent_to_local() *
         assembly_xform.get_parent_to_local());
 
@@ -1163,8 +1163,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() cons
 
 OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const float t) const
 {
-    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
-    const Transformd::MatrixType m(
+    const Transformf assembly_xform = m_assembly_instance_transform->evaluate(t);
+    const Transformf::MatrixType m(
         m_object_instance_transform->get_parent_to_local() *
         assembly_xform.get_parent_to_local());
 

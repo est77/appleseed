@@ -168,13 +168,13 @@ namespace
                 for (size_t i = 0; i < m_sample_count; ++i)
                 {
                     // Generate a uniform sample in [0,1)^2.
-                    const Vector2d s =
+                    const Vector2f s =
                         m_sample_count > 1 || m_params.m_force_aa
-                            ? sampling_context.next2<Vector2d>()
-                            : Vector2d(0.5);
+                            ? sampling_context.next2<Vector2f>()
+                            : Vector2f(0.5f);
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
+                    const Vector2f sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
 
                     // Create a pixel context that identifies the pixel and sample currently being rendered.
                     const PixelContext pixel_context(pi, sample_position);
@@ -218,12 +218,12 @@ namespace
                     for (int sx = 0; sx < m_sqrt_sample_count; ++sx)
                     {
                         // Compute the sample position (in continuous image space) and the instance number.
-                        Vector2d s;
+                        Vector2f s;
                         size_t instance;
                         m_pixel_sampler.sample(base_sx + sx, base_sy + sy, s, instance);
 
                         // Compute the sample position in NDC.
-                        const Vector2d sample_position = frame.get_sample_position(s.x, s.y);
+                        const Vector2f sample_position = frame.get_sample_position(s.x, s.y);
 
                         // Create a pixel context that identifies the pixel and sample currently being rendered.
                         const PixelContext pixel_context(pi, sample_position);

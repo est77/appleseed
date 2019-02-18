@@ -79,7 +79,7 @@ class CameraController
     // When enabled, the camera controller will track mouse movements and emit signals.
     void set_enabled(const bool enabled);
 
-    foundation::Transformd get_transform() const;
+    foundation::Transformf get_transform() const;
 
     void update_camera_transform();
     void save_camera_target();
@@ -94,7 +94,7 @@ class CameraController
     void signal_camera_change_end();
 
   private:
-    typedef foundation::CameraController<double> ControllerType;
+    typedef foundation::CameraController<float> ControllerType;
 
     QWidget*                m_widget;
     renderer::Project&      m_project;
@@ -102,7 +102,7 @@ class CameraController
     bool                    m_enabled;
 
     ControllerType          m_controller;
-    foundation::Vector3d    m_pivot;
+    foundation::Vector3f    m_pivot;
 
     void configure_controller();
 
@@ -115,7 +115,7 @@ class CameraController
     bool handle_mouse_move_event(const QMouseEvent* event);
     bool handle_key_press_event(const QKeyEvent* event);
 
-    foundation::Vector2d get_mouse_position(const QMouseEvent* event) const;
+    foundation::Vector2f get_mouse_position(const QMouseEvent* event) const;
 
     void frame_selected_object();
 };

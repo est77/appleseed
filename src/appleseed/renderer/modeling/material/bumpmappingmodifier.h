@@ -52,20 +52,20 @@ class BumpMappingModifier
         const float                 offset,
         const float                 amplitude);
 
-    foundation::Basis3d modify(
+    foundation::Basis3f modify(
         TextureCache&               texture_cache,
-        const foundation::Basis3d&  basis,
+        const foundation::Basis3f&  basis,
         const ShadingPoint&         shading_point) const override;
 
   private:
     const Source*                   m_map;
-    const double                    m_amplitude;
+    const float                     m_amplitude;
     float                           m_delta_u;
     float                           m_delta_v;
-    double                          m_rcp_delta_u;
-    double                          m_rcp_delta_v;
+    float                           m_rcp_delta_u;
+    float                           m_rcp_delta_v;
 
-    double evaluate_height(
+    float evaluate_height(
         TextureCache&               texture_cache,
         const float                 u,
         const float                 v) const;

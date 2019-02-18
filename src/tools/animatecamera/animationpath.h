@@ -67,11 +67,11 @@ class AnimationPath
     size_t size() const;
 
     // Return the i'th keyframe of the animation path.
-    const foundation::Transformd& operator[](const size_t i) const;
+    const foundation::Transformf& operator[](const size_t i) const;
 
   private:
     foundation::Logger&                 m_logger;
-    std::vector<foundation::Transformd> m_keyframes;
+    std::vector<foundation::Transformf> m_keyframes;
 };
 
 }   // namespace animatecamera

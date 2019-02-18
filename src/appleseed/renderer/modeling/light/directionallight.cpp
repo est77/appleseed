@@ -112,7 +112,7 @@ namespace
             check_non_zero_emission("irradiance", "irradiance_multiplier");
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
-            m_scene_center = Vector3d(scene_data.m_center);
+            m_scene_center = scene_data.m_center;
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
@@ -124,11 +124,11 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target_point,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector3f&         target_point,
+            const Vector2f&         s,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -140,10 +140,10 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector2f&         s,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -160,11 +160,11 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector2d&         s,
+            const Transformf&       light_transform,
+            const Vector2f&         s,
             const LightTargetArray& targets,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -172,9 +172,9 @@ namespace
 
             if (target_count > 0)
             {
-                const double x = s[0] * target_count;
+                const float x = s[0] * target_count;
                 const size_t target_index = truncate<size_t>(x);
-                const Vector2d target_s(x - target_index, s[1]);
+                const Vector2f target_s(x - target_index, s[1]);
                 const LightTarget& target = targets[target_index];
 
                 sample_disk(
@@ -202,8 +202,8 @@ namespace
         }
 
         float compute_distance_attenuation(
-            const Vector3d&         target,
-            const Vector3d&         position) const override
+            const Vector3f&         target,
+            const Vector3f&         position) const override
         {
             return 1.0f;
         }
@@ -216,26 +216,26 @@ namespace
             float       m_exposure;                 // emitted irradiance multiplier in f-stops
         };
 
-        Vector3d        m_scene_center;             // world space
-        double          m_scene_radius;             // world space
-        double          m_safe_scene_diameter;      // world space
+        Vector3f        m_scene_center;             // world space
+        float           m_scene_radius;             // world space
+        float           m_safe_scene_diameter;      // world space
 
         InputValues     m_values;
 
         void sample_disk(
-            const Transformd&       light_transform,
-            const Vector2d&         s,
-            const Vector3d&         disk_center,
-            const double            disk_radius,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector2f&         s,
+            const Vector3f&         disk_center,
+            const float             disk_radius,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const
         {
             outgoing = -normalize(light_transform.get_parent_z());
 
-            const Basis3d basis(outgoing);
-            const Vector2d p = sample_disk_uniform(s);
+            const Basis3f basis(outgoing);
+            const Vector2f p = sample_disk_uniform(s);
 
             position =
                   disk_center

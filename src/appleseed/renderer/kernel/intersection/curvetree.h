@@ -67,7 +67,7 @@ namespace renderer
 class CurveTree
   : public foundation::bvh::Tree<
                foundation::AlignedVector<
-                   foundation::bvh::Node<GAABB3>
+                   foundation::bvh::Node<foundation::AABB3f>
                >
            >
 {
@@ -77,14 +77,14 @@ class CurveTree
     {
         const Scene&                            m_scene;
         const foundation::UniqueID              m_curve_tree_uid;
-        const GAABB3                            m_bbox;
+        const foundation::AABB3f                m_bbox;
         const Assembly&                         m_assembly;
 
         // Constructor.
         Arguments(
             const Scene&                        scene,
             const foundation::UniqueID          curve_tree_uid,
-            const GAABB3&                       bbox,
+            const foundation::AABB3f&           bbox,
             const Assembly&                     assembly);
     };
 
@@ -108,11 +108,11 @@ class CurveTree
     std::vector<Curve3Type> m_curves3;
     std::vector<CurveKey>   m_curve_keys;
 
-    void collect_curves(std::vector<GAABB3>& curve_bboxes);
+    void collect_curves(std::vector<foundation::AABB3f>& curve_bboxes);
 
     void build_bvh(
         const ParamArray&                       params,
-        const double                            time,
+        const float                             time,
         foundation::Statistics&                 statistics);
 
     // Reorder curve keys to match a given ordering.
@@ -186,7 +186,7 @@ class CurveLeafVisitor
         const CurveTree::NodeType&              node,
         const GRay3&                            ray,
         const GRayInfo3&                        ray_info,
-        GScalar&                                distance
+        float&                                  distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics& stats
 #endif
@@ -218,7 +218,7 @@ class CurveLeafProbeVisitor
         const CurveTree::NodeType&              node,
         const GRay3&                            ray,
         const GRayInfo3&                        ray_info,
-        GScalar&                                distance
+        float&                                  distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics& stats
 #endif
@@ -267,7 +267,7 @@ inline bool CurveLeafVisitor::visit(
     const CurveTree::NodeType&                  node,
     const GRay3&                                ray,
     const GRayInfo3&                            ray_info,
-    GScalar&                                    distance
+    float&                                      distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&     stats
 #endif
@@ -277,7 +277,7 @@ inline bool CurveLeafVisitor::visit(
 
     size_t curve_index = node.get_item_index();
     size_t hit_curve_index = ~size_t(0);
-    GScalar u, v, t = ray.m_tmax;
+    float u, v, t = ray.m_tmax;
 
     for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i, ++curve_index)
     {
@@ -285,9 +285,9 @@ inline bool CurveLeafVisitor::visit(
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
         {
             m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve1;
-            m_shading_point.m_ray.m_tmax = static_cast<double>(t);
-            m_shading_point.m_bary[0] = static_cast<float>(u);
-            m_shading_point.m_bary[1] = static_cast<float>(v);
+            m_shading_point.m_ray.m_tmax = t;
+            m_shading_point.m_bary[0] = u;
+            m_shading_point.m_bary[1] = v;
             hit_curve_index = curve_index;
         }
     }
@@ -300,9 +300,9 @@ inline bool CurveLeafVisitor::visit(
         if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
         {
             m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve3;
-            m_shading_point.m_ray.m_tmax = static_cast<double>(t);
-            m_shading_point.m_bary[0] = static_cast<float>(u);
-            m_shading_point.m_bary[1] = static_cast<float>(v);
+            m_shading_point.m_ray.m_tmax = t;
+            m_shading_point.m_bary[0] = u;
+            m_shading_point.m_bary[1] = v;
             hit_curve_index = curve_index;
         }
     }
@@ -317,7 +317,7 @@ inline bool CurveLeafVisitor::visit(
     }
 
     // Continue traversal.
-    distance = static_cast<GScalar>(m_shading_point.m_ray.m_tmax);
+    distance = m_shading_point.m_ray.m_tmax;
     return true;
 }
 
@@ -338,7 +338,7 @@ inline bool CurveLeafProbeVisitor::visit(
     const CurveTree::NodeType&                  node,
     const GRay3&                                ray,
     const GRayInfo3&                            ray_info,
-    GScalar&                                    distance
+    float&                                      distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&     stats
 #endif

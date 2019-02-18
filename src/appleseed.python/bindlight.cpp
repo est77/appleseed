@@ -83,12 +83,12 @@ namespace
         return factory->create(name, bpy_dict_to_param_array(params));
     }
 
-    UnalignedTransformd light_get_transform(const Light* light)
+    UnalignedTransformf light_get_transform(const Light* light)
     {
-        return UnalignedTransformd(light->get_transform());
+        return UnalignedTransformf(light->get_transform());
     }
 
-    void light_set_transform(Light* light, const UnalignedTransformd& xform)
+    void light_set_transform(Light* light, const UnalignedTransformf& xform)
     {
         light->set_transform(xform.as_foundation_transform());
     }

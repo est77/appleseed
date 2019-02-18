@@ -190,7 +190,7 @@ namespace
           , m_path_count(0)
         {
             const Scene::RenderData& scene_data = m_scene.get_render_data();
-            m_scene_center = Vector3d(scene_data.m_center);
+            m_scene_center = Vector3f(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
             m_disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(m_scene_radius)));
@@ -333,8 +333,8 @@ namespace
                 const ShadingRay::Time&     time)
             {
                 // Connect the light vertex with the camera.
-                Vector2d sample_position;
-                Vector3d camera_outgoing;
+                Vector2f sample_position;
+                Vector3f camera_outgoing;
                 float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
@@ -346,8 +346,8 @@ namespace
                     return;
 
                 // Reject vertices on the back side of the area light.
-                double cos_alpha = dot(-camera_outgoing, light_sample.m_shading_normal);
-                if (cos_alpha <= 0.0)
+                float cos_alpha = dot(-camera_outgoing, light_sample.m_shading_normal);
+                if (cos_alpha <= 0.0f)
                     return;
 
                 // Compute the transmission factor between the light vertex and the camera.
@@ -367,7 +367,7 @@ namespace
                     return;
 
                 // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
-                const double distance = norm(camera_outgoing);
+                const float distance = norm(camera_outgoing);
                 cos_alpha /= distance;
 
                 // Store the contribution of this vertex.
@@ -377,13 +377,13 @@ namespace
             }
 
             void visit_non_physical_light_vertex(
-                const Vector3d&             light_vertex,
+                const Vector3f&             light_vertex,
                 const Spectrum&             light_particle_flux,
                 const ShadingRay::Time&     time)
             {
                 // Connect the light vertex with the camera.
-                Vector2d sample_position;
-                Vector3d camera_outgoing;
+                Vector2f sample_position;
+                Vector3f camera_outgoing;
                 float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
@@ -427,8 +427,8 @@ namespace
                     return;
 
                 // Connect the path vertex with the camera.
-                Vector2d sample_position;
-                Vector3d camera_outgoing;
+                Vector2f sample_position;
+                Vector3f camera_outgoing;
                 float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
@@ -440,7 +440,7 @@ namespace
                     return;
 
                 // Reject vertices on the back side of the geometric surface.
-                const Vector3d& shading_normal = vertex.get_geometric_normal();
+                const Vector3f& shading_normal = vertex.get_geometric_normal();
                 if (dot(camera_outgoing, shading_normal) >= 0.0)
                     return;
 
@@ -461,11 +461,11 @@ namespace
                     return;
 
                 // Normalize the camera outgoing direction.
-                const double distance = norm(camera_outgoing);
+                const float distance = norm(camera_outgoing);
                 camera_outgoing /= distance;
 
                 // Retrieve the geometric normal at the vertex.
-                const Vector3d geometric_normal =
+                const Vector3f geometric_normal =
                     flip_to_same_hemisphere(
                         vertex.get_geometric_normal(),
                         vertex.get_shading_normal());
@@ -500,7 +500,7 @@ namespace
             }
 
             void emit_sample(
-                const Vector2d&             position_ndc,
+                const Vector2f&             position_ndc,
                 const Spectrum&             radiance)
             {
                 assert(min_value(radiance) >= 0.0f);
@@ -524,9 +524,9 @@ namespace
         const Frame&                    m_frame;
 
         // Preserve order.
-        Vector3d                        m_scene_center;         // world space
-        double                          m_scene_radius;         // world space
-        double                          m_safe_scene_diameter;  // world space
+        Vector3f                        m_scene_center;         // world space
+        float                           m_scene_radius;         // world space
+        float                           m_safe_scene_diameter;  // world space
         float                           m_disk_point_prob;
 
         const ForwardLightSampler&      m_light_sampler;
@@ -657,7 +657,7 @@ namespace
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                Vector3d(emission_direction),
+                Vector3f(emission_direction),
                 m_intersector);
 
             // Build the light ray.
@@ -669,7 +669,7 @@ namespace
                     m_shutter_close_end_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
-                Vector3d(emission_direction),
+                Vector3f(emission_direction),
                 time,
                 VisibilityFlags::LightRay,
                 0);
@@ -728,13 +728,13 @@ namespace
         {
             // Sample the light.
             sampling_context.split_in_place(2, 1);
-            Vector3d emission_position, emission_direction;
+            Vector3f emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
                 m_shading_context,
                 light_sample.m_light_transform,
-                sampling_context.next2<Vector2d>(),
+                sampling_context.next2<Vector2f>(),
                 emission_position,
                 emission_direction,
                 light_value,
@@ -822,13 +822,13 @@ namespace
 
             // Uniformly sample the tangent disk.
             sampling_context.split_in_place(2, 1);
-            const Vector2d p =
+            const Vector2f p =
                   m_scene_radius
-                * sample_disk_uniform(sampling_context.next2<Vector2d>());
+                * sample_disk_uniform(sampling_context.next2<Vector2f>());
 
             // Compute the origin of the light ray.
-            const Basis3d basis(-Vector3d(outgoing));
-            const Vector3d ray_origin =
+            const Basis3f basis(-Vector3f(outgoing));
+            const Vector3f ray_origin =
                   m_scene_center
                 - m_safe_scene_diameter * basis.get_normal()    // a safe radius would have been sufficient
                 + p[0] * basis.get_tangent_u() +
@@ -847,7 +847,7 @@ namespace
                     m_shutter_close_end_time);
             const ShadingRay light_ray(
                 ray_origin,
-                -Vector3d(outgoing),
+                -Vector3f(outgoing),
                 time,
                 VisibilityFlags::LightRay,
                 0);

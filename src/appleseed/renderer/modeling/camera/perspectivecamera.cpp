@@ -87,8 +87,8 @@ bool PerspectiveCamera::on_render_begin(
 }
 
 bool PerspectiveCamera::project_camera_space_point(
-    const Vector3d&         point,
-    Vector2d&               ndc) const
+    const Vector3f&         point,
+    Vector2f&               ndc) const
 {
     // Cannot project the point if it is behind the near plane.
     if (point.z > m_near_z)
@@ -103,21 +103,21 @@ bool PerspectiveCamera::project_camera_space_point(
 
 bool PerspectiveCamera::project_segment(
     const float             time,
-    const Vector3d&         a,
-    const Vector3d&         b,
-    Vector2d&               a_ndc,
-    Vector2d&               b_ndc) const
+    const Vector3f&         a,
+    const Vector3f&         b,
+    Vector2f&               a_ndc,
+    Vector2f&               b_ndc) const
 {
     // Retrieve the camera transform.
-    Transformd scratch;
-    const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+    Transformf scratch;
+    const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
     // Transform the segment to camera space.
-    Vector3d local_a = transform.point_to_local(a);
-    Vector3d local_b = transform.point_to_local(b);
+    Vector3f local_a = transform.point_to_local(a);
+    Vector3f local_b = transform.point_to_local(b);
 
     // Clip the segment against the near plane.
-    if (!clip(Vector4d(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
+    if (!clip(Vector4f(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
         return false;
 
     // Project the segment onto the film plane.
@@ -138,10 +138,10 @@ RasterizationCamera PerspectiveCamera::get_rasterization_camera() const
     return rc;
 }
 
-double PerspectiveCamera::extract_focal_length(const double film_width) const
+float PerspectiveCamera::extract_focal_length(const float film_width) const
 {
-    const double DefaultFocalLength = 0.035;    // in meters
-    const double DefaultHFov = 54.0;            // in degrees
+    const float DefaultFocalLength = 0.035f;    // in meters
+    const float DefaultHFov = 54.0f;            // in degrees
 
     if (has_param("focal_length"))
     {
@@ -152,7 +152,7 @@ double PerspectiveCamera::extract_focal_length(const double film_width) const
                 "has precedence over \"focal_length\".",
                 get_path().c_str());
 
-            const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
+            const float hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
             return hfov_to_focal_length(film_width, deg_to_rad(hfov));
         }
         else
@@ -162,7 +162,7 @@ double PerspectiveCamera::extract_focal_length(const double film_width) const
     }
     else if (has_param("horizontal_fov"))
     {
-        const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
+        const float hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
         return hfov_to_focal_length(film_width, deg_to_rad(hfov));
     }
     else
@@ -177,32 +177,32 @@ double PerspectiveCamera::extract_focal_length(const double film_width) const
     }
 }
 
-double PerspectiveCamera::hfov_to_focal_length(const double film_width, const double hfov)
+float PerspectiveCamera::hfov_to_focal_length(const float film_width, const float hfov)
 {
-    return 0.5 * film_width / tan(0.5 * hfov);
+    return 0.5f * film_width / tan(0.5f * hfov);
 }
 
-double PerspectiveCamera::focal_length_to_hfov(const double film_width, const double focal_length)
+float PerspectiveCamera::focal_length_to_hfov(const float film_width, const float focal_length)
 {
-    return 2.0 * atan(film_width / (2.0 * focal_length));
+    return 2.0f * atan(film_width / (2.0f * focal_length));
 }
 
-Vector3d PerspectiveCamera::ndc_to_camera(const Vector2d& point) const
+Vector3f PerspectiveCamera::ndc_to_camera(const Vector2f& point) const
 {
     return
-        Vector3d(
-            (0.5 - point.x) * m_film_dimensions[0] - m_shift.x,
-            (point.y - 0.5) * m_film_dimensions[1] - m_shift.y,
+        Vector3f(
+            (0.5f - point.x) * m_film_dimensions[0] - m_shift.x,
+            (point.y - 0.5f) * m_film_dimensions[1] - m_shift.y,
             m_focal_length);
 }
 
-Vector2d PerspectiveCamera::camera_to_ndc(const Vector3d& point) const
+Vector2f PerspectiveCamera::camera_to_ndc(const Vector3f& point) const
 {
-    const double k = m_focal_length / point.z;
+    const float k = m_focal_length / point.z;
     return
-        Vector2d(
-            0.5 - ((point.x * k + m_shift.x) * m_rcp_film_width),
-            0.5 + ((point.y * k + m_shift.y) * m_rcp_film_height));
+        Vector2f(
+            0.5f - ((point.x * k + m_shift.x) * m_rcp_film_width),
+            0.5f + ((point.y * k + m_shift.y) * m_rcp_film_height));
 }
 
 }   // namespace renderer

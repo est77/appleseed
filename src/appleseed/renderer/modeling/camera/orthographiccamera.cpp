@@ -149,26 +149,26 @@ namespace
 
         void spawn_ray(
             SamplingContext&        sampling_context,
-            const Dual2d&           ndc,
+            const Dual2f&           ndc,
             ShadingRay&             ray) const override
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform =
+            Transformf scratch;
+            const Transformf& transform =
                 m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
             ray.m_org = transform.point_to_parent(ndc_to_camera(ndc.get_value()));
-            ray.m_dir = normalize(transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            ray.m_dir = normalize(transform.vector_to_parent(Vector3f(0.0, 0.0, -1.0)));
 
             // Compute ray derivatives.
             if (ndc.has_derivatives())
             {
-                const Vector2d px(ndc.get_value() + ndc.get_dx());
-                const Vector2d py(ndc.get_value() + ndc.get_dy());
+                const Vector2f px(ndc.get_value() + ndc.get_dx());
+                const Vector2f py(ndc.get_value() + ndc.get_dy());
 
                 ray.m_rx.m_org = transform.point_to_parent(ndc_to_camera(px));
                 ray.m_ry.m_org = transform.point_to_parent(ndc_to_camera(py));
@@ -183,17 +183,17 @@ namespace
         bool connect_vertex(
             SamplingContext&        sampling_context,
             const float             time,
-            const Vector3d&         point,
-            Vector2d&               ndc,
-            Vector3d&               outgoing,
+            const Vector3f&         point,
+            Vector2f&               ndc,
+            Vector3f&               outgoing,
             float&                  importance) const override
         {
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the input point to camera space.
-            const Vector3d p = transform.point_to_local(point);
+            const Vector3f p = transform.point_to_local(point);
 
             // Compute the normalized device coordinates of the film point.
             ndc[0] = 0.5 + p[0];
@@ -205,7 +205,7 @@ namespace
                 return false;
 
             // Compute the outgoing direction vector in world space.
-            outgoing = transform.vector_to_parent(Vector3d(0.0, 0.0, p.z));
+            outgoing = transform.vector_to_parent(Vector3f(0.0, 0.0, p.z));
 
             // Compute the emitted importance.
             importance = m_rcp_pixel_area;
@@ -215,8 +215,8 @@ namespace
         }
 
         bool project_camera_space_point(
-            const Vector3d&         point,
-            Vector2d&               ndc) const override
+            const Vector3f&         point,
+            Vector2f&               ndc) const override
         {
             // Cannot project the point if it is behind the near plane.
             if (point.z > m_near_z)
@@ -231,21 +231,21 @@ namespace
 
         bool project_segment(
             const float             time,
-            const Vector3d&         a,
-            const Vector3d&         b,
-            Vector2d&               a_ndc,
-            Vector2d&               b_ndc) const override
+            const Vector3f&         a,
+            const Vector3f&         b,
+            Vector2f&               a_ndc,
+            Vector2f&               b_ndc) const override
         {
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the segment to camera space.
-            Vector3d local_a = transform.point_to_local(a);
-            Vector3d local_b = transform.point_to_local(b);
+            Vector3f local_a = transform.point_to_local(a);
+            Vector3f local_b = transform.point_to_local(b);
 
             // Clip the segment against the near plane.
-            if (!clip(Vector4d(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
+            if (!clip(Vector4f(0.0f, 0.0f, 1.0f, -m_near_z), local_a, local_b))
                 return false;
 
             // Project the segment onto the film plane.
@@ -260,35 +260,35 @@ namespace
         {
             RasterizationCamera rc;
             rc.m_aspect_ratio = m_film_dimensions[0] / m_film_dimensions[1];
-            rc.m_hfov = deg_to_rad(54.0);
-            rc.m_shift_x = rc.m_shift_y = 0.0;
+            rc.m_hfov = deg_to_rad(54.0f);
+            rc.m_shift_x = rc.m_shift_y = 0.0f;
             return rc;
         }
 
       private:
         // Parameters.
-        Vector2d    m_film_dimensions;      // film dimensions in camera space, in meters
-        double      m_near_z;               // Z value of the near plane in camera space, in meters
+        Vector2f    m_film_dimensions;      // film dimensions in camera space, in meters
+        float       m_near_z;               // Z value of the near plane in camera space, in meters
 
         // Precomputed values.
-        double      m_safe_scene_diameter;  // scene diameter plus a safety margin
-        double      m_rcp_film_width;       // film width reciprocal in camera space
-        double      m_rcp_film_height;      // film height reciprocal in camera space
+        float       m_safe_scene_diameter;  // scene diameter plus a safety margin
+        float       m_rcp_film_width;       // film width reciprocal in camera space
+        float       m_rcp_film_height;      // film height reciprocal in camera space
         float       m_rcp_pixel_area;       // reciprocal of pixel area in camera space
 
-        Vector3d ndc_to_camera(const Vector2d& point) const
+        Vector3f ndc_to_camera(const Vector2f& point) const
         {
             return
-                Vector3d(
+                Vector3f(
                     (point.x - 0.5) * m_film_dimensions[0],
                     (0.5 - point.y) * m_film_dimensions[1],
                     m_safe_scene_diameter);
         }
 
-        Vector2d camera_to_ndc(const Vector3d& point) const
+        Vector2f camera_to_ndc(const Vector3f& point) const
         {
             return
-                Vector2d(
+                Vector2f(
                     0.5 + point.x * m_rcp_film_width,
                     0.5 - point.y * m_rcp_film_height);
         }

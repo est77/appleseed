@@ -62,7 +62,7 @@ BSDFSampler::BSDFSampler(
 {
 }
 
-const Vector3d& BSDFSampler::get_point() const
+const Vector3f& BSDFSampler::get_point() const
 {
     return m_shading_point.get_point();
 }
@@ -85,7 +85,7 @@ const ShadingPoint& BSDFSampler::trace_full(
 {
     ShadingRay ray(
         m_shading_point.get_point(),
-        Vector3d(direction),
+        Vector3f(direction),
         m_shading_point.get_ray().m_time,
         VisibilityFlags::ShadowRay,
         m_shading_point.get_ray().m_depth + 1);
@@ -108,7 +108,7 @@ void BSDFSampler::trace_simple(
 {
     ShadingRay ray(
         m_shading_point.get_point(),
-        Vector3d(direction),
+        Vector3f(direction),
         m_shading_point.get_ray().m_time,
         VisibilityFlags::ShadowRay,
         m_shading_point.get_ray().m_depth + 1);
@@ -123,7 +123,7 @@ void BSDFSampler::trace_simple(
 
 void BSDFSampler::trace_between(
     const ShadingContext&       shading_context,
-    const Vector3d&             target_position,
+    const Vector3f&             target_position,
     Spectrum&                   transmission) const
 {
     shading_context.get_tracer().trace_between_simple(
@@ -137,7 +137,7 @@ void BSDFSampler::trace_between(
 
 bool BSDFSampler::sample(
     SamplingContext&            sampling_context,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     Dual3f&                     incoming,
     DirectShadingComponents&    value,
     float&                      pdf) const
@@ -201,7 +201,7 @@ VolumeSampler::VolumeSampler(
 {
 }
 
-const Vector3d& VolumeSampler::get_point() const
+const Vector3f& VolumeSampler::get_point() const
 {
     return m_point;
 }
@@ -223,7 +223,7 @@ const ShadingPoint& VolumeSampler::trace_full(
 {
     ShadingRay ray(
         m_point,
-        Vector3d(direction),
+        Vector3f(direction),
         m_volume_ray.m_time,
         VisibilityFlags::ShadowRay,
         m_volume_ray.m_depth + 1);
@@ -245,7 +245,7 @@ void VolumeSampler::trace_simple(
 {
     ShadingRay ray(
         m_point,
-        Vector3d(direction),
+        Vector3f(direction),
         m_volume_ray.m_time,
         VisibilityFlags::ShadowRay,
         m_volume_ray.m_depth + 1);
@@ -259,7 +259,7 @@ void VolumeSampler::trace_simple(
 
 void VolumeSampler::trace_between(
     const ShadingContext&       shading_context,
-    const Vector3d&             target_position,
+    const Vector3f&             target_position,
     Spectrum&                   transmission) const
 {
     shading_context.get_tracer().trace_between_simple(
@@ -273,7 +273,7 @@ void VolumeSampler::trace_between(
 
 bool VolumeSampler::sample(
     SamplingContext&            sampling_context,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     Dual3f&                     incoming,
     DirectShadingComponents&    value,
     float&                      pdf) const

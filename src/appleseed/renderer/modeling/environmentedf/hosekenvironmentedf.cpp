@@ -168,8 +168,8 @@ namespace
         {
             const Vector3f local_outgoing = sample_hemisphere_cosine(s);
 
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
@@ -190,8 +190,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
@@ -211,8 +211,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
@@ -231,8 +231,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 

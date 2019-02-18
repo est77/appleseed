@@ -57,29 +57,29 @@ TEST_SUITE(Renderer_Kernel_Rendering_Final_PixelSampler)
 
     TEST_CASE_F(Sample_SubpixelGridSizeIs1x1_ReturnsSampleAtCenterOfPixel, Fixture<1>)
     {
-        Vector2d sample_position;
+        Vector2f sample_position;
         size_t initial_instance;
         m_sampler.sample(13, 17, sample_position, initial_instance);
 
-        EXPECT_EQ(Vector2d(13.5, 17.5), sample_position);
+        EXPECT_EQ(Vector2f(13.5f, 17.5f), sample_position);
     }
 
     TEST_CASE_F(Sample_SubpixelGridSizeIs2x2_SubpixelAtTopLeftCorner, Fixture<2>)
     {
-        Vector2d sample_position;
+        Vector2f sample_position;
         size_t initial_instance;
         m_sampler.sample(0, 0, sample_position, initial_instance);
 
-        EXPECT_EQ(Vector2d(0.0), sample_position);
+        EXPECT_EQ(Vector2f(0.0f), sample_position);
     }
 
     TEST_CASE_F(Sample_SubpixelGridSizeIs2x2_SubpixelAtBottomRightCorner, Fixture<2>)
     {
         // Assume a 32x32 pixels image with 2x2 samples per pixels.
-        Vector2d sample_position;
+        Vector2f sample_position;
         size_t initial_instance;
         m_sampler.sample(32 * 2 - 1, 32 * 2 - 1, sample_position, initial_instance);
 
-        EXPECT_EQ(Vector2d(31.9921875), sample_position);
+        EXPECT_EQ(Vector2f(31.9921875f), sample_position);
     }
 }

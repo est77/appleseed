@@ -134,8 +134,8 @@ namespace
         {
             // 1/4 of a pixel, like in RenderMan RIS.
             const CanvasProperties& c = frame.image().properties();
-            m_image_point_dx = Vector2d(1.0 / (4.0 * c.m_canvas_width), 0.0);
-            m_image_point_dy = Vector2d(0.0, -1.0 / (4.0 * c.m_canvas_height));
+            m_image_point_dx = Vector2f(1.0 / (4.0 * c.m_canvas_width), 0.0);
+            m_image_point_dy = Vector2f(0.0, -1.0 / (4.0 * c.m_canvas_height));
         }
 
         ~GenericSampleRenderer() override
@@ -165,7 +165,7 @@ namespace
         void render_sample(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
-            const Vector2d&             image_point,
+            const Vector2f&             image_point,
             AOVAccumulatorContainer&    aov_accumulators,
             ShadingResult&              shading_result) override
         {
@@ -180,7 +180,7 @@ namespace
             ShadingRay primary_ray;
             m_scene.get_active_camera()->spawn_ray(
                 sampling_context,
-                Dual2d(image_point, m_image_point_dx, m_image_point_dy),
+                Dual2f(image_point, m_image_point_dx, m_image_point_dy),
                 primary_ray);
 
             ShadingPoint shading_points[2];
@@ -332,8 +332,8 @@ namespace
         Tracer                      m_tracer;
         const ShadingContext        m_shading_context;
 
-        Vector2d                    m_image_point_dx;
-        Vector2d                    m_image_point_dy;
+        Vector2f                    m_image_point_dx;
+        Vector2f                    m_image_point_dy;
     };
 }
 

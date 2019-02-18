@@ -126,7 +126,7 @@ class APPLESEED_DLLSYMBOL Camera
     // The generated ray is expressed in world space.
     virtual void spawn_ray(
         SamplingContext&                sampling_context,
-        const foundation::Dual2d&       ndc,
+        const foundation::Dual2f&       ndc,
         ShadingRay&                     ray) const = 0;
 
     // Connect a vertex to the camera and return the direction vector from the
@@ -138,9 +138,9 @@ class APPLESEED_DLLSYMBOL Camera
     virtual bool connect_vertex(
         SamplingContext&                sampling_context,
         const float                     time,
-        const foundation::Vector3d&     point,
-        foundation::Vector2d&           ndc,
-        foundation::Vector3d&           outgoing,
+        const foundation::Vector3f&     point,
+        foundation::Vector2f&           ndc,
+        foundation::Vector3f&           outgoing,
         float&                          importance) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in
@@ -148,23 +148,23 @@ class APPLESEED_DLLSYMBOL Camera
     // Returns true if the projection was possible, false otherwise.
     bool project_point(
         const float                     time,
-        const foundation::Vector3d&     point,
-        foundation::Vector2d&           ndc) const;
+        const foundation::Vector3f&     point,
+        foundation::Vector2f&           ndc) const;
 
     // Similar to project_point(), except that the input point is expressed in camera space.
     virtual bool project_camera_space_point(
-        const foundation::Vector3d&     point,
-        foundation::Vector2d&           ndc) const = 0;
+        const foundation::Vector3f&     point,
+        foundation::Vector2f&           ndc) const = 0;
 
     // Project a 3D segment back to the film plane. The input segment is expressed in
     // world space. The returned segment is expressed in normalized device coordinates.
     // Returns true if the projection was possible, false otherwise.
     virtual bool project_segment(
         const float                     time,
-        const foundation::Vector3d&     a,
-        const foundation::Vector3d&     b,
-        foundation::Vector2d&           a_ndc,
-        foundation::Vector2d&           b_ndc) const = 0;
+        const foundation::Vector3f&     a,
+        const foundation::Vector3f&     b,
+        foundation::Vector2f&           a_ndc,
+        foundation::Vector2f&           b_ndc) const = 0;
 
     // Return a camera representation suitable for rasterization.
     virtual RasterizationCamera get_rasterization_camera() const = 0;
@@ -185,13 +185,13 @@ class APPLESEED_DLLSYMBOL Camera
     bool                m_motion_blur_enabled;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
-    foundation::Vector2d extract_film_dimensions() const;
+    foundation::Vector2f extract_film_dimensions() const;
 
     // Utility function to retrieve the abscissa (in meters) of the near plane from the camera parameters.
-    double extract_near_z() const;
+    float extract_near_z() const;
 
     // Utility function to retrieve the shift from the camera parameters.
-    foundation::Vector2d extract_shift() const;
+    foundation::Vector2f extract_shift() const;
 
     // Check shutter times and emit warnings if needed.
     void check_shutter_times_for_consistency() const;
@@ -229,9 +229,9 @@ class APPLESEED_DLLSYMBOL Camera
     bool has_param(const char* name) const;
     bool has_params(const char* name1, const char* name2) const;
 
-    double get_greater_than_zero(
+    float get_greater_than_zero(
         const char*                     name,
-        const double                    default_value) const;
+        const float                     default_value) const;
 };
 
 

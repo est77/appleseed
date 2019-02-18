@@ -97,7 +97,7 @@ namespace
                 create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
                     SubsurfaceStandardDipoleID,
                     "standard_dipole");
-            
+
             m_randomwalk =
                 create_and_register_randomwalk_bssrdf(
                     SubsurfaceRandomwalkID,
@@ -186,7 +186,7 @@ namespace
 
                 const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
 
-                outgoing_point.set_shading_basis(Basis3d(modified_basis));
+                outgoing_point.set_shading_basis(Basis3f(modified_basis));
 
                 const BSSRDF& bssrdf = bssrdf_from_closure_id(c->get_closure_type(closure_index));
                 const bool result =

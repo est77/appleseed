@@ -45,24 +45,24 @@ BENCHMARK_SUITE(Renderer_Utility_TransformSequence)
 {
     struct Fixture
     {
-        const AABB3d        m_bbox;
+        const AABB3f        m_bbox;
         TransformSequence   m_sequence;
-        AABB3d              m_motion_bbox;
+        AABB3f              m_motion_bbox;
 
         Fixture()
-          : m_bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0))
+          : m_bbox(Vector3f(-20.0f, -20.0f, -5.0f), Vector3f(-10.0f, -10.0f, 5.0f))
         {
-            const Vector3d axis = normalize(Vector3d(0.1, 0.2, 1.0));
+            const Vector3f axis = normalize(Vector3f(0.1f, 0.2f, 1.0f));
             m_sequence.set_transform(
                 0.0f,
-                Transformd::from_local_to_parent(
-                    Matrix4d::make_rotation(axis, 0.0) *
-                    Matrix4d::make_scaling(Vector3d(0.1))));
+                Transformf::from_local_to_parent(
+                    Matrix4f::make_rotation(axis, 0.0f) *
+                    Matrix4f::make_scaling(Vector3f(0.1f))));
             m_sequence.set_transform(
                 1.0f,
-                Transformd::from_local_to_parent(
-                    Matrix4d::make_rotation(axis, Pi<double>() - Pi<double>() / 8) *
-                    Matrix4d::make_scaling(Vector3d(0.2))));
+                Transformf::from_local_to_parent(
+                    Matrix4f::make_rotation(axis, Pi<float>() - Pi<float>() / 8) *
+                    Matrix4f::make_scaling(Vector3f(0.2f))));
             m_sequence.prepare();
         }
     };

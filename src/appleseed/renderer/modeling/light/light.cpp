@@ -60,10 +60,10 @@ UniqueID Light::get_class_uid()
 
 struct Light::Impl
 {
-    Transformd m_transform;
+    Transformf m_transform;
 
     Impl()
-      : m_transform(Transformd::identity())
+      : m_transform(Transformf::identity())
     {
     }
 };
@@ -72,8 +72,8 @@ Light::Light(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , impl(new Impl())
   , m_flags(0)
+  , impl(new Impl())
 {
     set_name(name);
 }
@@ -88,13 +88,13 @@ float Light::get_uncached_importance_multiplier() const
     return m_params.get_optional<float>("importance_multiplier", 1.0f);
 }
 
-void Light::set_transform(const Transformd& transform)
+void Light::set_transform(const Transformf& transform)
 {
     impl->m_transform = transform;
     bump_version_id();
 }
 
-const Transformd& Light::get_transform() const
+const Transformf& Light::get_transform() const
 {
     return impl->m_transform;
 }
@@ -113,7 +113,7 @@ bool Light::on_frame_begin(
     else
         m_flags &= ~CastIndirectLight;
 
-    if (get_uncached_importance_multiplier() <= 0.0)
+    if (get_uncached_importance_multiplier() <= 0.0f)
     {
         RENDERER_LOG_WARNING(
             "light \"%s\" has negative or zero importance; expect artifacts and/or slowdowns.",
@@ -125,11 +125,11 @@ bool Light::on_frame_begin(
 
 void Light::sample(
     const ShadingContext&   shading_context,
-    const Transformd&       light_transform,
-    const Vector2d&         s,
+    const Transformf&       light_transform,
+    const Vector2f&         s,
     const LightTargetArray& targets,
-    Vector3d&               position,
-    Vector3d&               outgoing,
+    Vector3f&               position,
+    Vector3f&               outgoing,
     Spectrum&               value,
     float&                  probability) const
 {

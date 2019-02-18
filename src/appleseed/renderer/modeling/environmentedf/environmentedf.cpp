@@ -79,19 +79,19 @@ bool EnvironmentEDF::on_frame_begin(
     {
         // Retrieve transform.
         float time;
-        Transformd transform;
+        Transformf transform;
         m_transform_sequence.get_transform(i, time, transform);
 
         // Decompose transform.
-        Vector3d scaling, translation;
-        Quaterniond rotation;
+        Vector3f scaling, translation;
+        Quaternionf rotation;
         transform.get_local_to_parent().decompose(scaling, rotation, translation);
 
         // Check transform validity.
         const bool is_valid_scaling =
-            (feq(scaling[0], +1.0) || feq(scaling[0], -1.0)) &&
-            (feq(scaling[1], +1.0) || feq(scaling[1], -1.0)) &&
-            (feq(scaling[2], +1.0) || feq(scaling[2], -1.0));
+            (feq(scaling[0], +1.0f) || feq(scaling[0], -1.0f)) &&
+            (feq(scaling[1], +1.0f) || feq(scaling[1], -1.0f)) &&
+            (feq(scaling[2], +1.0f) || feq(scaling[2], -1.0f));
         const bool is_valid_translation = fz(translation);
         const bool is_valid_rotation = is_normalized(rotation);
         const bool is_valid_transform = is_valid_scaling && is_valid_translation && is_valid_rotation;
@@ -106,14 +106,14 @@ bool EnvironmentEDF::on_frame_begin(
         }
 
         // Rebuild transform.
-        scaling[0] = scaling[0] < 0.0 ? -1.0 : +1.0;
-        scaling[1] = scaling[1] < 0.0 ? -1.0 : +1.0;
-        scaling[2] = scaling[2] < 0.0 ? -1.0 : +1.0;
+        scaling[0] = scaling[0] < 0.0f ? -1.0f : +1.0f;
+        scaling[1] = scaling[1] < 0.0f ? -1.0f : +1.0f;
+        scaling[2] = scaling[2] < 0.0f ? -1.0f : +1.0f;
         rotation = normalize(rotation);
         transform =
-            Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(rotation) *
-                Matrix4d::make_scaling(scaling));
+            Transformf::from_local_to_parent(
+                Matrix4f::make_rotation(rotation) *
+                Matrix4f::make_scaling(scaling));
 
         // Store transform.
         m_transform_sequence.set_transform(time, transform);

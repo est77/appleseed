@@ -80,9 +80,9 @@ float EDF::get_uncached_importance_multiplier() const
     return m_params.get_optional<float>("importance_multiplier", 1.0f);
 }
 
-double EDF::get_uncached_light_near_start() const
+float EDF::get_uncached_light_near_start() const
 {
-    return m_params.get_optional<double>("light_near_start", 0.0);
+    return m_params.get_optional<float>("light_near_start", 0.0f);
 }
 
 bool EDF::on_frame_begin(

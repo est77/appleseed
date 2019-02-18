@@ -75,8 +75,8 @@ class PathVertex
     // Current vertex properties.
     const ShadingPoint*         m_shading_point;
     const ShadingPoint*         m_parent_shading_point;
-    foundation::Dual3d          m_outgoing;
-    double                      m_cos_on;       // cos(outgoing direction, shading normal)
+    foundation::Dual3f          m_outgoing;
+    float                       m_cos_on;       // cos(outgoing direction, shading normal)
     const EDF*                  m_edf;
     const BSDF*                 m_bsdf;
     const void*                 m_bsdf_data;
@@ -100,10 +100,10 @@ class PathVertex
     const ShadingRay& get_ray() const;
     const ShadingRay::Time& get_time() const;
     const foundation::Vector2f& get_uv(const size_t uvset) const;
-    const foundation::Vector3d& get_point() const;
-    const foundation::Vector3d& get_geometric_normal() const;
-    const foundation::Vector3d& get_shading_normal() const;
-    const foundation::Basis3d& get_shading_basis() const;
+    const foundation::Vector3f& get_point() const;
+    const foundation::Vector3f& get_geometric_normal() const;
+    const foundation::Vector3f& get_shading_normal() const;
+    const foundation::Basis3f& get_shading_basis() const;
     const Material* get_material() const;
 
     // Compute the radiance emitted at this vertex. Only call when there is an EDF (when m_edf is set).
@@ -144,22 +144,22 @@ inline const foundation::Vector2f& PathVertex::get_uv(const size_t uvset) const
     return m_shading_point->get_uv(uvset);
 }
 
-inline const foundation::Vector3d& PathVertex::get_point() const
+inline const foundation::Vector3f& PathVertex::get_point() const
 {
     return m_shading_point->get_point();
 }
 
-inline const foundation::Vector3d& PathVertex::get_geometric_normal() const
+inline const foundation::Vector3f& PathVertex::get_geometric_normal() const
 {
     return m_shading_point->get_geometric_normal();
 }
 
-inline const foundation::Vector3d& PathVertex::get_shading_normal() const
+inline const foundation::Vector3f& PathVertex::get_shading_normal() const
 {
     return m_shading_point->get_shading_normal();
 }
 
-inline const foundation::Basis3d& PathVertex::get_shading_basis() const
+inline const foundation::Basis3f& PathVertex::get_shading_basis() const
 {
     return m_shading_point->get_shading_basis();
 }
@@ -176,8 +176,8 @@ inline float PathVertex::get_bsdf_prob_area() const
     assert(m_prev_prob > 0.0f);
 
     // Veach: 8.2.2.2 eq. 8.10.
-    const double d = m_shading_point->get_distance();
-    const float g = static_cast<float>(m_cos_on / (d * d));
+    const float d = m_shading_point->get_distance();
+    const float g = m_cos_on / (d * d);
     return m_prev_prob * g;
 }
 

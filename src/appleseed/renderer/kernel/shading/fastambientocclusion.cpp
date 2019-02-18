@@ -198,7 +198,7 @@ void AOVoxelTree::build(
             const ObjectInstance& object_instance = *j;
 
             // Compute the object space to world space transformation.
-            const Transformd transform =
+            const Transformf transform =
                   assembly_instance.transform_sequence().evaluate(time)
                 * object_instance.get_transform();
 
@@ -255,14 +255,14 @@ AOVoxelTreeIntersector::~AOVoxelTreeIntersector()
 bool AOVoxelTreeIntersector::trace(
     ShadingRay::RayType ray,
     const bool          solid,
-    double&             distance) const
+    float&              distance) const
 {
     // Compute ray info once for the entire traversal.
     const ShadingRay::RayInfoType ray_info(ray);
 
     // Retrieve the voxel tree.
     const AOVoxelTree::TreeType& tree = m_tree.m_tree;
-    const AABB3d tree_bbox(tree.get_bbox());
+    const AABB3f tree_bbox(tree.get_bbox());
 
     // Clip the ray against the bounding box of the tree.
     if (clip(ray, ray_info, tree_bbox))
@@ -294,15 +294,15 @@ bool AOVoxelTreeIntersector::trace(
 // Compute fast ambient occlusion at a given point in space.
 //
 
-double compute_fast_ambient_occlusion(
+float compute_fast_ambient_occlusion(
     const SamplingContext&          sampling_context,
     const AOVoxelTreeIntersector&   intersector,
-    const Vector3d&                 point,
-    const Vector3d&                 geometric_normal,
-    const Basis3d&                  shading_basis,
-    const double                    max_distance,
+    const Vector3f&                 point,
+    const Vector3f&                 geometric_normal,
+    const Basis3f&                  shading_basis,
+    const float                     max_distance,
     const size_t                    sample_count,
-    double&                         min_distance)
+    float&                          min_distance)
 {
     // Create a sampling context.
     SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
@@ -321,20 +321,20 @@ double compute_fast_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a cosine-weighted direction over the unit hemisphere.
-        ray.m_dir = sample_hemisphere_cosine(child_sampling_context.next2<Vector2d>());
+        ray.m_dir = sample_hemisphere_cosine(child_sampling_context.next2<Vector2f>());
 
         // Transform the direction to world space.
         ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);
 
         // Don't cast rays on or below the geometric surface.
-        if (dot(ray.m_dir, geometric_normal) <= 0.0)
+        if (dot(ray.m_dir, geometric_normal) <= 0.0f)
             continue;
 
         // Count the number of computed samples.
         ++computed_samples;
 
         // Trace the ambient occlusion ray and count the number of occluded samples.
-        double distance;
+        float distance;
         if (intersector.trace(ray, true, distance))
         {
             ++occluded_samples;
@@ -343,11 +343,11 @@ double compute_fast_ambient_occlusion(
     }
 
     // Compute occlusion as a scalar between 0.0 and 1.0.
-    double occlusion = static_cast<double>(occluded_samples);
+    float occlusion = static_cast<float>(occluded_samples);
     if (computed_samples > 1)
         occlusion /= computed_samples;
-    assert(occlusion >= 0.0);
-    assert(occlusion <= 1.0);
+    assert(occlusion >= 0.0f);
+    assert(occlusion <= 1.0f);
 
     return occlusion;
 }

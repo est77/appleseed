@@ -129,15 +129,15 @@ namespace
 
         void spawn_ray(
             SamplingContext&        sampling_context,
-            const Dual2d&           ndc,
+            const Dual2f&           ndc,
             ShadingRay&             ray) const override
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform =
+            Transformf scratch;
+            const Transformf& transform =
                 m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
@@ -147,8 +147,8 @@ namespace
             // Compute ray derivatives.
             if (ndc.has_derivatives())
             {
-                const Vector2d px(ndc.get_value() + ndc.get_dx());
-                const Vector2d py(ndc.get_value() + ndc.get_dy());
+                const Vector2f px(ndc.get_value() + ndc.get_dx());
+                const Vector2f py(ndc.get_value() + ndc.get_dy());
 
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
@@ -163,17 +163,17 @@ namespace
         bool connect_vertex(
             SamplingContext&        sampling_context,
             const float             time,
-            const Vector3d&         point,
-            Vector2d&               ndc,
-            Vector3d&               outgoing,
+            const Vector3f&         point,
+            Vector2f&               ndc,
+            Vector3f&               outgoing,
             float&                  importance) const override
         {
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the input point to camera space.
-            const Vector3d p = transform.point_to_local(point);
+            const Vector3f p = transform.point_to_local(point);
 
             // Compute the outgoing direction vector in world space.
             outgoing = transform.vector_to_parent(p);
@@ -182,20 +182,20 @@ namespace
             ndc = camera_to_ndc(p);
 
             // Compute the emitted importance.
-            const Vector3d q0 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y - m_half_pixel_height));
-            const Vector3d q1 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y - m_half_pixel_height));
-            const Vector3d q2 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y + m_half_pixel_height));
-            const Vector3d q3 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y + m_half_pixel_height));
-            const double solid_angle = 0.5 * norm(cross(q2 - q0, q3 - q1));
-            importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
+            const Vector3f q0 = ndc_to_camera(Vector2f(ndc.x - m_half_pixel_width, ndc.y - m_half_pixel_height));
+            const Vector3f q1 = ndc_to_camera(Vector2f(ndc.x + m_half_pixel_width, ndc.y - m_half_pixel_height));
+            const Vector3f q2 = ndc_to_camera(Vector2f(ndc.x + m_half_pixel_width, ndc.y + m_half_pixel_height));
+            const Vector3f q3 = ndc_to_camera(Vector2f(ndc.x - m_half_pixel_width, ndc.y + m_half_pixel_height));
+            const float solid_angle = 0.5f * norm(cross(q2 - q0, q3 - q1));
+            importance = 1.0f / (square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;
         }
 
         bool project_camera_space_point(
-            const Vector3d&         point,
-            Vector2d&               ndc) const override
+            const Vector3f&         point,
+            Vector2f&               ndc) const override
         {
             ndc = camera_to_ndc(point);
             return true;
@@ -203,14 +203,14 @@ namespace
 
         bool project_segment(
             const float             time,
-            const Vector3d&         a,
-            const Vector3d&         b,
-            Vector2d&               a_ndc,
-            Vector2d&               b_ndc) const override
+            const Vector3f&         a,
+            const Vector3f&         b,
+            Vector2f&               a_ndc,
+            Vector2f&               b_ndc) const override
         {
             // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Project the segment onto the film plane.
             a_ndc = camera_to_ndc(transform.point_to_local(a));
@@ -223,35 +223,35 @@ namespace
         RasterizationCamera get_rasterization_camera() const override
         {
             RasterizationCamera rc;
-            rc.m_aspect_ratio = 1024.0 / 576.0;
-            rc.m_hfov = deg_to_rad(54.0);
-            rc.m_shift_x = rc.m_shift_y = 0.0;
+            rc.m_aspect_ratio = 1024.0f / 576.0f;
+            rc.m_hfov = deg_to_rad(54.0f);
+            rc.m_shift_x = rc.m_shift_y = 0.0f;
             return rc;
         }
 
       private:
         // Precomputed values.
-        double  m_half_pixel_width;     // half pixel width in meters, in camera space
-        double  m_half_pixel_height;    // half pixel height in meters, in camera space
+        float  m_half_pixel_width;     // half pixel width in meters, in camera space
+        float  m_half_pixel_height;    // half pixel height in meters, in camera space
 
-        static Vector3d ndc_to_camera(const Vector2d& point)
+        static Vector3f ndc_to_camera(const Vector2f& point)
         {
-            return Vector3d::make_unit_vector(point.y * Pi<double>(), point.x * TwoPi<double>());
+            return Vector3f::make_unit_vector(point.y * Pi<float>(), point.x * TwoPi<float>());
         }
 
-        static Vector2d camera_to_ndc(const Vector3d& point)
+        static Vector2f camera_to_ndc(const Vector3f& point)
         {
             // Compute the unit direction vector from the camera position to the point.
-            const Vector3d dir = normalize(point);
+            const Vector3f dir = normalize(point);
 
             // Convert that direction to spherical coordinates.
-            const double phi = atan2(dir.z, dir.x);
-            const double theta = acos(dir.y);
+            const float phi = atan2(dir.z, dir.x);
+            const float theta = acos(dir.y);
 
             // Convert the spherical coordinates to normalized device coordinates.
-            return Vector2d(
-                wrap(phi * RcpTwoPi<double>()),
-                saturate(theta * RcpPi<double>()));
+            return Vector2f(
+                wrap(phi * RcpTwoPi<float>()),
+                saturate(theta * RcpPi<float>()));
         }
     };
 }

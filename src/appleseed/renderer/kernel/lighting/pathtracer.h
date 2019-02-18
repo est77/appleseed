@@ -88,7 +88,7 @@ class PathTracer
         const size_t            max_volume_bounces,
         const bool              clamp_roughness,
         const size_t            max_iterations = 1000,
-        const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
+        const float             near_start = 0.0f);          // abort tracing if the first ray is shorter than this
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -116,7 +116,7 @@ class PathTracer
     const size_t                m_max_volume_bounces;
     const bool                  m_clamp_roughness;
     const size_t                m_max_iterations;
-    const double                m_near_start;
+    const float                 m_near_start;
     size_t                      m_diffuse_bounces;
     size_t                      m_glossy_bounces;
     size_t                      m_specular_bounces;
@@ -170,7 +170,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
     const size_t                max_volume_bounces,
     const bool                  clamp_roughness,
     const size_t                max_iterations,
-    const double                near_start)
+    const float                 near_start)
   : m_path_visitor(path_visitor)
   , m_volume_visitor(volume_visitor)
   , m_rr_min_path_length(rr_min_path_length)
@@ -227,7 +227,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     // This variable tracks the beginning of the path segment inside the current medium.
     // While it is properly initialized when entering a medium, we also initialize it
     // here to silence a gcc warning.
-    foundation::Vector3d medium_start(0.0);
+    foundation::Vector3f medium_start(0.0f);
 
     m_diffuse_bounces = 0;
     m_glossy_bounces = 0;
@@ -273,11 +273,11 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         //   d(outgoing)/dx = d(-ray.dir)/dx = ray.dir - ray.dx.dir
         vertex.m_outgoing =
             ray.m_has_differentials
-                ? foundation::Dual3d(
+                ? foundation::Dual3f(
                     -ray.m_dir,
                     ray.m_dir - ray.m_rx.m_dir,
                     ray.m_dir - ray.m_ry.m_dir)
-                : foundation::Dual3d(-ray.m_dir);
+                : foundation::Dual3f(-ray.m_dir);
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit_surface())
@@ -529,10 +529,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         }
 
         // Build the medium list of the scattered ray.
-        const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
+        const foundation::Vector3f& geometric_normal = vertex.get_geometric_normal();
         const bool crossing_interface = vertex.m_bssrdf == nullptr &&
             foundation::dot(vertex.m_outgoing.get_value(), geometric_normal) *
-            foundation::dot(next_ray.m_dir, geometric_normal) < 0.0;
+            foundation::dot(next_ray.m_dir, geometric_normal) < 0.0f;
         if (crossing_interface)
         {
             // Ray goes under the surface:
@@ -730,11 +730,11 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Construct the scattered ray.
     const ShadingRay& ray = vertex.get_ray();
-    const foundation::Vector3d incoming(sample.m_incoming.get_value());
+    const foundation::Vector3f incoming(sample.m_incoming.get_value());
     next_ray.m_org = vertex.m_shading_point->get_biased_point(incoming);
     next_ray.m_dir = foundation::improve_normalization<2>(incoming);
     next_ray.m_time = ray.m_time;
-    next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode()),
+    next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode());
     next_ray.m_depth = ray.m_depth + 1;
 
     // Compute scattered ray differentials.
@@ -742,8 +742,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     {
         next_ray.m_rx.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
         next_ray.m_ry.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
-        next_ray.m_rx.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dx());
-        next_ray.m_ry.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dy());
+        next_ray.m_rx.m_dir = next_ray.m_dir + foundation::Vector3f(sample.m_incoming.get_dx());
+        next_ray.m_ry.m_dir = next_ray.m_dir + foundation::Vector3f(sample.m_incoming.get_dy());
         next_ray.m_has_differentials = true;
     }
 
@@ -890,7 +890,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             volume_ray,
             distance_sample,
             transmission);
-        
+
         // Compute MIS weight.
         // MIS terms are:
         //  - scattering albedo,
@@ -942,8 +942,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
         // Continue the ray in in-scattered direction.
         ShadingRay next_ray(
-            volume_ray.m_org + static_cast<double>(distance_sample) * volume_ray.m_dir,
-            foundation::improve_normalization<2>(foundation::Vector3d(incoming)),
+            volume_ray.m_org + distance_sample * volume_ray.m_dir,
+            foundation::improve_normalization<2>(foundation::Vector3f(incoming)),
             volume_ray.m_time,
             volume_ray.m_flags,
             volume_ray.m_depth + 1);

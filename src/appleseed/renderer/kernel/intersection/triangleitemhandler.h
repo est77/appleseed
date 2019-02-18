@@ -52,30 +52,30 @@ class TriangleItemHandler
     TriangleItemHandler(
         const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
         const std::vector<GVector3>&            triangle_vertices,
-        const std::vector<foundation::AABB3d>&  triangle_bboxes);
+        const std::vector<foundation::AABB3f>&  triangle_bboxes);
 
-    double get_bbox_grow_eps() const;
+    float get_bbox_grow_eps() const;
 
-    foundation::AABB3d clip(
+    foundation::AABB3f clip(
         const size_t                            item_index,
         const size_t                            dimension,
-        const double                            slab_min,
-        const double                            slab_max) const;
+        const float                             slab_min,
+        const float                             slab_max) const;
 
     bool intersect(
         const size_t                            item_index,
-        const foundation::AABB3d&               bbox) const;
+        const foundation::AABB3f&               bbox) const;
 
   private:
     const std::vector<TriangleVertexInfo>&      m_triangle_vertex_infos;
     const std::vector<GVector3>&                m_triangle_vertices;
-    const std::vector<foundation::AABB3d>&      m_triangle_bboxes;
+    const std::vector<foundation::AABB3f>&      m_triangle_bboxes;
 
-    static foundation::Vector3d segment_plane_intersection(
-        const foundation::Vector3d&             a,
-        const foundation::Vector3d&             b,
+    static foundation::Vector3f segment_plane_intersection(
+        const foundation::Vector3f&             a,
+        const foundation::Vector3f&             b,
         const size_t                            d,
-        const double                            x);
+        const float                             x);
 };
 
 }   // namespace renderer

@@ -46,17 +46,17 @@ class PixelContext
     // Constructor.
     PixelContext(
         const foundation::Vector2i& pixel_coords,
-        const foundation::Vector2d& sample_position);
+        const foundation::Vector2f& sample_position);
 
     // Return pixel coordinates.
     const foundation::Vector2i& get_pixel_coords() const;
 
     // Return sample coordinates.
-    const foundation::Vector2d& get_sample_position() const;
+    const foundation::Vector2f& get_sample_position() const;
 
   private:
     const foundation::Vector2i  m_pixel_coords;
-    const foundation::Vector2d  m_sample_position;
+    const foundation::Vector2f  m_sample_position;
 };
 
 
@@ -66,7 +66,7 @@ class PixelContext
 
 inline PixelContext::PixelContext(
     const foundation::Vector2i& pixel_coords,
-    const foundation::Vector2d& sample_position)
+    const foundation::Vector2f& sample_position)
   : m_pixel_coords(pixel_coords)
   , m_sample_position(sample_position)
 {
@@ -77,7 +77,7 @@ inline const foundation::Vector2i& PixelContext::get_pixel_coords() const
     return m_pixel_coords;
 }
 
-inline const foundation::Vector2d& PixelContext::get_sample_position() const
+inline const foundation::Vector2f& PixelContext::get_sample_position() const
 {
     return m_sample_position;
 }

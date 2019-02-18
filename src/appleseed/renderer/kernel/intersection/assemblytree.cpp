@@ -144,10 +144,10 @@ void AssemblyTree::collect_assembly_instances(
             cumulated_transform_seq);
 
         // Compute and store the assembly instance bounding box.
-        AABB3d assembly_instance_bbox(
+        AABB3f assembly_instance_bbox(
             cumulated_transform_seq.to_parent(
                 assembly.compute_non_hierarchical_local_bbox()));
-        assembly_instance_bbox.robust_grow(1.0e-15);
+        assembly_instance_bbox.robust_grow(1.0e-6f);
         assembly_instance_bboxes.push_back(assembly_instance_bbox);
     }
 }
@@ -186,7 +186,7 @@ void AssemblyTree::rebuild_assembly_tree()
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner, m_items.size(), AssemblyTreeMaxLeafSize);
     statistics.insert_time("build time", builder.get_build_time());
-    statistics.merge(bvh::TreeStatistics<AssemblyTree>(*this, AABB3d(m_scene.compute_bbox())));
+    statistics.merge(bvh::TreeStatistics<AssemblyTree>(*this, AABB3f(m_scene.compute_bbox())));
 
     if (!m_items.empty())
     {
@@ -556,7 +556,7 @@ namespace
 {
     void compute_assembly_instance_ray(
         const AssemblyInstance&     assembly_instance,
-        const Transformd&           assembly_instance_transform,
+        const Transformf&           assembly_instance_transform,
         const ShadingPoint*         parent_sp,
         const ShadingRay&           input_ray,
         ShadingRay&                 output_ray)
@@ -606,7 +606,7 @@ bool AssemblyLeafVisitor::visit(
     const AssemblyTree::NodeType&       node,
     const ShadingRay&                   ray,
     const ShadingRay::RayInfoType&      ray_info,
-    double&                             distance
+    float&                              distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , bvh::TraversalStatistics&         stats
 #endif
@@ -635,8 +635,8 @@ bool AssemblyLeafVisitor::visit(
         // Evaluate the transformation of the assembly instance.
         const TransformSequence* assembly_instance_transform_seq =
             &item.m_transform_sequence;
-        Transformd scratch;
-        const Transformd& assembly_instance_transform =
+        Transformf scratch;
+        const Transformf& assembly_instance_transform =
             assembly_instance_transform_seq->evaluate(ray.m_time.m_absolute, scratch);
 
         // Transform the ray to assembly instance space.
@@ -762,7 +762,7 @@ bool AssemblyLeafVisitor::visit(
 
                 // Transform the ray to object instance space.
                 // todo: transform ray differentials.
-                const Transformd& object_instance_transform = object_instance->get_transform();
+                const Transformf& object_instance_transform = object_instance->get_transform();
                 ShadingRay instance_local_ray;
                 instance_local_ray.m_org = object_instance_transform.point_to_local(local_shading_point.m_ray.m_org);
                 instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_shading_point.m_ray.m_dir);
@@ -813,7 +813,7 @@ bool AssemblyLeafProbeVisitor::visit(
     const AssemblyTree::NodeType&       node,
     const ShadingRay&                   ray,
     const ShadingRay::RayInfoType&      ray_info,
-    double&                             distance
+    float&                              distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , bvh::TraversalStatistics&         stats
 #endif
@@ -839,8 +839,8 @@ bool AssemblyLeafProbeVisitor::visit(
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
         // Evaluate the transformation of the assembly instance.
-        Transformd scratch;
-        const Transformd& assembly_instance_transform =
+        Transformf scratch;
+        const Transformf& assembly_instance_transform =
             item.m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
         // Transform the ray to assembly instance space.
@@ -969,7 +969,7 @@ bool AssemblyLeafProbeVisitor::visit(
 
                 // Transform the ray to object instance space.
                 // todo: transform ray differentials.
-                const Transformd& object_instance_transform = object_instance->get_transform();
+                const Transformf& object_instance_transform = object_instance->get_transform();
                 ShadingRay instance_local_ray;
                 instance_local_ray.m_org = object_instance_transform.point_to_local(local_ray.m_org);
                 instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_ray.m_dir);

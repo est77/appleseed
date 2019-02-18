@@ -54,7 +54,7 @@ namespace renderer
 class LightTree
   : public foundation::bvh::Tree<
                foundation::AlignedVector<
-                   LightTreeNode<foundation::AABB3d>
+                   LightTreeNode<foundation::AABB3f>
                >
             >
 {
@@ -85,7 +85,7 @@ class LightTree
   private:
     struct Item
     {
-        foundation::AABB3d      m_bbox;
+        foundation::AABB3f      m_bbox;
         size_t                  m_light_index;
         LightType               m_light_type;
 
@@ -96,9 +96,9 @@ class LightTree
         // external_source_index represents the light index in light_tree_lights
         // and emitting_triangles vectors within the BackwardLightSampler.
         Item(
-            const foundation::AABB3d&       bbox,
+            const foundation::AABB3f&       bbox,
             const size_t                    light_index,
-            const LightType                 light_type) 
+            const LightType                 light_type)
             : m_bbox(bbox)
             , m_light_index(light_index)
             , m_light_type(light_type)
@@ -122,20 +122,20 @@ class LightTree
     // represents the sum of all its child nodes importances.
     float recursive_node_update(
         const size_t                                parent_index,
-        const size_t                                node_index, 
+        const size_t                                node_index,
         const size_t                                node_level,
         IndexLUT&                                   tri_index_to_node_index);
-    
-    foundation::Vector3d emitting_triangle_centroid(
+
+    foundation::Vector3f emitting_triangle_centroid(
         const size_t                                triangle_index) const;
 
     float compute_node_probability(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::AABB3d&                   bbox,
+        const LightTreeNode<foundation::AABB3f>&    node,
+        const foundation::AABB3f&                   bbox,
         const ShadingPoint&                         shading_point) const;
 
     void child_node_probabilites(
-        const LightTreeNode<foundation::AABB3d>&    node,
+        const LightTreeNode<foundation::AABB3f>&    node,
         const ShadingPoint&                         shading_point,
         float&                                      p1,
         float&                                      p2) const;
@@ -143,7 +143,7 @@ class LightTree
     // Dump the tree bounding boxes to a VPython file on disk.
     void draw_tree_structure(
         const std::string&                          filename_base,
-        const foundation::AABB3d&                   root_bbox,
+        const foundation::AABB3f&                   root_bbox,
         const bool                                  separate_by_levels = false) const;
 };
 

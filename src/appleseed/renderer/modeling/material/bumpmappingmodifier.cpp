@@ -54,7 +54,7 @@ BumpMappingModifier::BumpMappingModifier(
     const float             offset,
     const float             amplitude)
   : m_map(map)
-  , m_amplitude(static_cast<double>(amplitude))
+  , m_amplitude(amplitude)
 {
 #ifndef USE_SCREEN_SPACE_UV_DERIVATIVES
     const Source::Hints map_hints = map->get_hints();
@@ -62,21 +62,21 @@ BumpMappingModifier::BumpMappingModifier(
     m_delta_u = offset / map_hints.m_width;
     m_delta_v = offset / map_hints.m_height;
 
-    m_rcp_delta_u = 1.0 / static_cast<double>(m_delta_u);
-    m_rcp_delta_v = 1.0 / static_cast<double>(m_delta_v);
+    m_rcp_delta_u = 1.0f / m_delta_u;
+    m_rcp_delta_v = 1.0f / m_delta_v;
 #endif
 }
 
-Basis3d BumpMappingModifier::modify(
+Basis3f BumpMappingModifier::modify(
     TextureCache&           texture_cache,
-    const Basis3d&          basis,
+    const Basis3f&          basis,
     const ShadingPoint&     shading_point) const
 {
     const size_t UVSet = 0;
     const Vector2f& uv = shading_point.get_uv(UVSet);
-    const Vector3d& dpdu = shading_point.get_dpdu(UVSet);
-    const Vector3d& dpdv = shading_point.get_dpdv(UVSet);
-    const Vector3d& n = basis.get_normal();
+    const Vector3f& dpdu = shading_point.get_dpdu(UVSet);
+    const Vector3f& dpdv = shading_point.get_dpdv(UVSet);
+    const Vector3f& n = basis.get_normal();
 
 #ifdef USE_SCREEN_SPACE_UV_DERIVATIVES
     const Vector2f& duvdx = shading_point.get_duvdx(UVSet);
@@ -89,17 +89,17 @@ Basis3d BumpMappingModifier::modify(
 #endif
 
     // Evaluate the height function at (u, v), (u + delta_u, v) and (u, v + delta_v).
-    const double h =  evaluate_height(texture_cache, uv[0],           uv[1]);
-    const double hu = evaluate_height(texture_cache, uv[0] + delta_u, uv[1]);
-    const double hv = evaluate_height(texture_cache, uv[0],           uv[1] + delta_v);
+    const float h =  evaluate_height(texture_cache, uv[0],           uv[1]);
+    const float hu = evaluate_height(texture_cache, uv[0] + delta_u, uv[1]);
+    const float hv = evaluate_height(texture_cache, uv[0],           uv[1] + delta_v);
 
     // Compute the partial derivatives of the height function at (u, v).
 #ifdef USE_SCREEN_SPACE_UV_DERIVATIVES
-    const double dhdu = (hu - h) / delta_u;
-    const double dhdv = (hv - h) / delta_v;
+    const float dhdu = (hu - h) / delta_u;
+    const float dhdv = (hv - h) / delta_v;
 #else
-    const double dhdu = (hu - h) * m_rcp_delta_u;
-    const double dhdv = (hv - h) * m_rcp_delta_v;
+    const float dhdu = (hu - h) * m_rcp_delta_u;
+    const float dhdv = (hv - h) * m_rcp_delta_v;
 #endif
 
     //
@@ -114,28 +114,28 @@ Basis3d BumpMappingModifier::modify(
     // the tessellation on coarse meshes. Since these terms are negligible, we simply omit them.
     //
 
-    const Vector3d displaced_dpdu = dpdu + m_amplitude * (dhdu * n);
-    const Vector3d displaced_dpdv = dpdv + m_amplitude * (dhdv * n);
+    const Vector3f displaced_dpdu = dpdu + m_amplitude * (dhdu * n);
+    const Vector3f displaced_dpdv = dpdv + m_amplitude * (dhdv * n);
 
     // Compute the perturbed normal.
-    Vector3d perturbed_n = normalize(cross(displaced_dpdu, displaced_dpdv));
+    Vector3f perturbed_n = normalize(cross(displaced_dpdu, displaced_dpdv));
 
     // Make sure the perturbed normal lies in the same hemisphere as the original one.
-    if (dot(perturbed_n, n) < 0.0)
+    if (dot(perturbed_n, n) < 0.0f)
         perturbed_n = -perturbed_n;
 
     // Construct an orthonormal basis around the perturbed normal.
-    return Basis3d(perturbed_n, displaced_dpdu);
+    return Basis3f(perturbed_n, displaced_dpdu);
 }
 
-double BumpMappingModifier::evaluate_height(
+float BumpMappingModifier::evaluate_height(
     TextureCache&           texture_cache,
     const float             u,
     const float             v) const
 {
     float h;
     m_map->evaluate(texture_cache, SourceInputs(Vector2f(u, v)), h);
-    return static_cast<double>(h);
+    return h;
 }
 
 }   // namespace renderer

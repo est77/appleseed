@@ -98,7 +98,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   object_name,
-        const UnalignedTransformd&      transform,
+        const UnalignedTransformf&      transform,
         const bpy::dict&                front_material_mappings,
         const bpy::dict&                back_material_mappings)
     {
@@ -116,7 +116,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   object_name,
-        const UnalignedTransformd&      transform,
+        const UnalignedTransformf&      transform,
         const bpy::dict&                front_material_mappings)
     {
         return
@@ -129,9 +129,9 @@ namespace
                 bpy::dict());
     }
 
-    UnalignedTransformd obj_inst_get_transform(const ObjectInstance* obj)
+    UnalignedTransformf obj_inst_get_transform(const ObjectInstance* obj)
     {
-        return UnalignedTransformd(obj->get_transform());
+        return UnalignedTransformf(obj->get_transform());
     }
 
     string obj_inst_get_obj_name(const ObjectInstance* obj)

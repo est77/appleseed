@@ -99,7 +99,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     DirectShadingComponents&    radiance) const
 {
     radiance.set(0.0f);
@@ -124,7 +124,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_variance(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream) const
 {
@@ -205,7 +205,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
 
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_variance(
     SamplingContext&            sampling_context,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream) const
 {
@@ -229,7 +229,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
 void DirectLightingIntegrator::take_single_material_sample(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     DirectShadingComponents&    radiance) const
 {
     assert(m_light_sampler.has_hittable_lights());
@@ -299,7 +299,7 @@ void DirectLightingIntegrator::take_single_material_sample(
         return;
 
     // Compute the square distance between the light sample and the shading point.
-    const double square_distance = square(light_shading_point.get_distance());
+    const float square_distance = square(light_shading_point.get_distance());
 
     // Don't use this sample if we're closer than the light near start value.
     if (square_distance < square(edf->get_light_near_start()))
@@ -307,10 +307,10 @@ void DirectLightingIntegrator::take_single_material_sample(
 
     if (sample_probability != BSDF::DiracDelta)
     {
-        if (mis_heuristic != MISNone && square_distance > 0.0)
+        if (mis_heuristic != MISNone && square_distance > 0.0f)
         {
             // Transform material_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-            const float material_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
+            const float material_prob_area = sample_probability * cos_on / square_distance;
 
             // Compute the probability density wrt. surface area measure of the light sample.
             const float light_prob_area = m_light_sampler.evaluate_pdf(
@@ -339,7 +339,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     SamplingContext&            sampling_context,
     const LightSample&          sample,
     const MISHeuristic          mis_heuristic,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream) const
 {
@@ -352,22 +352,22 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Compute the incoming direction in world space.
-    Vector3d incoming = sample.m_point - m_material_sampler.get_point();
+    Vector3f incoming = sample.m_point - m_material_sampler.get_point();
 
     // No contribution if the shading point is behind the light.
-    double cos_on = dot(-incoming, sample.m_shading_normal);
-    if (cos_on <= 0.0)
+    float cos_on = dot(-incoming, sample.m_shading_normal);
+    if (cos_on <= 0.0f)
         return;
 
     // Compute the square distance between the light sample and the shading point.
-    const double square_distance = square_norm(incoming);
+    const float square_distance = square_norm(incoming);
 
     // Don't use this sample if we're closer than the light near start value.
     if (square_distance < square(edf->get_light_near_start()))
         return;
 
-    const double rcp_sample_square_distance = 1.0 / square_distance;
-    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+    const float rcp_sample_square_distance = 1.0 / square_distance;
+    const float rcp_sample_distance = sqrt(rcp_sample_square_distance);
 
     // Normalize the incoming direction.
     cos_on *= rcp_sample_distance;
@@ -475,7 +475,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     SamplingContext&            sampling_context,
     const LightSample&          sample,
-    const Dual3d&               outgoing,
+    const Dual3f&               outgoing,
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream) const
 {
@@ -487,10 +487,10 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
 
     // Generate a uniform sample in [0,1).
     SamplingContext child_sampling_context = sampling_context.split(2, 1);
-    const Vector2d s = child_sampling_context.next2<Vector2d>();
+    const Vector2f s = child_sampling_context.next2<Vector2f>();
 
     // Evaluate the light.
-    Vector3d emission_position, emission_direction;
+    Vector3f emission_position, emission_direction;
     Spectrum light_value(Spectrum::Illuminance);
     float probability;
     light->sample(
@@ -504,7 +504,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         probability);
 
     // Compute the incoming direction in world space.
-    const Vector3d incoming = -emission_direction;
+    const Vector3f incoming = -emission_direction;
 
     // Compute the transmission factor between the light sample and the shading point.
     Spectrum transmission;

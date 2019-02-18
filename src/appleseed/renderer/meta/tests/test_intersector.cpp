@@ -77,7 +77,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                     "object_instance",
                     ParamArray(),
                     "object",
-                    Transformd::identity(),
+                    Transformf::identity(),
                     StringDictionary()));
 
             m_scene.assembly_instances().insert(
@@ -116,10 +116,10 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
     TEST_CASE_F(Trace_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<false>)
     {
         const ShadingRay ray(
-            Vector3d(0.0, 0.0, 2.0),
-            Vector3d(0.0, 0.0, -1.0),
-            0.0,                                // tmin
-            2.0,                                // tmax
+            Vector3f(0.0f, 0.0f, 2.0f),
+            Vector3f(0.0f, 0.0f, -1.0f),
+            0.0f,                                // tmin
+            2.0f,                                // tmax
             ShadingRay::Time(),
             VisibilityFlags::CameraRay,
             0);                                 // depth
@@ -133,10 +133,10 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
     TEST_CASE_F(TraceProbe_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<false>)
     {
         const ShadingRay ray(
-            Vector3d(0.0, 0.0, 2.0),
-            Vector3d(0.0, 0.0, -1.0),
-            0.0,                                // tmin
-            2.0,                                // tmax
+            Vector3f(0.0f, 0.0f, 2.0f),
+            Vector3f(0.0f, 0.0f, -1.0f),
+            0.0f,                                // tmin
+            2.0f,                                // tmax
             ShadingRay::Time(),
             VisibilityFlags::CameraRay,
             0);                                 // depth
@@ -151,10 +151,10 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
     TEST_CASE_F(Trace_Embree_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<true>)
     {
         const ShadingRay ray(
-            Vector3d(0.0, 0.0, 2.0),
-            Vector3d(0.0, 0.0, -1.0),
-            0.0,                                // tmin
-            2.0,                                // tmax
+            Vector3f(0.0f, 0.0f, 2.0f),
+            Vector3f(0.0f, 0.0f, -1.0f),
+            0.0f,                                // tmin
+            2.0f,                                // tmax
             ShadingRay::Time(),
             VisibilityFlags::CameraRay,
             0);                                 // depth
@@ -168,10 +168,10 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
     TEST_CASE_F(TraceProbe_Embree_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<true>)
     {
         const ShadingRay ray(
-            Vector3d(0.0, 0.0, 2.0),
-            Vector3d(0.0, 0.0, -1.0),
-            0.0,                                // tmin
-            2.0,                                // tmax
+            Vector3f(0.0f, 0.0f, 2.0f),
+            Vector3f(0.0f, 0.0f, -1.0f),
+            0.0f,                                // tmin
+            2.0f,                                // tmax
             ShadingRay::Time(),
             VisibilityFlags::CameraRay,
             0);                                 // depth

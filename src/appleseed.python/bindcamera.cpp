@@ -101,9 +101,9 @@ namespace
         return make_shared<ProjectPoints>(camera, resolution);
     }
 
-    bpy::object project_point(const ProjectPoints* proj, const float time, const Vector3d& point)
+    bpy::object project_point(const ProjectPoints* proj, const float time, const Vector3f& point)
     {
-        Vector2d ndc;
+        Vector2f ndc;
 
         if (proj->project_point(time, point, ndc))
             return bpy::object(ndc);
@@ -111,9 +111,9 @@ namespace
         return bpy::object();
     }
 
-    bpy::object project_camera_space_point(const ProjectPoints* proj, const Vector3d& point)
+    bpy::object project_camera_space_point(const ProjectPoints* proj, const Vector3f& point)
     {
-        Vector2d ndc;
+        Vector2f ndc;
 
         if (proj->project_camera_space_point(point, ndc))
             return bpy::object(ndc);

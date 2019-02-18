@@ -63,45 +63,45 @@ class PerspectiveCamera
 
     // Similar to project_point(), except that the input point is expressed in camera space.
     bool project_camera_space_point(
-        const foundation::Vector3d&     point,
-        foundation::Vector2d&           ndc) const override;
+        const foundation::Vector3f&     point,
+        foundation::Vector2f&           ndc) const override;
 
     // Project a 3D segment back to the film plane. The input segment is expressed in
     // world space. The returned segment is expressed in normalized device coordinates.
     // Returns true if the projection was possible, false otherwise.
     bool project_segment(
         const float                     time,
-        const foundation::Vector3d&     a,
-        const foundation::Vector3d&     b,
-        foundation::Vector2d&           a_ndc,
-        foundation::Vector2d&           b_ndc) const override;
+        const foundation::Vector3f&     a,
+        const foundation::Vector3f&     b,
+        foundation::Vector2f&           a_ndc,
+        foundation::Vector2f&           b_ndc) const override;
 
     // Return a camera representation suitable for rasterization.
     RasterizationCamera get_rasterization_camera() const override;
 
   protected:
     // Parameters.
-    foundation::Vector2d    m_film_dimensions;      // film dimensions in camera space, in meters
-    double                  m_focal_length;         // focal length in camera space, in meters
-    double                  m_near_z;               // Z value of the near plane in camera space, in meters
-    foundation::Vector2d    m_shift;                // camera shift in camera space, in meters
+    foundation::Vector2f    m_film_dimensions;      // film dimensions in camera space, in meters
+    float                   m_focal_length;         // focal length in camera space, in meters
+    float                   m_near_z;               // Z value of the near plane in camera space, in meters
+    foundation::Vector2f    m_shift;                // camera shift in camera space, in meters
 
     // Precomputed values.
-    double                  m_rcp_film_width;       // film width reciprocal in camera space
-    double                  m_rcp_film_height;      // film height reciprocal in camera space
-    double                  m_pixel_area;           // pixel area in meters, in camera space
+    float                   m_rcp_film_width;       // film width reciprocal in camera space
+    float                   m_rcp_film_height;      // film height reciprocal in camera space
+    float                   m_pixel_area;           // pixel area in meters, in camera space
 
     // Utility function to retrieve the focal length (in meters) from the camera parameters.
-    double extract_focal_length(const double film_width) const;
+    float extract_focal_length(const float film_width) const;
 
     // Focal length <-> horizontal field of view conversion functions.
     // Focal length and film width are expressed in meters; horizontal field of view is expressed in radians.
-    static double hfov_to_focal_length(const double film_width, const double hfov);
-    static double focal_length_to_hfov(const double film_width, const double focal_length);
+    static float hfov_to_focal_length(const float film_width, const float hfov);
+    static float focal_length_to_hfov(const float film_width, const float focal_length);
 
     // Project points between NDC and camera spaces.
-    foundation::Vector3d ndc_to_camera(const foundation::Vector2d& point) const;
-    foundation::Vector2d camera_to_ndc(const foundation::Vector3d& point) const;
+    foundation::Vector3f ndc_to_camera(const foundation::Vector2f& point) const;
+    foundation::Vector2f camera_to_ndc(const foundation::Vector3f& point) const;
 };
 
 }   // namespace renderer

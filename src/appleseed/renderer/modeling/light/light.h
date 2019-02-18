@@ -89,10 +89,10 @@ class APPLESEED_DLLSYMBOL Light
     float get_uncached_importance_multiplier() const;
 
     // Set the light transformation.
-    void set_transform(const foundation::Transformd& transform);
+    void set_transform(const foundation::Transformf& transform);
 
     // Get the light transformation.
-    const foundation::Transformd& get_transform() const;
+    const foundation::Transformf& get_transform() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -106,35 +106,35 @@ class APPLESEED_DLLSYMBOL Light
     // its probability density and the value of the light for this direction.
     virtual void sample(
         const ShadingContext&           shading_context,
-        const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector3d&     target_point,               // world space target point
-        const foundation::Vector2d&     s,                          // sample in [0,1)^2
-        foundation::Vector3d&           position,                   // world space emission position
-        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        const foundation::Transformf&   light_transform,            // light space to world space transform
+        const foundation::Vector3f&     target_point,               // world space target point
+        const foundation::Vector2f&     s,                          // sample in [0,1)^2
+        foundation::Vector3f&           position,                   // world space emission position
+        foundation::Vector3f&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
         float&                          probability) const = 0;     // PDF value
     virtual void sample(
         const ShadingContext&           shading_context,
-        const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector2d&     s,                          // sample in [0,1)^2
-        foundation::Vector3d&           position,                   // world space emission position
-        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        const foundation::Transformf&   light_transform,            // light space to world space transform
+        const foundation::Vector2f&     s,                          // sample in [0,1)^2
+        foundation::Vector3f&           position,                   // world space emission position
+        foundation::Vector3f&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
         float&                          probability) const = 0;     // PDF value
     virtual void sample(
         const ShadingContext&           shading_context,
-        const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector2d&     s,                          // sample in [0,1)^2
+        const foundation::Transformf&   light_transform,            // light space to world space transform
+        const foundation::Vector2f&     s,                          // sample in [0,1)^2
         const LightTargetArray&         targets,
-        foundation::Vector3d&           position,                   // world space emission position
-        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        foundation::Vector3f&           position,                   // world space emission position
+        foundation::Vector3f&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
         float&                          probability) const;         // PDF value
 
     // Compute the distance attenuation of this light.
     virtual float compute_distance_attenuation(
-        const foundation::Vector3d&     target,                     // world space target point
-        const foundation::Vector3d&     position) const = 0;        // world space emission position
+        const foundation::Vector3f&     target,                     // world space target point
+        const foundation::Vector3f&     position) const = 0;        // world space emission position
 
   protected:
     int m_flags;

@@ -67,7 +67,7 @@ class LightPathStream
     void begin_path(
         const PixelContext&             pixel_context,
         const Camera*                   camera,
-        const foundation::Vector3d&     camera_vertex_position);
+        const foundation::Vector3f&     camera_vertex_position);
 
     void hit_reflector(
         const PathVertex&               vertex);
@@ -78,13 +78,13 @@ class LightPathStream
 
     void sampled_emitting_triangle(
         const EmittingTriangle&         triangle,
-        const foundation::Vector3d&     emission_position,
+        const foundation::Vector3f&     emission_position,
         const Spectrum&                 material_value,
         const Spectrum&                 emitted_radiance);
 
     void sampled_non_physical_light(
         const Light&                    light,
-        const foundation::Vector3d&     emission_position,
+        const foundation::Vector3f&     emission_position,
         const Spectrum&                 material_value,
         const Spectrum&                 emitted_radiance);
 

@@ -63,17 +63,17 @@ MouseCoordinatesTracker::~MouseCoordinatesTracker()
     m_widget->removeEventFilter(this);
 }
 
-Vector2d MouseCoordinatesTracker::widget_to_ndc(const QPoint& point) const
+Vector2f MouseCoordinatesTracker::widget_to_ndc(const QPoint& point) const
 {
     return
-        Vector2d(
-            static_cast<double>(point.x()) / m_widget->width(),
-            static_cast<double>(point.y()) / m_widget->height());
+        Vector2f(
+            static_cast<float>(point.x()) / m_widget->width(),
+            static_cast<float>(point.y()) / m_widget->height());
 }
 
 Vector2i MouseCoordinatesTracker::widget_to_pixel(const QPoint& point) const
 {
-    const Vector2d ndc = widget_to_ndc(point);
+    const Vector2f ndc = widget_to_ndc(point);
 
     return
         Vector2i(
@@ -102,14 +102,14 @@ bool MouseCoordinatesTracker::eventFilter(QObject* object, QEvent* event)
 void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
 {
     const Vector2i pix = widget_to_pixel(point);
-    const Vector2d ndc = widget_to_ndc(point);
+    const Vector2f ndc = widget_to_ndc(point);
 
     m_label->setText(
         QString("Pixel: %1, %2 - NDC: %3, %4")
             .arg(QString::number(pix.x), 4, ' ')
             .arg(QString::number(pix.y), 4, ' ')
-            .arg(QString::number(ndc.x, 'f', 5))
-            .arg(QString::number(ndc.y, 'f', 5)));
+            .arg(QString::number(static_cast<double>(ndc.x), 'f', 5))
+            .arg(QString::number(static_cast<double>(ndc.y), 'f', 5)));
 }
 
 }   // namespace studio

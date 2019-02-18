@@ -83,7 +83,7 @@ QImage LightPathsWidget::capture()
     return grabFrameBuffer();
 }
 
-void LightPathsWidget::set_transform(const Transformd& transform)
+void LightPathsWidget::set_transform(const Transformf& transform)
 {
     m_camera_matrix = transform.get_parent_to_local();
 }
@@ -157,7 +157,7 @@ void LightPathsWidget::slot_synchronize_camera()
 {
     m_camera.transform_sequence().clear();
     m_camera.transform_sequence().set_transform(0.0f,
-        Transformd::from_local_to_parent(inverse(m_camera_matrix)));
+        Transformf::from_local_to_parent(inverse(m_camera_matrix)));
 }
 
 void LightPathsWidget::initializeGL()
@@ -241,7 +241,7 @@ namespace
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, Specular);
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, Shininess);
 
-        const Transformd& transform = object_instance.get_transform();
+        const Transformf& transform = object_instance.get_transform();
 
         glPushMatrix();
         glMultMatrixd(transform.get_local_to_parent());
@@ -261,7 +261,7 @@ namespace
         if (assembly == nullptr)
             return;
 
-        const Transformd transform = assembly_instance.transform_sequence().evaluate(time);
+        const Transformf transform = assembly_instance.transform_sequence().evaluate(time);
 
         glPushMatrix();
         glMultMatrixd(transform.get_local_to_parent());

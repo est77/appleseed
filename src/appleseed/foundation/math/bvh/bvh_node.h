@@ -104,7 +104,7 @@ class APPLESEED_ALIGN(64) Node
     uint32                          m_right_bbox_index;
     uint32                          m_right_bbox_count;
 
-    APPLESEED_SIMD4_ALIGN ValueType m_bbox_data[4 * Dimension];
+    APPLESEED_SIMD4_ALIGN ValueType m_bbox_data[4 * 2 * Dimension];
 };
 
 
@@ -253,7 +253,7 @@ inline size_t Node<AABB>::get_right_bbox_count() const
     return static_cast<uint32>(m_right_bbox_count);
 }
 
-#define MAX_USER_DATA_SIZE (4 * Node<AABB>::Dimension * sizeof(typename AABB::ValueType))
+#define MAX_USER_DATA_SIZE (8 * Node<AABB>::Dimension * sizeof(typename AABB::ValueType))
 
 template <typename AABB>
 const size_t Node<AABB>::MaxUserDataSize = MAX_USER_DATA_SIZE;

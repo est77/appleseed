@@ -115,7 +115,7 @@ void ObjectItem::do_instantiate(const string& name)
             name.c_str(),
             ParamArray(),
             m_entity->get_name(),
-            Transformd::identity(),
+            Transformf::identity(),
             StringDictionary()));
 
     m_parent_item->add_item(object_instance.get());

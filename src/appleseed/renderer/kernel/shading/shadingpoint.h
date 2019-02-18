@@ -140,7 +140,7 @@ class ShadingPoint
     bool is_curve_primitive() const;
 
     // Return the distance from the ray origin to the intersection point.
-    double get_distance() const;
+    float get_distance() const;
 
     // Return the barycentric coordinates of the intersection point.
     const foundation::Vector2f& get_bary() const;
@@ -153,41 +153,41 @@ class ShadingPoint
     const foundation::Vector2f& get_duvdy(const size_t uvset) const;
 
     // Return the intersection point in world space.
-    const foundation::Vector3d& get_point() const;
+    const foundation::Vector3f& get_point() const;
 
     // Return the intersection point in world space, with per-object-instance ray bias applied.
-    foundation::Vector3d get_biased_point(const foundation::Vector3d& direction) const;
+    foundation::Vector3f get_biased_point(const foundation::Vector3f& direction) const;
 
     // Return the intersection point in world space, properly offset to avoid self-intersections.
-    const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
+    const foundation::Vector3f& get_offset_point(const foundation::Vector3f& direction) const;
 
     // Return the world space partial derivatives of the intersection point wrt. a given UV set.
-    const foundation::Vector3d& get_dpdu(const size_t uvset) const;
-    const foundation::Vector3d& get_dpdv(const size_t uvset) const;
+    const foundation::Vector3f& get_dpdu(const size_t uvset) const;
+    const foundation::Vector3f& get_dpdv(const size_t uvset) const;
 
     // Return the world space partial derivatives of the intersection normal wrt. a given UV set.
-    const foundation::Vector3d& get_dndu(const size_t uvset) const;
-    const foundation::Vector3d& get_dndv(const size_t uvset) const;
+    const foundation::Vector3f& get_dndu(const size_t uvset) const;
+    const foundation::Vector3f& get_dndv(const size_t uvset) const;
 
     // Return the screen space partial derivatives of the intersection point.
-    const foundation::Vector3d& get_dpdx() const;
-    const foundation::Vector3d& get_dpdy() const;
+    const foundation::Vector3f& get_dpdx() const;
+    const foundation::Vector3f& get_dpdy() const;
 
     // Return the world space geometric normal at the intersection point. The geometric normal
     // always faces the incoming ray, i.e. dot(ray_dir, geometric_normal) is always positive or null.
-    const foundation::Vector3d& get_geometric_normal() const;
+    const foundation::Vector3f& get_geometric_normal() const;
 
     // Return the original world space shading normal at the intersection point.
-    const foundation::Vector3d& get_original_shading_normal() const;
+    const foundation::Vector3f& get_original_shading_normal() const;
 
     // Return the (possibly modified) world space shading normal at the intersection point.
     // The shading normal is always in the same hemisphere as the geometric normal but it is
     // not necessarily facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
-    const foundation::Vector3d& get_shading_normal() const;
+    const foundation::Vector3f& get_shading_normal() const;
 
     // Set/get the world space orthonormal basis around the (possibly modified) shading normal.
-    void set_shading_basis(const foundation::Basis3d& basis) const;
-    const foundation::Basis3d& get_shading_basis() const;
+    void set_shading_basis(const foundation::Basis3f& basis) const;
+    const foundation::Basis3f& get_shading_basis() const;
 
     // Return the side of the surface that was hit.
     ObjectInstance::Side get_side() const;
@@ -200,10 +200,10 @@ class ShadingPoint
     bool is_leaving() const;
 
     // Return the i'th world space vertex of the hit triangle.
-    const foundation::Vector3d& get_vertex(const size_t i) const;
+    const foundation::Vector3f& get_vertex(const size_t i) const;
 
     // Return the world space point velocity.
-    const foundation::Vector3d& get_world_space_point_velocity() const;
+    const foundation::Vector3f& get_world_space_point_velocity() const;
 
     // Return the material of the side (front or back) that was hit, at the intersection point, or 0 if there is none.
     const Material* get_material() const;
@@ -215,7 +215,7 @@ class ShadingPoint
     const AssemblyInstance& get_assembly_instance() const;
 
     // Return the transform at ray time of the assembly instance that was hit.
-    const foundation::Transformd& get_assembly_instance_transform() const;
+    const foundation::Transformf& get_assembly_instance_transform() const;
 
     // Return the assembly that was hit.
     const Assembly& get_assembly() const;
@@ -256,7 +256,7 @@ class ShadingPoint
         OSL::Matrix44 get_inverse_transform(const float t) const;
 
         const TransformSequence*        m_assembly_instance_transform;
-        const foundation::Transformd*   m_object_instance_transform;
+        const foundation::Transformf*   m_object_instance_transform;
     };
 
     struct OSLTraceData
@@ -297,7 +297,7 @@ class ShadingPoint
     PrimitiveType                       m_primitive_type;                   // type of the hit primitive
     foundation::Vector2f                m_bary;                             // barycentric coordinates of intersection point
     const AssemblyInstance*             m_assembly_instance;                // hit assembly instance
-    foundation::Transformd              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
+    foundation::Transformf              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
     const TransformSequence*            m_assembly_instance_transform_seq;  // transform sequence of the hit assembly instance.
     size_t                              m_object_instance_index;            // index of the object instance that was hit
     size_t                              m_primitive_index;                  // index of the hit primitive
@@ -341,29 +341,29 @@ class ShadingPoint
     mutable foundation::Vector2f        m_uv;                           // texture coordinates from UV set #0
     mutable foundation::Vector2f        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
     mutable foundation::Vector2f        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
-    mutable foundation::Vector3d        m_point;                        // world space intersection point
-    mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
-    mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
-    mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
-    mutable foundation::Vector3d        m_dndu;                         // world space partial derivative of the intersection normal wrt. U
-    mutable foundation::Vector3d        m_dndv;                         // world space partial derivative of the intersection normal wrt. V
-    mutable foundation::Vector3d        m_dpdx;                         // screen space partial derivative of the intersection point wrt. X
-    mutable foundation::Vector3d        m_dpdy;                         // screen space partial derivative of the intersection point wrt. Y
-    mutable foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
-    mutable foundation::Vector3d        m_original_shading_normal;      // original world space shading normal, unit-length
-    mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
+    mutable foundation::Vector3f        m_point;                        // world space intersection point
+    mutable foundation::Vector3f        m_biased_point;                 // world space intersection point with per-object-instance bias applied
+    mutable foundation::Vector3f        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
+    mutable foundation::Vector3f        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
+    mutable foundation::Vector3f        m_dndu;                         // world space partial derivative of the intersection normal wrt. U
+    mutable foundation::Vector3f        m_dndv;                         // world space partial derivative of the intersection normal wrt. V
+    mutable foundation::Vector3f        m_dpdx;                         // screen space partial derivative of the intersection point wrt. X
+    mutable foundation::Vector3f        m_dpdy;                         // screen space partial derivative of the intersection point wrt. Y
+    mutable foundation::Vector3f        m_geometric_normal;             // world space geometric normal, unit-length
+    mutable foundation::Vector3f        m_original_shading_normal;      // original world space shading normal, unit-length
+    mutable foundation::Basis3f         m_shading_basis;                // world space orthonormal basis around shading normal
     mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
-    mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
-    mutable foundation::Vector3d        m_point_velocity;               // world space point velocity
+    mutable foundation::Vector3f        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
+    mutable foundation::Vector3f        m_point_velocity;               // world space point velocity
     mutable const Material*             m_material;                     // material at intersection point
     mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
     mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
-    mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
-    mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
-    mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
+    mutable foundation::Vector3f        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
+    mutable foundation::Vector3f        m_front_point;                  // hit point refined to front, in assembly instance space
+    mutable foundation::Vector3f        m_back_point;                   // hit point refined to back, in assembly instance space
 
     // OSL-related data.
     mutable OSLObjectTransformInfo      m_obj_transform_info;
@@ -516,7 +516,7 @@ inline bool ShadingPoint::is_curve_primitive() const
     return (m_primitive_type & PrimitiveCurve) != 0;
 }
 
-inline double ShadingPoint::get_distance() const
+inline float ShadingPoint::get_distance() const
 {
     assert(is_valid());
     return m_ray.m_tmax;
@@ -594,7 +594,7 @@ inline const foundation::Vector2f& ShadingPoint::get_duvdy(const size_t uvset) c
     return m_duvdy;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_point() const
+inline const foundation::Vector3f& ShadingPoint::get_point() const
 {
     assert(is_valid());
 
@@ -607,18 +607,18 @@ inline const foundation::Vector3d& ShadingPoint::get_point() const
     return m_point;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& direction) const
+inline const foundation::Vector3f& ShadingPoint::get_offset_point(const foundation::Vector3f& direction) const
 {
     assert(hit_surface());
     assert(m_members & HasRefinedPoints);
 
     return
-        foundation::dot(m_asm_geo_normal, direction) > 0.0
+        foundation::dot(m_asm_geo_normal, direction) > 0.0f
             ? m_front_point
             : m_back_point;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) const
+inline const foundation::Vector3f& ShadingPoint::get_dpdu(const size_t uvset) const
 {
     assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
@@ -632,7 +632,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) co
     return m_dpdu;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) const
+inline const foundation::Vector3f& ShadingPoint::get_dpdv(const size_t uvset) const
 {
     assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
@@ -646,7 +646,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) co
     return m_dpdv;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) const
+inline const foundation::Vector3f& ShadingPoint::get_dndu(const size_t uvset) const
 {
     assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
@@ -660,7 +660,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) co
     return m_dndu;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) const
+inline const foundation::Vector3f& ShadingPoint::get_dndv(const size_t uvset) const
 {
     assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
@@ -674,7 +674,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) co
     return m_dndv;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
+inline const foundation::Vector3f& ShadingPoint::get_dpdx() const
 {
     assert(hit_surface());
 
@@ -687,7 +687,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
     return m_dpdx;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
+inline const foundation::Vector3f& ShadingPoint::get_dpdy() const
 {
     assert(hit_surface());
 
@@ -700,7 +700,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
     return m_dpdy;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
+inline const foundation::Vector3f& ShadingPoint::get_geometric_normal() const
 {
     assert(hit_surface());
 
@@ -713,7 +713,7 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
     return m_geometric_normal;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() const
+inline const foundation::Vector3f& ShadingPoint::get_original_shading_normal() const
 {
     assert(hit_surface());
 
@@ -726,12 +726,12 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
     return m_original_shading_normal;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
+inline const foundation::Vector3f& ShadingPoint::get_shading_normal() const
 {
     return get_shading_basis().get_normal();
 }
 
-inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
+inline void ShadingPoint::set_shading_basis(const foundation::Basis3f& basis) const
 {
     assert(hit_surface());
     m_shading_basis = basis;
@@ -739,7 +739,7 @@ inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) co
     m_members &= ~HasScreenSpaceDerivatives;
 }
 
-inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
+inline const foundation::Basis3f& ShadingPoint::get_shading_basis() const
 {
     assert(hit_surface());
 
@@ -775,7 +775,7 @@ inline bool ShadingPoint::is_leaving() const
     return get_side() == ObjectInstance::BackSide;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) const
+inline const foundation::Vector3f& ShadingPoint::get_vertex(const size_t i) const
 {
     assert(hit_surface());
     assert(m_primitive_type == PrimitiveTriangle);
@@ -790,7 +790,7 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
     return (&m_v0_w)[i];
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity() const
+inline const foundation::Vector3f& ShadingPoint::get_world_space_point_velocity() const
 {
     assert(hit_surface());
 
@@ -851,7 +851,7 @@ inline const AssemblyInstance& ShadingPoint::get_assembly_instance() const
     return *m_assembly_instance;
 }
 
-inline const foundation::Transformd& ShadingPoint::get_assembly_instance_transform() const
+inline const foundation::Transformf& ShadingPoint::get_assembly_instance_transform() const
 {
     assert(hit_surface());
     return m_assembly_instance_transform;

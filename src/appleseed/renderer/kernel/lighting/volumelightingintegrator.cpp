@@ -65,17 +65,17 @@ namespace
           : m_shading_context(shading_context)
           , m_sampling_context(sampling_context)
         {
-            Vector3d emission_position;
+            Vector3f emission_position;
             if (light_sample.m_light != nullptr)
             {
                 m_sampling_context.split_in_place(2, 1);
-                Vector3d emission_direction;  // not used
+                Vector3f emission_direction;  // not used
                 Spectrum light_value(Spectrum::Illuminance);
                 float probability;
                 light_sample.m_light->sample(
                     m_shading_context,
                     light_sample.m_light_transform,
-                    m_sampling_context.next2<Vector2d>(),
+                    m_sampling_context.next2<Vector2f>(),
                     emission_position,
                     emission_direction,
                     light_value,
@@ -95,7 +95,7 @@ namespace
             m_projection_to_light =
                 std::sqrt(square_norm(origin_to_light) - square(m_origin_to_projection));
 
-            m_ray_length = static_cast<float>(volume_ray.get_length());
+            m_ray_length = volume_ray.get_length();
 
             m_near_angle = std::atan2(-m_origin_to_projection, m_projection_to_light);
 
@@ -551,7 +551,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
         integrator.take_single_material_sample(
             sampling_context,
             mis_heuristic,
-            Dual3d(m_volume_ray.m_dir),
+            Dual3f(m_volume_ray.m_dir),
             radiance);
     }
     else if (light_sample == nullptr || light_sample->m_triangle != nullptr)
@@ -568,7 +568,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             sampling_context,
             light_sample,
             mis_heuristic,
-            Dual3d(m_volume_ray.m_dir),
+            Dual3f(m_volume_ray.m_dir),
             radiance,
             nullptr);
     }
@@ -577,7 +577,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
         integrator.add_non_physical_light_sample_contribution(
             sampling_context,
             *light_sample,
-            Dual3d(m_volume_ray.m_dir),
+            Dual3f(m_volume_ray.m_dir),
             radiance,
             nullptr);
     }

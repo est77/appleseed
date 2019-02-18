@@ -85,7 +85,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 "object_inst",
                 ParamArray(),
                 "object",
-                Transformd::identity(),
+                Transformf::identity(),
                 StringDictionary()));
 
         // Create an instance of the assembly.
@@ -96,7 +96,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 "assembly"));
         assembly_instance->transform_sequence().set_transform(
             0.0f,
-            Transformd::from_local_to_parent(
+            Transformf::from_local_to_parent(
                 Matrix4d::make_translation(Vector3d(1.0)) *
                 Matrix4d::make_scaling(Vector3d(10.0))));
 

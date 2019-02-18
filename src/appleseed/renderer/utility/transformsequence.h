@@ -74,17 +74,17 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // Replaces any transform already set at this time.
     void set_transform(
         const float                     time,
-        const foundation::Transformd&   transform);
+        const foundation::Transformf&   transform);
 
     // Return a given (time, transform) pair.
     void get_transform(
         const size_t                    index,
         float&                          time,
-        foundation::Transformd&         transform) const;
+        foundation::Transformf&         transform) const;
 
     // Return the transform with the lowest time value.
     // Return the identity transform if the sequence is empty.
-    const foundation::Transformd& get_earliest_transform() const;
+    const foundation::Transformf& get_earliest_transform() const;
 
     // Optimize the sequence by removing redundant transforms.
     // If called, this method must be called after new transforms
@@ -105,15 +105,15 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // This method can only be called after prepare() has been called
     // and it assumes xform is the result of evaluating this transform
     // sequence at some time.
-    bool swaps_handedness(const foundation::Transformd& xform) const;
+    bool swaps_handedness(const foundation::Transformf& xform) const;
 
     // Compute the transform for any time value.
-    foundation::Transformd evaluate(const float time) const;
+    foundation::Transformf evaluate(const float time) const;
 
     // A variant of evaluate() that avoids copying transforms in certain cases.
-    const foundation::Transformd& evaluate(
+    const foundation::Transformf& evaluate(
         const float                     time,
-        foundation::Transformd&         scratch) const;
+        foundation::Transformf&         scratch) const;
 
     // Compose two transform sequences.
     TransformSequence operator*(const TransformSequence& rhs) const;
@@ -127,7 +127,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
     struct TransformKey
     {
         float                           m_time;
-        foundation::Transformd          m_transform;
+        foundation::Transformf          m_transform;
 
         bool operator<(const TransformKey& rhs) const
         {
@@ -138,7 +138,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
     size_t                              m_capacity;
     size_t                              m_size;
     TransformKey*                       m_keys;
-    foundation::TransformInterpolatord* m_interpolators;
+    foundation::TransformInterpolatorf* m_interpolators;
     bool                                m_can_swap_handedness;
     bool                                m_all_swap_handedness;
 
@@ -146,12 +146,12 @@ class APPLESEED_DLLSYMBOL TransformSequence
 
     void interpolate(
         const float                     time,
-        foundation::Transformd&         result) const;
+        foundation::Transformf&         result) const;
 
-    foundation::AABB3d compute_motion_segment_bbox(
-        const foundation::AABB3d&       bbox,
-        const foundation::Transformd&   from,
-        const foundation::Transformd&   to) const;
+    foundation::AABB3f compute_motion_segment_bbox(
+        const foundation::AABB3f&       bbox,
+        const foundation::Transformf&   from,
+        const foundation::Transformf&   to) const;
 };
 
 
@@ -174,20 +174,20 @@ inline bool TransformSequence::can_swap_handedness() const
     return m_can_swap_handedness;
 }
 
-inline foundation::Transformd TransformSequence::evaluate(const float time) const
+inline foundation::Transformf TransformSequence::evaluate(const float time) const
 {
-    foundation::Transformd scratch;
+    foundation::Transformf scratch;
     return evaluate(time, scratch);
 }
 
-APPLESEED_FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
+APPLESEED_FORCE_INLINE const foundation::Transformf& TransformSequence::evaluate(
     const float             time,
-    foundation::Transformd& scratch) const
+    foundation::Transformf& scratch) const
 {
     if (m_size == 0)
-        return foundation::Transformd::identity();
+        return foundation::Transformf::identity();
 
-    assert(m_size == 1 || m_interpolators != 0);
+    assert(m_size == 1 || m_interpolators != nullptr);
 
     const TransformKey* first = m_keys;
 
@@ -222,7 +222,7 @@ foundation::AABB<T, 3> TransformSequence::to_parent(const foundation::AABB<T, 3>
         result.insert(
             foundation::AABB<T, 3>(
                 compute_motion_segment_bbox(
-                    foundation::AABB3d(bbox),
+                    foundation::AABB3f(bbox),
                     m_keys[i].m_transform,
                     m_keys[i + 1].m_transform)));
     }

@@ -61,7 +61,7 @@ namespace renderer
 namespace
 {
     //
-    // A light source compatible with the Omni light of Autodesk 3ds Max.
+    // A light source compatible with the Omni light of Autodesk 3fs Max.
     //
 
     const char* Model = "max_omni_light";
@@ -114,11 +114,11 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target_point,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector3f&         target_point,
+            const Vector2f&         s,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -130,10 +130,10 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector2f&         s,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -146,8 +146,8 @@ namespace
         }
 
         float compute_distance_attenuation(
-            const Vector3d&         target,
-            const Vector3d&         position) const override
+            const Vector3f&         target,
+            const Vector3f&         position) const override
         {
             return
                 autodesk_max_decay(
@@ -190,8 +190,8 @@ Dictionary MaxOmniLightFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Autodesk 3ds Max Omni Light")
-            .insert("help", "A light source compatible with the Omni light of Autodesk 3ds Max");
+            .insert("label", "Autodesk 3fs Max Omni Light")
+            .insert("help", "A light source compatible with the Omni light of Autodesk 3fs Max");
 }
 
 DictionaryArray MaxOmniLightFactory::get_input_metadata() const

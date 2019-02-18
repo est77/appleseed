@@ -75,7 +75,7 @@ typedef std::map<foundation::uint64, IntersectionFilter*> IntersectionFilterRepo
 class TriangleTree
   : public foundation::bvh::Tree<
                foundation::AlignedVector<
-                   foundation::bvh::Node<foundation::AABB3d>
+                   foundation::bvh::Node<foundation::AABB3f>
                >
            >
 {
@@ -129,13 +129,13 @@ class TriangleTree
 
     void build_bvh(
         const ParamArray&                       params,
-        const double                            time,
+        const float                             time,
         const bool                              save_memory,
         foundation::Statistics&                 statistics);
 
     void build_sbvh(
         const ParamArray&                       params,
-        const double                            time,
+        const float                             time,
         const bool                              save_memory,
         foundation::Statistics&                 statistics);
 
@@ -214,9 +214,9 @@ class TriangleLeafVisitor
     // Visit a leaf.
     bool visit(
         const TriangleTree::NodeType&           node,
-        const foundation::Ray3d&                ray,
-        const foundation::RayInfo3d&            ray_info,
-        double&                                 distance
+        const foundation::Ray3f&                ray,
+        const foundation::RayInfo3f&            ray_info,
+        float&                                  distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics& stats
 #endif
@@ -247,15 +247,15 @@ class TriangleLeafProbeVisitor
     // Constructor.
     TriangleLeafProbeVisitor(
         const TriangleTree&                     tree,
-        const double                            ray_time,
+        const float                             ray_time,
         const VisibilityFlags::Type             ray_flags);
 
     // Visit a leaf.
     bool visit(
         const TriangleTree::NodeType&           node,
-        const foundation::Ray3d&                ray,
-        const foundation::RayInfo3d&            ray_info,
-        double&                                 distance
+        const foundation::Ray3f&                ray,
+        const foundation::RayInfo3f&            ray_info,
+        float&                                  distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics& stats
 #endif
@@ -263,7 +263,7 @@ class TriangleLeafProbeVisitor
 
   private:
     const TriangleTree&         m_tree;
-    const double                m_ray_time;
+    const float                 m_ray_time;
     const VisibilityFlags::Type m_ray_flags;
     const bool                  m_has_intersection_filters;
 };
@@ -276,14 +276,14 @@ class TriangleLeafProbeVisitor
 typedef foundation::bvh::Intersector<
     TriangleTree,
     TriangleLeafVisitor,
-    foundation::Ray3d,          // make sure we pick the SSE2-optimized version of foundation::bvh::Intersector
+    foundation::Ray3f,          // make sure we pick the SSE2-optimized version of foundation::bvh::Intersector
     TriangleTreeStackSize
 > TriangleTreeIntersector;
 
 typedef foundation::bvh::Intersector<
     TriangleTree,
     TriangleLeafProbeVisitor,
-    foundation::Ray3d,          // make sure we pick the SSE2-optimized version of foundation::bvh::Intersector
+    foundation::Ray3f,          // make sure we pick the SSE2-optimized version of foundation::bvh::Intersector
     TriangleTreeStackSize
 > TriangleTreeProbeIntersector;
 
@@ -324,7 +324,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
     const TriangleTree&         tree,
-    const double                ray_time,
+    const float                 ray_time,
     const VisibilityFlags::Type ray_flags)
   : m_tree(tree)
   , m_ray_time(ray_time)

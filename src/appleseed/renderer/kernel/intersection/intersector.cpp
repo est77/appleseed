@@ -70,18 +70,18 @@ Intersector::Intersector(
 {
 }
 
-Vector3d Intersector::refine(
+Vector3f Intersector::refine(
     const TriangleSupportPlaneType& support_plane,
-    const Vector3d&                 point,
-    const Vector3d&                 direction)
+    const Vector3f&                 point,
+    const Vector3f&                 direction)
 {
-    Vector3d result = point;
+    Vector3f result = point;
 
     const size_t RefinementSteps = 2;
 
     for (size_t i = 0; i < RefinementSteps; ++i)
     {
-        const double t = support_plane.intersect(result, direction);
+        const float t = support_plane.intersect(result, direction);
         result += t * direction;
     }
 
@@ -89,10 +89,10 @@ Vector3d Intersector::refine(
 }
 
 void Intersector::fixed_offset(
-    const Vector3d&                 p,
-    Vector3d                        n,
-    Vector3d&                       front,
-    Vector3d&                       back)
+    const Vector3f&                 p,
+    Vector3f                        n,
+    Vector3f&                       front,
+    Vector3f&                       back)
 {
     //
     // Reference:
@@ -102,7 +102,7 @@ void Intersector::fixed_offset(
     //
 
     // Offset parameters.
-    const double Threshold = 1.0e-25;
+    const float Threshold = 1.0e-10f;
     const int EpsMag = 8;
     static const int EpsLut[2] = { EpsMag, -EpsMag };
 
@@ -123,31 +123,31 @@ void Intersector::fixed_offset(
     {
         if (is_small[i])
         {
-            const double shift = n[i] * Threshold;
+            const float shift = n[i] * Threshold;
             front[i] = p[i] + shift;
             back[i] = p[i] - shift;
         }
         else
         {
-            const uint64 pi = binary_cast<uint64>(p[i]);
-            const int shift = EpsLut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
-            front[i] = binary_cast<double>(pi + shift);
-            back[i] = binary_cast<double>(pi - shift);
+            const uint32 pi = binary_cast<uint32>(p[i]);
+            const int shift = EpsLut[(pi ^ binary_cast<uint32>(n[i])) >> 31];
+            front[i] = binary_cast<float>(pi + shift);
+            back[i] = binary_cast<float>(pi - shift);
         }
     }
 }
 
 namespace
 {
-    Vector3d adaptive_offset_point_step(
-        const Vector3d&                 p,
-        const Vector3d&                 n,
-        const int64                     mag)
+    Vector3f adaptive_offset_point_step(
+        const Vector3f&                 p,
+        const Vector3f&                 n,
+        const uint32                    mag)
     {
-        const double Threshold = 1.0e-25;
-        const int64 eps_lut[2] = { mag, -mag };
+        const float Threshold = 1.0e-10f;
+        const uint32 eps_lut[2] = { mag, -mag };
 
-        Vector3d result;
+        Vector3f result;
 
         for (size_t i = 0; i < 3; ++i)
         {
@@ -155,23 +155,23 @@ namespace
                 result[i] = p[i] + n[i] * Threshold;
             else
             {
-                const uint64 pi = binary_cast<uint64>(p[i]);
-                const int64 shift = eps_lut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
-                result[i] = binary_cast<double>(pi + shift);
+                const uint32 pi = binary_cast<uint32>(p[i]);
+                const uint32 shift = eps_lut[(pi ^ binary_cast<uint32>(n[i])) >> 31];
+                result[i] = binary_cast<float>(pi + shift);
             }
         }
 
         return result;
     }
 
-    Vector3d adaptive_offset_point(
+    Vector3f adaptive_offset_point(
         const TriangleSupportPlaneType& support_plane,
-        const Vector3d&                 p,
-        const Vector3d&                 n,
-        const int64                     initial_mag)
+        const Vector3f&                 p,
+        const Vector3f&                 n,
+        const uint32                     initial_mag)
     {
-        int64 mag = initial_mag;
-        Vector3d result = p;
+        uint32 mag = initial_mag;
+        Vector3f result = p;
 
         for (size_t i = 0; i < 64; ++i)
         {
@@ -189,12 +189,12 @@ namespace
 
 void Intersector::adaptive_offset(
     const TriangleSupportPlaneType& support_plane,
-    const Vector3d&                 p,
-    Vector3d                        n,
-    Vector3d&                       front,
-    Vector3d&                       back)
+    const Vector3f&                 p,
+    Vector3f                        n,
+    Vector3f&                       front,
+    Vector3f&                       back)
 {
-    const int64 InitialMag = 8;
+    const uint32 InitialMag = 8;
 
     n = normalize(n);
 
@@ -357,7 +357,7 @@ void Intersector::make_surface_shading_point(
     const ShadingPoint::PrimitiveType   primitive_type,
     const Vector2f&                     bary,
     const AssemblyInstance*             assembly_instance,
-    const Transformd&                   assembly_instance_transform,
+    const Transformf&                   assembly_instance_transform,
     const size_t                        object_instance_index,
     const size_t                        primitive_index,
     const TriangleSupportPlaneType&     triangle_support_plane) const
@@ -390,7 +390,7 @@ void Intersector::make_surface_shading_point(
 void Intersector::make_volume_shading_point(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   volume_ray,
-    const double                        distance) const
+    const float                         distance) const
 {
 #ifdef DEBUG
     // This helps finding bugs if manufacture_hit()

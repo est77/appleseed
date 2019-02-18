@@ -104,7 +104,7 @@ namespace
         assert(geometry_data.m_geometry_type == RTC_GEOMETRY_TYPE_TRIANGLE);
 
         // Retrieve object space -> assembly space transform for the object instance.
-        const Transformd& transform = object_instance.get_transform();
+        const Transformf& transform = object_instance.get_transform();
 
         // Retrieve the object.
         Object& object = object_instance.get_object();
@@ -162,7 +162,7 @@ namespace
         const ObjectInstance&   object_instance,
         EmbreeGeometryData&     geometry_data)
     {
-        //const Transformd& transform = object_instance.get_transform();
+        //const Transformf& transform = object_instance.get_transform();
 
         switch(geometry_data.m_geometry_type)
         {
@@ -460,13 +460,13 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
             assert(p > 0.0f && p <= 1.0f);
 
             const TriangleType triangle(
-                Vector3d(
+                Vector3f(
                     geometry_data->m_vertices[motion_step_begin_offset + v0_idx] * q
                     + geometry_data->m_vertices[motion_step_end_offset + v0_idx] * p),
-                Vector3d(
+                Vector3f(
                     geometry_data->m_vertices[motion_step_begin_offset + v1_idx] * q
                     + geometry_data->m_vertices[motion_step_end_offset + v1_idx] * p),
-                Vector3d(
+                Vector3f(
                     geometry_data->m_vertices[motion_step_begin_offset + v2_idx] * q
                     + geometry_data->m_vertices[motion_step_end_offset + v2_idx] * p));
 
@@ -475,9 +475,9 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
         else
         {
             const TriangleType triangle(
-                Vector3d(geometry_data->m_vertices[v0_idx]),
-                Vector3d(geometry_data->m_vertices[v1_idx]),
-                Vector3d(geometry_data->m_vertices[v2_idx]));
+                Vector3f(geometry_data->m_vertices[v0_idx]),
+                Vector3f(geometry_data->m_vertices[v1_idx]),
+                Vector3f(geometry_data->m_vertices[v2_idx]));
 
             shading_point.m_triangle_support_plane.initialize(triangle);
         }

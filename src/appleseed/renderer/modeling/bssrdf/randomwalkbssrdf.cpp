@@ -233,7 +233,7 @@ namespace
             bssrdf_sample.m_value.set(1.0f);
             bssrdf_sample.m_probability = 1.0f;
 
-            Vector3d scattering_point;
+            Vector3f scattering_point;
             Vector3f slab_normal;
             Vector3f direction;
             bool transmitted = false;
@@ -350,7 +350,7 @@ namespace
                 // Construct a new ray in the sampled direction.
                 ShadingRay new_ray(
                     scattering_point,
-                    Vector3d(new_direction),
+                    new_direction,
                     outgoing_point.get_time(),
                     VisibilityFlags::ShadowRay,
                     outgoing_point.get_ray().m_depth + 1);
@@ -612,7 +612,7 @@ namespace
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample,
             bool&                   volume_scattering_occurred,
-            Vector3d&               scattering_point,
+            Vector3f&               scattering_point,
             Vector3f&               slab_normal,
             Vector3f&               direction) const
         {
@@ -681,7 +681,7 @@ namespace
                 direction = bsdf_sample.m_incoming.get_value();
                 ShadingRay ray(
                     shading_point_ptr->get_point(),
-                    Vector3d(direction),
+                    direction,
                     outgoing_point.get_time(),
                     VisibilityFlags::SubsurfaceRay,
                     outgoing_point.get_ray().m_depth + 1);
@@ -732,16 +732,16 @@ namespace
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample,
             bool&                   volume_scattering_occurred,
-            Vector3d&               scattering_point,
+            Vector3f&               scattering_point,
             Vector3f&               slab_normal,
             Vector3f&               direction) const
         {
             // Pick initial random-walk direction uniformly at random.
             sampling_context.split_in_place(2, 1);
-            Vector3d initial_dir = sample_hemisphere_cosine(sampling_context.next2<Vector2d>());
+            Vector3f initial_dir = sample_hemisphere_cosine(sampling_context.next2<Vector2f>());
             initial_dir.y = -initial_dir.y;
             initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
-            direction = static_cast<Vector3f>(initial_dir);
+            direction = initial_dir;
 
             // Choose color channel used for distance sampling.
             sampling_context.split_in_place(1, 1);

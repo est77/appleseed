@@ -160,7 +160,7 @@ namespace
             m_values.m_turbidity += BaseTurbidity;
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
-            m_scene_center = Vector3d(scene_data.m_center);
+            m_scene_center = Vector3f(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
@@ -171,10 +171,10 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector2f&         s,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -193,11 +193,11 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target_point,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector3f&         target_point,
+            const Vector2f&         s,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -213,11 +213,11 @@ namespace
 
         void sample(
             const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector2d&         s,
+            const Transformf&       light_transform,
+            const Vector2f&         s,
             const LightTargetArray& targets,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
@@ -225,9 +225,9 @@ namespace
 
             if (target_count > 0)
             {
-                const double x = s[0] * target_count;
+                const float x = s[0] * target_count;
                 const size_t target_index = truncate<size_t>(x);
-                const Vector2d target_s(x - target_index, s[1]);
+                const Vector2f target_s(x - target_index, s[1]);
                 const LightTarget& target = targets[target_index];
 
                 sample_disk(
@@ -255,8 +255,8 @@ namespace
         }
 
         float compute_distance_attenuation(
-            const Vector3d&         target,
-            const Vector3d&         position) const override
+            const Vector3f&         target,
+            const Vector3f&         position) const override
         {
             return 1.0f;
         }
@@ -270,9 +270,9 @@ namespace
             float           m_distance;                 // distance between Sun and scene, in millions of km
         };
 
-        Vector3d            m_scene_center;             // world space
-        double              m_scene_radius;             // world space
-        double              m_safe_scene_diameter;      // world space
+        Vector3f            m_scene_center;             // world space
+        float               m_scene_radius;             // world space
+        float               m_safe_scene_diameter;      // world space
         float               m_sun_solid_angle;          // Sun's solid angle, in steradians
 
         InputValues         m_values;
@@ -294,15 +294,15 @@ namespace
                 sun_theta_src->evaluate_uniform(sun_theta);
                 sun_phi_src->evaluate_uniform(sun_phi);
 
-                Transformd scratch;
-                const Transformd& env_edf_transform = env_edf->transform_sequence().evaluate(0.0f, scratch);
+                Transformf scratch;
+                const Transformf& env_edf_transform = env_edf->transform_sequence().evaluate(0.0f, scratch);
 
                 set_transform(
-                    Transformd::from_local_to_parent(
+                    Transformf::from_local_to_parent(
                         Matrix4d::make_rotation(
-                            Quaterniond::make_rotation(
-                                Vector3d(0.0, 0.0, -1.0),   // default emission direction of this light
-                                -Vector3d::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))) *
+                            Quaternionf::make_rotation(
+                                Vector3f(0.0f, 0.0f, -1.0f),   // default emission direction of this light
+                                -Vector3f::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))) *
                     env_edf_transform);
             }
 
@@ -333,7 +333,7 @@ namespace
         }
 
         void compute_sun_radiance(
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             const float             turbidity,
             const float             radiance_multiplier,
             RegularSpectrum31f&     radiance) const
@@ -446,19 +446,19 @@ namespace
         }
 
         void sample_disk(
-            const Transformd&       light_transform,
-            const Vector2d&         s,
-            const Vector3d&         disk_center,
-            const double            disk_radius,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector2f&         s,
+            const Vector3f&         disk_center,
+            const float             disk_radius,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const
         {
             outgoing = -normalize(light_transform.get_parent_z());
 
-            const Basis3d basis(outgoing);
-            const Vector2d p = sample_disk_uniform(s);
+            const Basis3f basis(outgoing);
+            const Vector2f p = sample_disk_uniform(s);
 
             position =
                   disk_center
@@ -481,28 +481,28 @@ namespace
         }
 
         void sample_sun_surface(
-            const Transformd&       light_transform,
-            const Vector3d&         target_point,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
+            const Transformf&       light_transform,
+            const Vector3f&         target_point,
+            const Vector2f&         s,
+            Vector3f&               position,
+            Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const
         {
-            assert(m_safe_scene_diameter > 0.0);
+            assert(m_safe_scene_diameter > 0.0f);
 
             // sun_diameter = 1.3914
             // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
             // tan(angular_diameter / 2) * distance = sun_radius
             // tan(angular_diameter / 2) * scene_diameter = virtual_sun_radius
             // -> virtual_sun_radius = sun_radius * scene_diameter / distance
-            double sun_radius = SunRadius * m_safe_scene_diameter / m_values.m_distance;
+            float sun_radius = SunRadius * m_safe_scene_diameter / m_values.m_distance;
             sun_radius *= m_values.m_size_multiplier;
 
             outgoing = -normalize(light_transform.get_parent_z());
 
-            const Basis3d basis(outgoing);
-            const Vector2d p = sample_disk_uniform(s);
+            const Basis3f basis(outgoing);
+            const Vector2f p = sample_disk_uniform(s);
 
             position =
                   target_point

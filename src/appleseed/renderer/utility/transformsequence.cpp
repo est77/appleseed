@@ -91,7 +91,7 @@ void TransformSequence::clear()
 
 void TransformSequence::set_transform(
     const float         time,
-    const Transformd&   transform)
+    const Transformf&   transform)
 {
     assert(m_size <= m_capacity);
 
@@ -126,7 +126,7 @@ void TransformSequence::set_transform(
 void TransformSequence::get_transform(
     const size_t        index,
     float&              time,
-    Transformd&         transform) const
+    Transformf&         transform) const
 {
     assert(index < m_size);
 
@@ -134,10 +134,10 @@ void TransformSequence::get_transform(
     transform = m_keys[index].m_transform;
 }
 
-const Transformd& TransformSequence::get_earliest_transform() const
+const Transformf& TransformSequence::get_earliest_transform() const
 {
     if (m_size == 0)
-        return Transformd::identity();
+        return Transformf::identity();
 
     float earliest_time = m_keys[0].m_time;
     size_t earliest_index = 0;
@@ -190,7 +190,7 @@ bool TransformSequence::prepare()
     {
         sort(m_keys, m_keys + m_size);
 
-        m_interpolators = new TransformInterpolatord[m_size - 1];
+        m_interpolators = new TransformInterpolatorf[m_size - 1];
 
         for (size_t i = 0; i < m_size - 1; ++i)
         {
@@ -220,7 +220,7 @@ bool TransformSequence::prepare()
     return success;
 }
 
-bool TransformSequence::swaps_handedness(const Transformd& xform) const
+bool TransformSequence::swaps_handedness(const Transformf& xform) const
 {
     if (!m_can_swap_handedness)
         return false;
@@ -236,7 +236,7 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
     TransformSequence result;
 
     size_t lhs_i = 0, rhs_i = 0;
-    Transformd scratch;
+    Transformf scratch;
 
     while (lhs_i < m_size && rhs_i < rhs.m_size)
     {
@@ -294,7 +294,7 @@ void TransformSequence::copy_from(const TransformSequence& rhs)
 
     if (rhs.m_interpolators)
     {
-        m_interpolators = new TransformInterpolatord[m_size - 1];
+        m_interpolators = new TransformInterpolatorf[m_size - 1];
 
         for (size_t i = 0; i < m_size - 1; ++i)
             m_interpolators[i] = rhs.m_interpolators[i];
@@ -307,7 +307,7 @@ void TransformSequence::copy_from(const TransformSequence& rhs)
 
 void TransformSequence::interpolate(
     const float         time,
-    Transformd&         result) const
+    Transformf&         result) const
 {
     assert(m_size > 0);
 
@@ -329,32 +329,32 @@ void TransformSequence::interpolate(
 
     const float t = (time - begin_time) / (end_time - begin_time);
 
-    m_interpolators[begin].evaluate(static_cast<double>(t), result);
+    m_interpolators[begin].evaluate(static_cast<float>(t), result);
 }
 
 namespace
 {
     struct LinearFunction
     {
-        const double    m_s0;
-        const double    m_s1;
-        const double    m_rcp_max_theta;
-        const double    m_d;
+        const float    m_s0;
+        const float    m_s1;
+        const float    m_rcp_max_theta;
+        const float    m_d;
 
-        LinearFunction(const double s0, const double s1, const double max_theta)
+        LinearFunction(const float s0, const float s1, const float max_theta)
           : m_s0(s0)
           , m_s1(s1)
-          , m_rcp_max_theta(1.0 / max_theta)
+          , m_rcp_max_theta(1.0f / max_theta)
           , m_d((m_s1 - m_s0) * m_rcp_max_theta)
         {
         }
 
-        double f(const double theta) const
+        float f(const float theta) const
         {
             return lerp(m_s0, m_s1, theta * m_rcp_max_theta);
         }
 
-        double d(const double theta) const
+        float d(const float theta) const
         {
             return m_d;
         }
@@ -364,32 +364,32 @@ namespace
     {
         const LinearFunction&   m_sx;
         const LinearFunction&   m_sy;
-        const Vector2d&         m_p;
+        const Vector2f&         m_p;
 
-        TrajectoryX(const LinearFunction& sx, const LinearFunction& sy, const Vector2d& p)
+        TrajectoryX(const LinearFunction& sx, const LinearFunction& sy, const Vector2f& p)
           : m_sx(sx)
           , m_sy(sy)
           , m_p(p)
         {
         }
 
-        double f(const double theta) const
+        float f(const float theta) const
         {
             return m_sx.f(theta) * cos(theta) * m_p.x - m_sy.f(theta) * sin(theta) * m_p.y;
         }
 
-        double d(const double theta) const
+        float d(const float theta) const
         {
             return (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * cos(theta) -
                    (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * sin(theta);
         }
 
-        double dd(const double theta) const
+        float dd(const float theta) const
         {
-            const double a = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
-            const double b = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
-            const double ap = -m_sy.d(theta) * m_p.y;
-            const double bp = m_sx.d(theta) * m_p.x;
+            const float a = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
+            const float b = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
+            const float ap = -m_sy.d(theta) * m_p.y;
+            const float bp = m_sx.d(theta) * m_p.x;
             return (ap - b) * cos(theta) - (bp + a) * sin(theta);
         }
     };
@@ -398,32 +398,32 @@ namespace
     {
         const LinearFunction&   m_sx;
         const LinearFunction&   m_sy;
-        const Vector2d&         m_p;
+        const Vector2f&         m_p;
 
-        TrajectoryY(const LinearFunction& sx, const LinearFunction& sy, const Vector2d& p)
+        TrajectoryY(const LinearFunction& sx, const LinearFunction& sy, const Vector2f& p)
           : m_sx(sx)
           , m_sy(sy)
           , m_p(p)
         {
         }
 
-        double f(const double theta) const
+        float f(const float theta) const
         {
             return m_sx.f(theta) * sin(theta) * m_p.x + m_sy.f(theta) * cos(theta) * m_p.y;
         }
 
-        double d(const double theta) const
+        float d(const float theta) const
         {
             return (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * cos(theta) +
                    (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * sin(theta);
         }
 
-        double dd(const double theta) const
+        float dd(const float theta) const
         {
-            const double a = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
-            const double b = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
-            const double ap = m_sx.d(theta) * m_p.x;
-            const double bp = -m_sy.d(theta) * m_p.y;
+            const float a = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
+            const float b = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
+            const float ap = m_sx.d(theta) * m_p.x;
+            const float bp = -m_sy.d(theta) * m_p.y;
             return (ap + b) * cos(theta) + (bp - a) * sin(theta);
         }
     };
@@ -431,7 +431,7 @@ namespace
     template <typename Class>
     struct Bind
     {
-        typedef double (Class::*Method)(double) const;
+        typedef float (Class::*Method)(float) const;
 
         const Class&    m_class;
         const Method&   m_method;
@@ -442,7 +442,7 @@ namespace
         {
         }
 
-        double operator()(const double t) const
+        float operator()(const float t) const
         {
             return (m_class.*m_method)(t);
         }
@@ -453,17 +453,17 @@ namespace
         const TrajectoryX&          m_tx;
         const TrajectoryY&          m_ty;
         const LinearFunction&       m_sz;
-        const Transformd&           m_axis_to_z;
-        const Vector3d&             m_corner;
-        AABB3d&                     m_motion_bbox;
+        const Transformf&           m_axis_to_z;
+        const Vector3f&             m_corner;
+        AABB3f&                     m_motion_bbox;
 
         RootHandler(
             const TrajectoryX&      tx,
             const TrajectoryY&      ty,
             const LinearFunction&   sz,
-            const Transformd&       axis_to_z,
-            const Vector3d&         corner,
-            AABB3d&                 motion_bbox)
+            const Transformf&       axis_to_z,
+            const Vector3f&         corner,
+            AABB3f&                 motion_bbox)
           : m_tx(tx)
           , m_ty(ty)
           , m_sz(sz)
@@ -473,18 +473,18 @@ namespace
         {
         }
 
-        void operator()(const double theta) const
+        void operator()(const float theta) const
         {
-            const Vector3d extremum(m_tx.f(theta), m_ty.f(theta), m_sz.f(theta) * m_corner.z);
+            const Vector3f extremum(m_tx.f(theta), m_ty.f(theta), m_sz.f(theta) * m_corner.z);
             m_motion_bbox.insert(m_axis_to_z.point_to_parent(extremum));
-        };
+        }
     };
 }
 
-AABB3d TransformSequence::compute_motion_segment_bbox(
-    const AABB3d&       bbox,
-    const Transformd&   from,
-    const Transformd&   to) const
+AABB3f TransformSequence::compute_motion_segment_bbox(
+    const AABB3f&       bbox,
+    const Transformf&   from,
+    const Transformf&   to) const
 {
     //
     // Reference:
@@ -493,59 +493,59 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     //
 
     // Parameters.
-    const double MinLength = HalfPi<double>();
-    const double RootEps = 1.0e-6;
-    const double GrowEps = 1.0e-4;
+    const float MinLength = HalfPi<float>();
+    const float RootEps = 1.0e-6f;
+    const float GrowEps = 1.0e-4f;
     const size_t MaxIterations = 100;
 
     // Start with the bounding box at 'from'.
-    const AABB3d from_bbox = from.to_parent(bbox);
-    AABB3d motion_bbox = from_bbox;
+    const AABB3f from_bbox = from.to_parent(bbox);
+    AABB3f motion_bbox = from_bbox;
 
     // Setup an interpolator between 'from' and 'to'.
-    TransformInterpolatord interpolator;
+    TransformInterpolatorf interpolator;
     if (!interpolator.set_transforms(from, to))
         return motion_bbox;
 
     // Compute the scalings at 'from' and 'to'.
-    const Vector3d s0 = interpolator.get_s0();
-    const Vector3d s1 = interpolator.get_s1();
+    const Vector3f s0 = interpolator.get_s0();
+    const Vector3f s1 = interpolator.get_s1();
 
     // Compute the relative rotation between 'from' and 'to'.
-    const Quaterniond q =
+    const Quaternionf q =
         interpolator.get_q1() * conjugate(interpolator.get_q0());
 
     // Transform the relative rotation to the axis-angle representation.
-    Vector3d axis;
-    double angle;
+    Vector3f axis;
+    float angle;
     q.extract_axis_angle(axis, angle);
-    if (axis.z < 0.0)
+    if (axis.z < 0.0f)
         angle = -angle;
 
     // The following code only makes sense if there is a rotation component.
-    if (angle == 0.0)
+    if (angle == 0.0f)
         return motion_bbox;
 
     // Compute the rotation required to align the rotation axis with the Z axis.
-    const Vector3d Z(0.0, 0.0, 1.0);
-    const Vector3d perp = cross(Z, axis);
-    const double perp_norm = norm(perp);
-    Transformd axis_to_z;
-    if (perp_norm == 0.0)
-        axis_to_z = Transformd::identity();
+    const Vector3f Z(0.0f, 0.0f, 1.0f);
+    const Vector3f perp = cross(Z, axis);
+    const float perp_norm = norm(perp);
+    Transformf axis_to_z;
+    if (perp_norm == 0.0f)
+        axis_to_z = Transformf::identity();
     else
     {
-        const Vector3d v = perp / perp_norm;
-        const double sin_a = clamp(perp_norm, -1.0, 1.0);
-        const double cos_a = sqrt(1.0 - sin_a * sin_a);
-        axis_to_z.set_local_to_parent(Matrix4d::make_rotation(v, cos_a, +sin_a));
-        axis_to_z.set_parent_to_local(Matrix4d::make_rotation(v, cos_a, -sin_a));
+        const Vector3f v = perp / perp_norm;
+        const float sin_a = clamp(perp_norm, -1.0f, 1.0f);
+        const float cos_a = sqrt(1.0f - sin_a * sin_a);
+        axis_to_z.set_local_to_parent(Matrix4f::make_rotation(v, cos_a, +sin_a));
+        axis_to_z.set_parent_to_local(Matrix4f::make_rotation(v, cos_a, -sin_a));
     }
 
     // Build the linear scaling functions Sx(theta), Sy(theta) and Sz(theta).
-    const LinearFunction sx(1.0, s1.x / s0.x, angle);
-    const LinearFunction sy(1.0, s1.y / s0.y, angle);
-    const LinearFunction sz(1.0, s1.z / s0.z, angle);
+    const LinearFunction sx(1.0f, s1.x / s0.x, angle);
+    const LinearFunction sy(1.0f, s1.y / s0.y, angle);
+    const LinearFunction sz(1.0f, s1.z / s0.z, angle);
 
     // Consider each corner of the bounding box. Notice an important trick here:
     // we take advantage of the way AABB::compute_corner() works to only iterate
@@ -554,15 +554,15 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     for (size_t c = 0; c < 4; ++c)
     {
         // Compute the position of this corner at 'from'.
-        const Vector3d corner = axis_to_z.point_to_local(from_bbox.compute_corner(c));
-        const Vector2d corner2d(corner.x, corner.y);
+        const Vector3f corner = axis_to_z.point_to_local(from_bbox.compute_corner(c));
+        const Vector2f corner2f(corner.x, corner.y);
 
         // Build the trajectory functions x(theta) and y(theta).
-        const TrajectoryX tx(sx, sy, corner2d);
-        const TrajectoryY ty(sx, sy, corner2d);
+        const TrajectoryX tx(sx, sy, corner2f);
+        const TrajectoryY ty(sx, sy, corner2f);
 
-        const double a = min(angle, 0.0);
-        const double b = max(angle, 0.0);
+        const float a = min(angle, 0.0f);
+        const float b = max(angle, 0.0f);
 
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
         RootHandler root_handler(tx, ty, sz, axis_to_z, corner, motion_bbox);

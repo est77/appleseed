@@ -89,27 +89,27 @@ class Tracer
     void trace_between_simple(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     target,
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
     void trace_between_simple(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     target,
         const ShadingRay&               parent_ray,
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
     void trace_between_simple(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     origin,
+        const foundation::Vector3f&     target,
         const ShadingRay&               parent_ray,
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
     void trace_between_simple(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     origin,
+        const foundation::Vector3f&     target,
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
@@ -136,27 +136,27 @@ class Tracer
     const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     target,
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
     const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     target,
         const ShadingRay&               parent_ray,
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
     const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     origin,
+        const foundation::Vector3f&     target,
         const ShadingRay&               parent_ray,
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
     const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     origin,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     origin,
+        const foundation::Vector3f&     target,
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
@@ -179,7 +179,7 @@ class Tracer
 
     const ShadingPoint& do_trace_between(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target,
+        const foundation::Vector3f&     target,
         const ShadingRay&               ray,
         Spectrum&                       transmission,
         const ShadingPoint*             parent_shading_point);
@@ -240,20 +240,20 @@ inline void Tracer::trace_simple(
 inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         target,
     const VisibilityFlags::Type         ray_flags,
     Spectrum&                           transmission)
 {
     if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
     {
-        const foundation::Vector3d direction = target - origin.get_point();
-        const double dist = foundation::norm(direction);
+        const foundation::Vector3f direction = target - origin.get_point();
+        const float dist = foundation::norm(direction);
 
         const ShadingRay ray(
             origin.get_biased_point(direction),
             direction / dist,
-            0.0,                        // ray tmin
-            dist * (1.0 - 1.0e-6),      // ray tmax
+            0.0f,                       // ray tmin
+            dist * (1.0f - 1.0e-6f),    // ray tmax
             origin.get_time(),
             ray_flags,
             origin.get_ray().m_depth + 1);
@@ -278,21 +278,21 @@ inline void Tracer::trace_between_simple(
 inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         target,
     const ShadingRay&                   parent_ray,
     const VisibilityFlags::Type         ray_flags,
     Spectrum&                           transmission)
 {
     if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
     {
-        const foundation::Vector3d direction = target - origin.get_point();
-        const double dist = foundation::norm(direction);
+        const foundation::Vector3f direction = target - origin.get_point();
+        const float dist = foundation::norm(direction);
 
         const ShadingRay ray(
             origin.get_biased_point(direction),
             direction / dist,
-            0.0,                        // ray tmin
-            dist * (1.0 - 1.0e-6),      // ray tmax
+            0.0f,                       // ray tmin
+            dist * (1.0f - 1.0e-6f),    // ray tmax
             parent_ray.m_time,
             ray_flags,
             parent_ray.m_depth);
@@ -317,22 +317,22 @@ inline void Tracer::trace_between_simple(
 
 inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
-    const foundation::Vector3d&         origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         origin,
+    const foundation::Vector3f&         target,
     const ShadingRay&                   parent_ray,
     const VisibilityFlags::Type         ray_flags,
     Spectrum&                           transmission)
 {
     if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
     {
-        const foundation::Vector3d direction = target - origin;
-        const double dist = foundation::norm(direction);
+        const foundation::Vector3f direction = target - origin;
+        const float dist = foundation::norm(direction);
 
         const ShadingRay ray(
             origin,
             direction / dist,
-            0.0,                        // ray tmin
-            dist * (1.0 - 1.0e-6),      // ray tmax
+            0.0f,                       // ray tmin
+            dist * (1.0f - 1.0e-6f),    // ray tmax
             parent_ray.m_time,
             ray_flags,
             parent_ray.m_depth);
@@ -357,8 +357,8 @@ inline void Tracer::trace_between_simple(
 
 inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
-    const foundation::Vector3d&         origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         origin,
+    const foundation::Vector3f&         target,
     const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
@@ -366,14 +366,14 @@ inline void Tracer::trace_between_simple(
 {
     if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
     {
-        const foundation::Vector3d direction = target - origin;
-        const double dist = foundation::norm(direction);
+        const foundation::Vector3f direction = target - origin;
+        const float dist = foundation::norm(direction);
 
         const ShadingRay ray(
             origin,
             direction / dist,
-            0.0,                        // ray tmin
-            dist * (1.0 - 1.0e-6),      // ray tmax
+            0.0f,                       // ray tmin
+            dist * (1.0f - 1.0e-6f),    // ray tmax
             ray_time,
             ray_flags,
             ray_depth);
@@ -427,18 +427,18 @@ inline const ShadingPoint& Tracer::trace_full(
 inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         target,
     const VisibilityFlags::Type         ray_flags,
     Spectrum&                           transmission)
 {
-    const foundation::Vector3d direction = target - origin.get_point();
-    const double dist = foundation::norm(direction);
+    const foundation::Vector3f direction = target - origin.get_point();
+    const float dist = foundation::norm(direction);
 
     ShadingRay ray(
         origin.get_biased_point(direction),
         direction / dist,
-        0.0,
-        dist * (1.0 - 1.0e-6),
+        0.0f,
+        dist * (1.0f - 1.0e-6f),
         origin.get_ray().m_time,
         ray_flags,
         origin.get_ray().m_depth + 1);
@@ -455,19 +455,19 @@ inline const ShadingPoint& Tracer::trace_between_full(
 inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         target,
     const ShadingRay&                   parent_ray,
     const VisibilityFlags::Type         ray_flags,
     Spectrum&                           transmission)
 {
-    const foundation::Vector3d direction = target - origin.get_point();
-    const double dist = foundation::norm(direction);
+    const foundation::Vector3f direction = target - origin.get_point();
+    const float dist = foundation::norm(direction);
 
     ShadingRay ray(
         origin.get_biased_point(direction),
         direction / dist,
-        0.0,
-        dist * (1.0 - 1.0e-6),
+        0.0f,
+        dist * (1.0f - 1.0e-6f),
         parent_ray.m_time,
         ray_flags,
         parent_ray.m_depth + 1);
@@ -485,19 +485,19 @@ inline const ShadingPoint& Tracer::trace_between_full(
 
 inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
-    const foundation::Vector3d&         origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         origin,
+    const foundation::Vector3f&         target,
     const ShadingRay&                   parent_ray,
     const VisibilityFlags::Type         ray_flags,
     Spectrum&                           transmission)
 {
-    const double dist = foundation::norm(target - origin);
+    const float dist = foundation::norm(target - origin);
 
     ShadingRay ray(
         origin,
         (target - origin) / dist,
-        0.0,
-        dist * (1.0 - 1.0e-6),
+        0.0f,
+        dist * (1.0f - 1.0e-6f),
         parent_ray.m_time,
         ray_flags,
         parent_ray.m_depth + 1);
@@ -515,20 +515,20 @@ inline const ShadingPoint& Tracer::trace_between_full(
 
 inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
-    const foundation::Vector3d&         origin,
-    const foundation::Vector3d&         target,
+    const foundation::Vector3f&         origin,
+    const foundation::Vector3f&         target,
     const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
     Spectrum&                           transmission)
 {
-    const double dist = foundation::norm(target - origin);
+    const float dist = foundation::norm(target - origin);
 
     const ShadingRay ray(
         origin,
         (target - origin) / dist,
-        dist * 1.0e-6,
-        dist * (1.0 - 1.0e-6),
+        dist * 1.0e-6f,
+        dist * (1.0f - 1.0e-6f),
         ray_time,
         ray_flags,
         ray_depth + 1);

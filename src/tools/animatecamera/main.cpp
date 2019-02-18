@@ -220,7 +220,7 @@ namespace
         {
             const size_t part_count = g_cl.m_part_count.value();
             const size_t frames_per_part =
-                static_cast<size_t>(ceil(static_cast<double>(frames.size()) / part_count));
+                static_cast<size_t>(ceil(static_cast<float>(frames.size()) / part_count));
 
             for (size_t part = 1, frame_begin = 0; frame_begin < frames.size(); ++part)
             {
@@ -361,8 +361,8 @@ namespace
       private:
         vector<size_t> do_generate() override
         {
-            typedef pair<Transformd, Transformd> TransformPair;
-            typedef map<TransformPair, size_t, TransformPairComparer<double>> TransformMap;
+            typedef pair<Transformf, Transformf> TransformPair;
+            typedef map<TransformPair, size_t, TransformPairComparer<float>> TransformMap;
 
             vector<size_t> frames;
 
@@ -461,12 +461,12 @@ namespace
 
             // Retrieve the command line parameter values.
             const int frame_count = g_cl.m_frame_count.value();
-            const Vector3d center_offset(
+            const Vector3f center_offset(
                 g_cl.m_camera_target.values()[0],
                 g_cl.m_camera_target.values()[1],
                 g_cl.m_camera_target.values()[2]);
-            const double normalized_distance = g_cl.m_camera_distance.value();
-            const double normalized_elevation = g_cl.m_camera_elevation.value();
+            const float normalized_distance = g_cl.m_camera_distance.value();
+            const float normalized_elevation = g_cl.m_camera_elevation.value();
             const float motion_blur_amount = g_cl.m_motion_blur.value();
 
             if (frame_count < 1)
@@ -476,32 +476,32 @@ namespace
             auto_release_ptr<Project> project(load_master_project());
 
             // Retrieve the scene's bounding box.
-            const AABB3d scene_bbox(project->get_scene()->compute_bbox());
-            const Vector3d extent = scene_bbox.extent();
-            const double max_radius = 0.5 * max(extent.x, extent.z);
-            const double max_height = 0.5 * extent.y;
+            const AABB3f scene_bbox(project->get_scene()->compute_bbox());
+            const Vector3f extent = scene_bbox.extent();
+            const float max_radius = 0.5f * max(extent.x, extent.z);
+            const float max_height = 0.5f * extent.y;
 
             // Precompute some stuff.
-            const Vector3d Up(0.0, 1.0, 0.0);
-            const Vector3d center = scene_bbox.center() + center_offset;
-            const double distance = max_radius * normalized_distance;
-            const double elevation = max_height * normalized_elevation;
+            const Vector3f Up(0.0f, 1.0f, 0.0f);
+            const Vector3f center = scene_bbox.center() + center_offset;
+            const float distance = max_radius * normalized_distance;
+            const float elevation = max_height * normalized_elevation;
 
             // Compute the transform of the camera at the last frame.
-            const double angle = -1.0 / frame_count * TwoPi<double>();
-            const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
-            Transformd previous_transform(
-                Transformd::from_local_to_parent(
-                    Matrix4d::make_lookat(position, center, Up)));
+            const float angle = -1.0f / frame_count * TwoPi<float>();
+            const Vector3f position(distance * cos(angle), elevation, distance * sin(angle));
+            Transformf previous_transform(
+                Transformf::from_local_to_parent(
+                    Matrix4f::make_lookat(position, center, Up)));
 
             for (int i = 0; i < frame_count; ++i)
             {
                 // Compute the transform of the camera at this frame.
-                const double angle = (i * TwoPi<double>()) / frame_count;
-                const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
-                const Transformd new_transform(
-                    Transformd::from_local_to_parent(
-                        Matrix4d::make_lookat(position, center, Up)));
+                const float angle = (i * TwoPi<float>()) / frame_count;
+                const Vector3f position(distance * cos(angle), elevation, distance * sin(angle));
+                const Transformf new_transform(
+                    Transformf::from_local_to_parent(
+                        Matrix4f::make_lookat(position, center, Up)));
 
                 // Set the camera's transform sequence.
                 Camera* camera = project->get_uncached_active_camera();

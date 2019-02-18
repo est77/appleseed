@@ -66,12 +66,12 @@ namespace
     /// TODO:: decide if we should use existing PathVertex (in PathVertex.h) or just keep using BDPTVertex
     struct BDPTVertex
     {
-        Vector3d                m_position;
-        Vector3d                m_geometric_normal;
+        Vector3f                m_position;
+        Vector3f                m_geometric_normal;
         Spectrum                m_beta;
         const BSDF*             m_bsdf;
         const void*             m_bsdf_data;
-        Vector3d                m_dir_to_prev_vertex;
+        Vector3f                m_dir_to_prev_vertex;
         const BDPTVertex*       m_prev_vertex;
         Basis3f                 m_shading_basis;
         Spectrum                m_Le;
@@ -93,14 +93,14 @@ namespace
         {
         }
 
-        double convert_density(double pdf, const BDPTVertex& vertex) const
+        float convert_density(float pdf, const BDPTVertex& vertex) const
         {
-            const Vector3d w = m_position - vertex.m_position;
-            const double dist2 = square_norm(w);
-            if (dist2 == 0.0)
-                return 0.0;
-            const double rcp_dist2 = 1.0 / dist2;
-            pdf *= max(dot(vertex.m_geometric_normal, w * sqrt(rcp_dist2)), 0.0);
+            const Vector3f w = m_position - vertex.m_position;
+            const float dist2 = square_norm(w);
+            if (dist2 == 0.0f)
+                return 0.0f;
+            const float rcp_dist2 = 1.0f / dist2;
+            pdf *= max(dot(vertex.m_geometric_normal, w * sqrt(rcp_dist2)), 0.0f);
             return pdf * rcp_dist2;
         }
     };
@@ -129,8 +129,8 @@ namespace
             const Project&              project,
             const ForwardLightSampler&  light_sampler,
             const ParamArray&           params)
-          : m_light_sampler(light_sampler)
-          , m_params(params)
+          : m_params(params)
+          , m_light_sampler(light_sampler)
         {
             const Camera* camera = project.get_uncached_active_camera();
             m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
@@ -186,29 +186,29 @@ namespace
             const BDPTVertex&           a,
             const BDPTVertex&           b)
         {
-            const Vector3d v = b.m_position - a.m_position;
-            const Vector3d normalized_v = normalize(v);
-            const double dist2 = square_norm(v);
+            const Vector3f v = b.m_position - a.m_position;
+            const Vector3f normalized_v = normalize(v);
+            const float dist2 = square_norm(v);
 
             /// TODO:: the special care have to be taken for these dot products when it comes to volume
-            const double cos1 = max(-dot(normalized_v, b.m_geometric_normal), 0.0);
-            const double cos2 = max(dot(normalized_v, a.m_geometric_normal), 0.0);
+            const float cos1 = max(-dot(normalized_v, b.m_geometric_normal), 0.0f);
+            const float cos2 = max(dot(normalized_v, a.m_geometric_normal), 0.0f);
 
             Spectrum result(0.0f);
 
             // do the visibility test
-            if (cos1 > 0.0 && cos2 > 0.0)
+            if (cos1 > 0.0f && cos2 > 0.0f)
             {
                 shading_context.get_tracer().trace_between_simple(
                     shading_context,
-                    a.m_position + (v * 1.0e-6),
+                    a.m_position + (v * 1.0e-6f),
                     b.m_position,
                     shading_point.get_ray().m_time,
                     VisibilityFlags::ShadowRay,
                     shading_point.get_ray().m_depth,
                     result);
-                double geometry_term = cos1 * cos2 / dist2;
-                result *= (float)geometry_term;
+                float geometry_term = cos1 * cos2 / dist2;
+                result *= geometry_term;
             }
 
             return result;
@@ -531,7 +531,7 @@ namespace
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                Vector3d(emission_direction),
+                Vector3f(emission_direction),
                 shading_context.get_intersector());
 
             // Build the light ray.
@@ -543,7 +543,7 @@ namespace
                     m_shutter_close_end_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
-                Vector3d(emission_direction),
+                Vector3f(emission_direction),
                 time,
                 VisibilityFlags::LightRay,
                 0);

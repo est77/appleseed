@@ -809,13 +809,13 @@ namespace
         {
             try
             {
-                m_transform = Transformd::from_local_to_parent(m_matrix);
+                m_transform = Transformf::from_local_to_parent(m_matrix);
             }
             catch (const ExceptionSingularMatrix&)
             {
                 RENDERER_LOG_ERROR("while defining <transform> element: the transformation matrix is singular.");
                 m_context.get_event_counters().signal_error();
-                m_transform = Transformd::identity();
+                m_transform = Transformf::identity();
             }
         }
 
@@ -874,7 +874,7 @@ namespace
             return m_time;
         }
 
-        const Transformd& get_transform() const
+        const Transformf& get_transform() const
         {
             return m_transform;
         }
@@ -883,7 +883,7 @@ namespace
         ParseContext&   m_context;
         float           m_time;
         Matrix4d        m_matrix;
-        Transformd      m_transform;
+        Transformf      m_transform;
     };
 
 
@@ -907,7 +907,7 @@ namespace
                 collapse_transforms();
 
             if (m_transforms.empty())
-                m_transforms[0.0f] = Transformd::identity();
+                m_transforms[0.0f] = Transformf::identity();
         }
 
         void end_child_element(
@@ -938,7 +938,7 @@ namespace
                 target.set_transform(i->first, i->second);
         }
 
-        Transformd get_earliest_transform() const
+        Transformf get_earliest_transform() const
         {
             TransformSequence sequence;
             copy_transform_sequence_to(sequence);
@@ -946,7 +946,7 @@ namespace
         }
 
       private:
-        typedef map<float, Transformd> TransformMap;
+        typedef map<float, Transformf> TransformMap;
 
         TransformMap m_transforms;
 
@@ -954,7 +954,7 @@ namespace
         {
             if (are_transforms_identical())
             {
-                const Transformd transform = m_transforms.begin()->second;
+                const Transformf transform = m_transforms.begin()->second;
                 m_transforms.clear();
                 m_transforms[0.0f] = transform;
             }

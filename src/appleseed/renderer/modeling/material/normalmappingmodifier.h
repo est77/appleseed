@@ -56,9 +56,9 @@ class NormalMappingModifier
         const Source*               map,
         const UpVector              up_vector);
 
-    foundation::Basis3d modify(
+    foundation::Basis3f modify(
         TextureCache&               texture_cache,
-        const foundation::Basis3d&  basis,
+        const foundation::Basis3f&  basis,
         const ShadingPoint&         shading_point) const override;
 
   private:

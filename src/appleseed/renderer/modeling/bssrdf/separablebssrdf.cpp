@@ -86,54 +86,54 @@ namespace
     const float ProbVAxis = 0.25f;
 
     void pick_projection_axis(
-        const Basis3d&          shading_basis,
+        const Basis3f&          shading_basis,
         const float             s,
         Axis&                   axis,
         float&                  axis_prob,
-        Basis3d&                basis)
+        Basis3f&                basis)
     {
-        const Vector3d& n = shading_basis.get_normal();
-        const Vector3d& u = shading_basis.get_tangent_u();
-        const Vector3d& v = shading_basis.get_tangent_v();
+        const Vector3f& n = shading_basis.get_normal();
+        const Vector3f& u = shading_basis.get_tangent_u();
+        const Vector3f& v = shading_basis.get_tangent_v();
 
         if (s < ProbNAxis)
         {
             // Project the sample along N.
             axis = NAxis;
             axis_prob = ProbNAxis;
-            basis = Basis3d(n, u, v);
+            basis = Basis3f(n, u, v);
         }
         else if (s < ProbNAxis + ProbUAxis)
         {
             // Project the sample along U.
             axis = UAxis;
             axis_prob = ProbUAxis;
-            basis = Basis3d(u, v, n);
+            basis = Basis3f(u, v, n);
         }
         else
         {
             // Project the sample along V.
             axis = VAxis;
             axis_prob = ProbVAxis;
-            basis = Basis3d(v, n, u);
+            basis = Basis3f(v, n, u);
         }
     }
 
     float compute_mis_weight(
         const SeparableBSSRDF&  bssrdf,
         const void*             bssrdf_data,
-        const Basis3d&          basis,
+        const Basis3f&          basis,
         const Axis              axis,
         const float             sample_pdf,
-        const Vector3d&         outgoing_point,
-        const Vector3d&         incoming_point,
-        const Vector3d&         incoming_normal)
+        const Vector3f&         outgoing_point,
+        const Vector3f&         incoming_point,
+        const Vector3f&         incoming_normal)
     {
-        const Vector3d d = incoming_point - outgoing_point;
-        const float du = static_cast<float>(norm(project(d, basis.get_tangent_u())));
-        const float dv = static_cast<float>(norm(project(d, basis.get_tangent_v())));
-        const float dot_un = static_cast<float>(abs(dot(basis.get_tangent_u(), incoming_normal)));
-        const float dot_vn = static_cast<float>(abs(dot(basis.get_tangent_v(), incoming_normal)));
+        const Vector3f d = incoming_point - outgoing_point;
+        const float du = norm(project(d, basis.get_tangent_u()));
+        const float dv = norm(project(d, basis.get_tangent_v()));
+        const float dot_un = abs(dot(basis.get_tangent_u(), incoming_normal));
+        const float dot_vn = abs(dot(basis.get_tangent_v(), incoming_normal));
         const float pdf_u = bssrdf.evaluate_profile_pdf(bssrdf_data, du) * dot_un;
         const float pdf_v = bssrdf.evaluate_profile_pdf(bssrdf_data, dv) * dot_vn;
 
@@ -197,7 +197,7 @@ namespace
         // Choose a projection axis.
         Axis projection_axis;
         float projection_axis_prob;
-        Basis3d projection_basis;
+        Basis3f projection_basis;
         pick_projection_axis(
             outgoing_point.get_shading_basis(),
             u[2],
@@ -208,31 +208,31 @@ namespace
         // Compute the height of the point on the hemisphere above the sampling disk.
         assert(disk_radius <= max_disk_radius);
         const float h = sqrt(square(max_disk_radius) - square(disk_radius));
-        const Vector3d hn = static_cast<double>(h) * projection_basis.get_normal();
+        const Vector3f hn = h * projection_basis.get_normal();
 
         // Compute sphere entry and exit points.
-        Vector3d entry_point, exit_point;
+        Vector3f entry_point, exit_point;
         entry_point = outgoing_point.get_point();
-        entry_point += static_cast<double>(disk_point[0]) * projection_basis.get_tangent_u();
-        entry_point += static_cast<double>(disk_point[1]) * projection_basis.get_tangent_v();
+        entry_point += disk_point[0] * projection_basis.get_tangent_u();
+        entry_point += disk_point[1] * projection_basis.get_tangent_v();
         exit_point = entry_point;
         entry_point += hn;
         exit_point -= hn;
-        assert(feq(norm(exit_point - entry_point), 2.0 * h, 1.0e-6));
+        assert(feq(norm(exit_point - entry_point), 2.0f * h, 1.0e-6f));
 
         // Build a probe ray inscribed inside the sphere around the sampling disk.
         ShadingRay probe_ray(
             entry_point,
             -projection_basis.get_normal(),
-            0.0,
-            2.0 * h,
+            0.0f,
+            2.0f * h,
             outgoing_point.get_time(),
             VisibilityFlags::ProbeRay,
             outgoing_point.get_ray().m_depth + 1);
 
         const ObjectInstance& outgoing_object_instance = outgoing_point.get_object_instance();
         const Material* outgoing_material = outgoing_point.get_material();
-        assert(outgoing_material != 0);
+        assert(outgoing_material != nullptr);
 
         const size_t MaxIntersectionCount = 1000;
         const size_t MaxCandidateCount = 16;
@@ -249,7 +249,7 @@ namespace
 
             // Move the ray's origin past the hit surface.
             probe_ray.m_org = incoming_point.get_point();
-            probe_ray.m_tmin = 1.0e-6;
+            probe_ray.m_tmin = 1.0e-6f;
             probe_ray.m_tmax = norm(exit_point - probe_ray.m_org);
 
             //
@@ -312,8 +312,7 @@ namespace
 
         // Compute the PDF of this incoming point.
         const float dot_nn =
-            static_cast<float>(
-                abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
+            abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal()));
         incoming_point_prob = projection_axis_prob * disk_point_prob * dot_nn;
 
         // Weight the sample contribution with multiple importance sampling.
@@ -397,8 +396,8 @@ bool SeparableBSSRDF::do_sample(
 
     // Sample the BSDF at the incoming point.
     bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
-    bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
-    bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
+    bsdf_sample.m_geometric_normal = bssrdf_sample.m_incoming_point.get_geometric_normal();
+    bsdf_sample.m_shading_basis = bssrdf_sample.m_incoming_point.get_shading_basis();
     bsdf_sample.m_outgoing = Dual3f(outgoing_dir);      // chosen arbitrarily (no outgoing direction at the incoming point)
     bssrdf_sample.m_brdf->sample(
         sampling_context,
@@ -483,8 +482,7 @@ void SeparableBSSRDF::do_evaluate(
 
     // The profile function evalutes to zero outside the sampling disk.
     const float square_radius =
-        static_cast<float>(
-            square_norm(outgoing_point.get_point() - incoming_point.get_point()));
+        square_norm(outgoing_point.get_point() - incoming_point.get_point());
     if (square_radius > square(values.m_max_disk_radius))
     {
         value.set(0.0f);

@@ -72,7 +72,7 @@ namespace
             const ParamArray&           params)
           : SurfaceShader(name, params)
           , m_samples(m_params.get_required<size_t>("samples", 16))
-          , m_max_distance(m_params.get_required<double>("max_distance", 1.0))
+          , m_max_distance(m_params.get_required<float>("max_distance", 1.0f))
         {
             const string sampling_method = m_params.get_required<string>("sampling_method", "uniform");
 
@@ -108,14 +108,14 @@ namespace
             AOVAccumulatorContainer&    aov_accumulators,
             ShadingResult&              shading_result) const override
         {
-            double occlusion;
+            float occlusion;
 
             if (m_sampling_method == UniformSampling)
             {
                 occlusion =
                     compute_ambient_occlusion(
                         sampling_context,
-                        sample_hemisphere_uniform<double>,
+                        sample_hemisphere_uniform<float>,
                         shading_context.get_intersector(),
                         shading_point,
                         m_max_distance,
@@ -126,14 +126,14 @@ namespace
                 occlusion =
                     compute_ambient_occlusion(
                         sampling_context,
-                        sample_hemisphere_cosine<double>,
+                        sample_hemisphere_cosine<float>,
                         shading_context.get_intersector(),
                         shading_point,
                         m_max_distance,
                         m_samples);
             }
 
-            const float accessibility = static_cast<float>(1.0 - occlusion);
+            const float accessibility = static_cast<float>(1.0f - occlusion);
             shading_result.m_main = Color4f(accessibility, accessibility, accessibility, 1.0f);
         }
 
@@ -145,7 +145,7 @@ namespace
         };
 
         const size_t    m_samples;
-        const double    m_max_distance;
+        const float     m_max_distance;
         SamplingMethod  m_sampling_method;
     };
 }

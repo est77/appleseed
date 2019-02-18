@@ -146,7 +146,7 @@ void OSLShaderGroupExec::execute_bump(
             VisibilityFlags::SubsurfaceRay);
 
         CompositeSubsurfaceClosure c(
-            Basis3f(shading_point.get_shading_basis()),
+            shading_point.get_shading_basis(),
             shading_point.get_osl_shader_globals().Ci,
             m_arena);
 
@@ -155,7 +155,7 @@ void OSLShaderGroupExec::execute_bump(
         {
             const size_t index = c.choose_closure(s[1]);
             shading_point.set_shading_basis(
-                Basis3d(c.get_closure_shading_basis(index)));
+                c.get_closure_shading_basis(index));
         }
     }
     else
@@ -224,7 +224,7 @@ void OSLShaderGroupExec::choose_bsdf_closure_shading_basis(
     const Vector2f&                 s) const
 {
     CompositeSurfaceClosure c(
-        Basis3f(shading_point.get_shading_basis()),
+        shading_point.get_shading_basis(),
         shading_point.get_osl_shader_globals().Ci,
         m_arena);
 
@@ -235,7 +235,7 @@ void OSLShaderGroupExec::choose_bsdf_closure_shading_basis(
 
     const size_t index = c.choose_closure(s[1], num_closures, pdfs);
     shading_point.set_shading_basis(
-        Basis3d(c.get_closure_shading_basis(index)));
+        c.get_closure_shading_basis(index));
 }
 
 }   // namespace renderer

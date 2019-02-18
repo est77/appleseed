@@ -50,7 +50,7 @@ namespace renderer
 
 void LightSample::make_shading_point(
     ShadingPoint&           shading_point,
-    const Vector3d&         direction,
+    const Vector3f&         direction,
     const Intersector&      intersector) const
 {
     assert(m_triangle && !m_light);
@@ -60,8 +60,8 @@ void LightSample::make_shading_point(
         ShadingRay(
             m_point,
             direction,
-            0.0,
-            0.0,
+            0.0f,
+            0.0f,
             ShadingRay::Time(),
             VisibilityFlags::CameraRay, 0),
         ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)

@@ -76,7 +76,7 @@ class LightPathsWidget
     QImage capture() override;
 
     void set_transform(
-        const foundation::Transformd&       transform);
+        const foundation::Transformf&       transform);
 
     void set_light_paths(
         const renderer::LightPathArray&     light_paths);

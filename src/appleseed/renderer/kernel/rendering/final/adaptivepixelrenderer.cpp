@@ -225,10 +225,10 @@ namespace
                 for (size_t i = 0; i < batch_size; ++i)
                 {
                     // Generate a uniform sample in [0,1)^2.
-                    const Vector2d s = sampling_context.next2<Vector2d>();
+                    const Vector2f s = sampling_context.next2<Vector2f>();
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
+                    const Vector2f sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
 
                     // Create a pixel context that identifies the pixel and sample currently being rendered.
                     const PixelContext pixel_context(pi, sample_position);

@@ -56,7 +56,7 @@ class MouseCoordinatesTracker
 
     ~MouseCoordinatesTracker() override;
 
-    foundation::Vector2d widget_to_ndc(const QPoint& point) const;
+    foundation::Vector2f widget_to_ndc(const QPoint& point) const;
     foundation::Vector2i widget_to_pixel(const QPoint& point) const;
 
   private:

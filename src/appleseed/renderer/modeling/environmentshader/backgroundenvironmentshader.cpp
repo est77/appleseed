@@ -80,7 +80,7 @@ namespace
         void evaluate(
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
-            const Vector3d&         direction,
+            const Vector3f&         direction,
             Spectrum&               value,
             Alpha&                  alpha) const override
         {

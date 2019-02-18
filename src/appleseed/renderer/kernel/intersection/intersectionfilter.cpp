@@ -158,7 +158,7 @@ void IntersectionFilter::do_update(
         return;
 
     // Build the alpha mask.
-    double transparency;
+    float transparency;
     unique_ptr<AlphaMask> alpha_mask(
         create_alpha_mask(
             alpha_map,
@@ -241,7 +241,7 @@ size_t IntersectionFilter::get_uv_memory_size() const
 IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
     const Source*           alpha_map,
     TextureCache&           texture_cache,
-    double&                 transparency)
+    float&                  transparency)
 {
     assert(alpha_map);
 
@@ -275,7 +275,7 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
     }
 
     // Compute the ratio of transparent texels to the total number of texels.
-    transparency = static_cast<double>(transparent_texel_count) / (hints.m_width * hints.m_height);
+    transparency = static_cast<float>(transparent_texel_count) / (hints.m_width * hints.m_height);
 
     return alpha_mask;
 }

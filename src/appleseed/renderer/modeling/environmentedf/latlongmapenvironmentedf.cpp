@@ -112,7 +112,7 @@ namespace
           , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
           , m_exposure_source(exposure_source)
-          , m_exposure_multiplier_source(exposure_multiplier_source) 
+          , m_exposure_multiplier_source(exposure_multiplier_source)
           , m_rcp_width(1.0f / width)
           , m_rcp_height(1.0f / height)
         {
@@ -265,8 +265,8 @@ namespace
                 Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
             // Transform the emission direction to world space.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             // Return the emitted radiance.
@@ -285,8 +285,8 @@ namespace
             assert(is_normalized(outgoing));
 
             // Transform the emission direction to local space.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.
@@ -321,8 +321,8 @@ namespace
             }
 
             // Transform the emission direction to local space.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.
@@ -354,8 +354,8 @@ namespace
             }
 
             // Transform the emission direction to local space.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            Transformf scratch;
+            const Transformf& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.

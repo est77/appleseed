@@ -54,23 +54,23 @@ namespace renderer
 //
 
 template <typename SamplingFunction>
-double compute_ambient_occlusion(
+float compute_ambient_occlusion(
     const SamplingContext&  sampling_context,
     SamplingFunction&       sampling_function,
     const Intersector&      intersector,
     const ShadingPoint&     shading_point,
-    const double            max_distance,
+    const float             max_distance,
     const size_t            sample_count)
 {
-    const foundation::Vector3d& geometric_normal = shading_point.get_geometric_normal();
-    const foundation::Basis3d& shading_basis = shading_point.get_shading_basis();
+    const foundation::Vector3f& geometric_normal = shading_point.get_geometric_normal();
+    const foundation::Basis3f& shading_basis = shading_point.get_shading_basis();
 
     // Create a sampling context.
     SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
 
     // Construct the ambient occlusion ray.
     ShadingRay ray;
-    ray.m_tmin = 0.0;
+    ray.m_tmin = 0.0f;
     ray.m_tmax = max_distance;
     ray.m_time = shading_point.get_time();
     ray.m_flags = VisibilityFlags::ProbeRay;
@@ -82,13 +82,13 @@ double compute_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a direction over the unit hemisphere.
-        ray.m_dir = sampling_function(child_sampling_context.next2<foundation::Vector2d>());
+        ray.m_dir = sampling_function(child_sampling_context.next2<foundation::Vector2f>());
 
         // Transform the direction to world space.
         ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);
 
         // Don't cast rays on or below the geometric surface.
-        if (foundation::dot(ray.m_dir, geometric_normal) <= 0.0)
+        if (foundation::dot(ray.m_dir, geometric_normal) <= 0.0f)
             continue;
 
         // Compute the ray origin.
@@ -103,11 +103,11 @@ double compute_ambient_occlusion(
     }
 
     // Compute occlusion as a scalar between 0.0 and 1.0.
-    double occlusion = static_cast<double>(occluded_samples);
+    float occlusion = static_cast<float>(occluded_samples);
     if (computed_samples > 1)
         occlusion /= computed_samples;
-    assert(occlusion >= 0.0);
-    assert(occlusion <= 1.0);
+    assert(occlusion >= 0.0f);
+    assert(occlusion <= 1.0f);
 
     return occlusion;
 }

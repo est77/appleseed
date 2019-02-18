@@ -61,25 +61,25 @@ class APPLESEED_DLLSYMBOL ScenePicker
   public:
     struct PickingResult
     {
-        foundation::Vector2d            m_ndc;
+        foundation::Vector2f            m_ndc;
 
         bool                            m_hit;
         ShadingPoint::PrimitiveType     m_primitive_type;
-        double                          m_distance;                     // world space
+        float                           m_distance;                     // world space
 
         foundation::Vector2f            m_bary;
         foundation::Vector2f            m_uv;
         foundation::Vector2f            m_duvdx;
         foundation::Vector2f            m_duvdy;
-        foundation::Vector3d            m_point;                        // world space
-        foundation::Vector3d            m_dpdu;                         // world space
-        foundation::Vector3d            m_dpdv;                         // world space
-        foundation::Vector3d            m_dndu;                         // world space
-        foundation::Vector3d            m_dndv;                         // world space
-        foundation::Vector3d            m_dpdx;                         // world space
-        foundation::Vector3d            m_dpdy;                         // world space
-        foundation::Vector3d            m_geometric_normal;             // world space
-        foundation::Vector3d            m_original_shading_normal;      // world space
+        foundation::Vector3f            m_point;                        // world space
+        foundation::Vector3f            m_dpdu;                         // world space
+        foundation::Vector3f            m_dpdv;                         // world space
+        foundation::Vector3f            m_dndu;                         // world space
+        foundation::Vector3f            m_dndv;                         // world space
+        foundation::Vector3f            m_dpdx;                         // world space
+        foundation::Vector3f            m_dpdy;                         // world space
+        foundation::Vector3f            m_geometric_normal;             // world space
+        foundation::Vector3f            m_original_shading_normal;      // world space
         ObjectInstance::Side            m_side;
 
         // Note: the (possibly perturbed) shading normal is excluded from picking results
@@ -87,7 +87,7 @@ class APPLESEED_DLLSYMBOL ScenePicker
 
         const Camera*                   m_camera;
         const AssemblyInstance*         m_assembly_instance;
-        foundation::Transformd          m_assembly_instance_transform;
+        foundation::Transformf          m_assembly_instance_transform;
         const Assembly*                 m_assembly;
         const ObjectInstance*           m_object_instance;
         const Object*                   m_object;
@@ -102,7 +102,7 @@ class APPLESEED_DLLSYMBOL ScenePicker
 
     ~ScenePicker();
 
-    PickingResult pick(const foundation::Vector2d& ndc) const;
+    PickingResult pick(const foundation::Vector2f& ndc) const;
 
   private:
     struct Impl;

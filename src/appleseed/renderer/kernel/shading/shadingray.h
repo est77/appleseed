@@ -58,13 +58,13 @@ namespace renderer
 //
 
 class ShadingRay
-  : public foundation::Ray3d
+  : public foundation::Ray3f
 {
   public:
     // Types.
-    typedef foundation::Vector3d    VectorType;
-    typedef foundation::Ray3d       RayType;
-    typedef foundation::RayInfo3d   RayInfoType;
+    typedef foundation::Vector3f    VectorType;
+    typedef foundation::Ray3f       RayType;
+    typedef foundation::RayInfo3f   RayInfoType;
     typedef foundation::uint16      DepthType;
 
     class Time
@@ -119,8 +119,8 @@ class ShadingRay
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const double                tmin,
-        const double                tmax,
+        const float                 tmin,
+        const float                 tmax,
         const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
@@ -184,8 +184,8 @@ inline ShadingRay::ShadingRay(
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const double                    tmin,
-    const double                    tmax,
+    const float                     tmin,
+    const float                     tmax,
     const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)

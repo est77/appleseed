@@ -88,9 +88,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             ShadingPointBuilder outgoing_builder(m_outgoing_point);
             outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-            outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
-            outgoing_builder.set_geometric_normal(Vector3d(0.0, 1.0, 0.0));
-            outgoing_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
+            outgoing_builder.set_point(Vector3f(0.0, 0.0, 0.0));
+            outgoing_builder.set_geometric_normal(Vector3f(0.0, 1.0, 0.0));
+            outgoing_builder.set_shading_basis(Basis3f(Vector3f(0.0, 1.0, 0.0)));
             outgoing_builder.set_side(ObjectInstance::FrontSide);
         }
 
@@ -153,8 +153,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ShadingPoint incoming_point;
             ShadingPointBuilder incoming_builder(incoming_point);
             incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-            incoming_builder.set_point(Vector3d(disk_radius, 0.0, 0.0));
-            incoming_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
+            incoming_builder.set_point(Vector3f(disk_radius, 0.0, 0.0));
+            incoming_builder.set_shading_basis(Basis3f(Vector3f(0.0, 1.0, 0.0)));
 
             Spectrum value;
             m_bssrdf->evaluate_profile(
@@ -173,8 +173,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ShadingPoint incoming_point;
             ShadingPointBuilder incoming_builder(incoming_point);
             incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-            incoming_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
-            incoming_builder.set_point(Vector3d(radius, 0.0, 0.0));
+            incoming_builder.set_shading_basis(Basis3f(Vector3f(0.0, 1.0, 0.0)));
+            incoming_builder.set_point(Vector3f(radius, 0.0, 0.0));
 
             Spectrum result;
             m_bssrdf->evaluate(
@@ -386,7 +386,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const ComputeRdBetterDipole better_rd_fun(Eta);
 
         const size_t PointCount = 1000;
-        vector<Vector2d> std_points, better_points;
+        vector<Vector2f> std_points, better_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -429,7 +429,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const ComputeRdStandardDipole rd_fun(1.0f);
-        vector<Vector2d> ai_points, ni_points;
+        vector<Vector2f> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -477,7 +477,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const ComputeRdBetterDipole rd_fun(1.0f);
-        vector<Vector2d> ai_points, ni_points;
+        vector<Vector2f> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -634,8 +634,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         //
 
         const size_t SampleCount = 1000;
-        vector<Vector2d> points_low_albedo;
-        vector<Vector2d> points_high_albedo;
+        vector<Vector2f> points_low_albedo;
+        vector<Vector2f> points_high_albedo;
 
         GnuplotFile plotfile;
         plotfile.set_title("Approximations for diffusion length");
@@ -673,7 +673,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         size_t transmitted_count_dwivedi = 0;
         vector<size_t> iterations_hist_classical(MaxIterations, 0);
         vector<size_t> iterations_hist_dwivedi(MaxIterations, 0);
-        vector<Vector2d> points;
+        vector<Vector2f> points;
 
         GnuplotFile plotfile;
         plotfile.set_title("Histogram of randomwalk iterations");
@@ -768,7 +768,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 6.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        vector<Vector2f> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -791,7 +791,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 20.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        vector<Vector2f> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -820,7 +820,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float s = normalized_diffusion_s_mfp(a);
 
             const size_t N = 1000;
-            vector<Vector2d> points;
+            vector<Vector2f> points;
 
             for (size_t j = 0; j < N; ++j)
             {
@@ -868,7 +868,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float s = normalized_diffusion_s_dmfp(a);
 
             const size_t N = 1000;
-            vector<Vector2d> points;
+            vector<Vector2f> points;
 
             for (size_t j = 0; j < N; ++j)
             {
@@ -910,7 +910,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 1.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        vector<Vector2f> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -1006,7 +1006,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const size_t N = 200;
-        vector<Vector2d> points;
+        vector<Vector2f> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
@@ -1075,7 +1075,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const size_t N = 200;
-        vector<Vector2d> points;
+        vector<Vector2f> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
@@ -1152,7 +1152,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        vector<Vector2f> points;
 
         for (size_t i = 0; i < N; ++i)
         {

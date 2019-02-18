@@ -84,8 +84,8 @@ namespace
           , m_window_width(static_cast<int>(frame.get_crop_window().extent()[0]))
           , m_window_height(static_cast<int>(frame.get_crop_window().extent()[1]))
           , m_sample_renderer(sample_renderer_factory->create(generator_index))
-          , m_window_width_next_pow2(next_power(static_cast<double>(m_window_width), 2.0))
-          , m_window_height_next_pow3(next_power(static_cast<double>(m_window_height), 3.0))
+          , m_window_width_next_pow2(next_power(static_cast<float>(m_window_width), 2.0f))
+          , m_window_height_next_pow3(next_power(static_cast<float>(m_window_height), 3.0f))
         {
         }
 
@@ -138,8 +138,8 @@ namespace
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         SamplingContext::RNGType            m_rng;
 
-        const double                        m_window_width_next_pow2;
-        const double                        m_window_height_next_pow3;
+        const float                         m_window_width_next_pow2;
+        const float                         m_window_height_next_pow3;
 
         Population<uint64>                  m_total_sampling_dim;
 
@@ -151,10 +151,10 @@ namespace
         {
             // Compute the sample position in NDC.
             const size_t Bases[2] = { 2, 3 };
-            const Vector2d s = halton_sequence<double, 2>(Bases, sequence_index);
+            const Vector2f s = halton_sequence<float, 2>(Bases, sequence_index);
 
             // Compute the coordinates of the pixel in the padded crop window.
-            const Vector2d t(s[0] * m_window_width_next_pow2, s[1] * m_window_height_next_pow3);
+            const Vector2f t(s[0] * m_window_width_next_pow2, s[1] * m_window_height_next_pow3);
             const int x = truncate<int>(t[0]);
             const int y = truncate<int>(t[1]);
 
@@ -164,7 +164,7 @@ namespace
 
             // Transform the sample position back to NDC. Full precision divisions are required
             // to ensure that the sample position indeed lies in the [0,1)^2 interval.
-            const Vector2d sample_position(
+            const Vector2f sample_position(
                 (m_window_origin_x + t[0]) / m_canvas_width,
                 (m_window_origin_y + t[1]) / m_canvas_height);
 

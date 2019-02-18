@@ -66,13 +66,13 @@ class APPLESEED_DLLSYMBOL ProjectPoints
     // Returns true if the projection was possible, false otherwise.
     bool project_point(
         const float                          time,
-        const foundation::Vector3d&          point,
-        foundation::Vector2d&                ndc) const;
+        const foundation::Vector3f&          point,
+        foundation::Vector2f&                ndc) const;
 
     // Similar to project_point(), except that the input point is expressed in camera space.
     bool project_camera_space_point(
-        const foundation::Vector3d&          point,
-        foundation::Vector2d&                ndc) const;
+        const foundation::Vector3f&          point,
+        foundation::Vector2f&                ndc) const;
 
   private:
     struct Impl;

@@ -751,7 +751,7 @@ namespace
 
             void add_direct_lighting_contribution_bsdf(
                 const ShadingPoint&         shading_point,
-                const Dual3d&               outgoing,
+                const Dual3f&               outgoing,
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
@@ -802,7 +802,7 @@ namespace
 
             void add_image_based_lighting_contribution_bsdf(
                 const ShadingPoint&         shading_point,
-                const Dual3d&               outgoing,
+                const Dual3f&               outgoing,
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,

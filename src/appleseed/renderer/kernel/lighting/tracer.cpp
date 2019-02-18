@@ -95,7 +95,7 @@ const ShadingPoint& Tracer::do_trace(
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
-    Vector3d point = ray.m_org;
+    Vector3f point = ray.m_org;
     size_t iterations = 0;
 
     m_shading_points[shading_point_index].clear();
@@ -208,7 +208,7 @@ const ShadingPoint& Tracer::do_trace(
 
 const ShadingPoint& Tracer::do_trace_between(
     const ShadingContext&       shading_context,
-    const foundation::Vector3d& target,
+    const foundation::Vector3f& target,
     const ShadingRay&           ray,
     Spectrum&                   transmission,
     const ShadingPoint*         parent_shading_point)
@@ -217,7 +217,7 @@ const ShadingPoint& Tracer::do_trace_between(
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
-    Vector3d point = ray.m_org;
+    Vector3f point = ray.m_org;
     size_t iterations = 0;
 
     m_shading_points[shading_point_index].clear();
@@ -296,7 +296,7 @@ const ShadingPoint& Tracer::do_trace_between(
         point = shading_point_ptr->get_point();
 
         // Continue the ray in the same direction.
-        const Vector3d direction = target - point;
+        const Vector3f direction = target - point;
         const double dist = norm(direction);
 
         ShadingRay next_ray(

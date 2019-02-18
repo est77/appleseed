@@ -91,7 +91,7 @@ ScenePicker::~ScenePicker()
     delete impl;
 }
 
-ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
+ScenePicker::PickingResult ScenePicker::pick(const Vector2f& ndc) const
 {
     PickingResult result;
 
@@ -99,21 +99,21 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
     result.m_hit = false;
     result.m_primitive_type = ShadingPoint::PrimitiveNone;
-    result.m_distance = numeric_limits<double>::max();
+    result.m_distance = numeric_limits<float>::max();
 
     result.m_bary = Vector2f(0.0);
     result.m_uv = Vector2f(0.0);
     result.m_duvdx = Vector2f(0.0);
     result.m_duvdy = Vector2f(0.0);
-    result.m_point = Vector3d(0.0);
-    result.m_dpdu = Vector3d(0.0);
-    result.m_dpdv = Vector3d(0.0);
-    result.m_dndu = Vector3d(0.0);
-    result.m_dndv = Vector3d(0.0);
-    result.m_dpdx = Vector3d(0.0);
-    result.m_dpdy = Vector3d(0.0);
-    result.m_geometric_normal = Vector3d(0.0);
-    result.m_original_shading_normal = Vector3d(0.0);
+    result.m_point = Vector3f(0.0);
+    result.m_dpdu = Vector3f(0.0);
+    result.m_dpdv = Vector3f(0.0);
+    result.m_dndu = Vector3f(0.0);
+    result.m_dndv = Vector3f(0.0);
+    result.m_dpdx = Vector3f(0.0);
+    result.m_dpdy = Vector3f(0.0);
+    result.m_geometric_normal = Vector3f(0.0);
+    result.m_original_shading_normal = Vector3f(0.0);
     result.m_side = ObjectInstance::FrontSide;
 
     result.m_camera = impl->m_project.get_uncached_active_camera();
@@ -134,13 +134,13 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
     const CanvasProperties& frame_props = impl->m_project.get_frame()->image().properties();
-    const Vector2d ndc_dx(1.0 / (4.0 * frame_props.m_canvas_width), 0.0);
-    const Vector2d ndc_dy(0.0, -1.0 / (4.0 * frame_props.m_canvas_height));
+    const Vector2f ndc_dx(1.0 / (4.0 * frame_props.m_canvas_width), 0.0);
+    const Vector2f ndc_dy(0.0, -1.0 / (4.0 * frame_props.m_canvas_height));
 
     ShadingRay ray;
     result.m_camera->spawn_ray(
         sampling_context,
-        Dual2d(ndc, ndc_dx, ndc_dy),
+        Dual2f(ndc, ndc_dx, ndc_dy),
         ray);
 
     ShadingPoint shading_point;

@@ -89,10 +89,10 @@ namespace
 
             if (shading_point.hit_surface())
             {
-                const Vector3d& p = shading_point.get_point();
-                out[0] = static_cast<float>(p[0]);
-                out[1] = static_cast<float>(p[1]);
-                out[2] = static_cast<float>(p[2]);
+                const Vector3f& p = shading_point.get_point();
+                out[0] = p[0];
+                out[1] = p[1];
+                out[2] = p[2];
             }
             else
             {

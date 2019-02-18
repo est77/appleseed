@@ -115,16 +115,16 @@ bool ProjectPoints::is_initialized() const
 
 bool ProjectPoints::project_point(
     const float              time,
-    const Vector3d&          point,
-    Vector2d&                ndc) const
+    const Vector3f&          point,
+    Vector2f&                ndc) const
 {
     assert(is_initialized());
     return impl->m_camera->project_point(time, point, ndc);
 }
 
 bool ProjectPoints::project_camera_space_point(
-    const Vector3d&          point,
-    Vector2d&                ndc) const
+    const Vector3f&          point,
+    Vector2f&                ndc) const
 {
     assert(is_initialized());
     return impl->m_camera->project_camera_space_point(point, ndc);

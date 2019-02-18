@@ -166,19 +166,19 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
 {
     const Intersector& intersector = shading_context.get_intersector();
 
-    const Vector3d& p = shading_point.get_point();
-    const Vector3d& n = shading_point.get_shading_normal();
+    const Vector3f& p = shading_point.get_point();
+    const Vector3f& n = shading_point.get_shading_normal();
     const ShadingRay& original_ray = shading_point.get_ray();
 
-    const Vector3d& I = original_ray.m_dir;
-    const Vector3d dIdx = normalize(original_ray.m_rx.m_dir - I);
-    const Basis3d basis(-I, dIdx);
+    const Vector3f& I = original_ray.m_dir;
+    const Vector3f dIdx = normalize(original_ray.m_rx.m_dir - I);
+    const Basis3f basis(-I, dIdx);
 
     // Construct the contour ray.
     ShadingRay ray;
     ray.m_org = original_ray.m_org;
     ray.m_tmin = original_ray.m_tmin;
-    ray.m_tmax = numeric_limits<double>::max();
+    ray.m_tmax = numeric_limits<float>::max();
     ray.m_time = original_ray.m_time;
     ray.m_flags = VisibilityFlags::ProbeRay;
     ray.m_depth = original_ray.m_depth;
@@ -187,14 +187,14 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
 
     // Sample radius. Use the average of the norm of dpdx and dpdy
     // and compensate for the fact that our differentials are 1/4 of a pixel.
-    const Vector3d& dpdx = shading_point.get_dpdx();
-    const Vector3d& dpdy = shading_point.get_dpdy();
-    const double pixel_radius = (norm(dpdx) + norm(dpdy)) * 2.0;
+    const Vector3f& dpdx = shading_point.get_dpdx();
+    const Vector3f& dpdy = shading_point.get_dpdy();
+    const float pixel_radius = (norm(dpdx) + norm(dpdy)) * 2.0f;
 
     const NPRContourInputValues* values =
         reinterpret_cast<const NPRContourInputValues*>(c.get_closure_input_values(closure_index));
 
-    const double contour_radius = static_cast<double>(values->m_width) * pixel_radius;
+    const float contour_radius = values->m_width * pixel_radius;
 
     int discontinuity_samples = 0;
     int total_samples = 0;
@@ -204,20 +204,20 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
 
     for (size_t q = 1, quality = values->m_quality; q <= quality; ++q)
     {
-        const double radius = (q * contour_radius) / static_cast<double>(quality);
+        const float radius = (q * contour_radius) / static_cast<float>(quality);
 
-        const double angle_step = 45.0 / static_cast<double>(q);
-        const double rad_angle_step = deg_to_rad(angle_step);
+        const float angle_step = 45.0f / static_cast<float>(q);
+        const float rad_angle_step = deg_to_rad(angle_step);
 
-        const size_t num_samples = static_cast<size_t>(360.0 / angle_step);
+        const size_t num_samples = static_cast<size_t>(360.0f / angle_step);
 
         for (size_t i = 0; i < num_samples; ++i)
         {
-            const double angle = static_cast<double>(i) * rad_angle_step;
-            const double x = sin(angle);
-            const double y = cos(angle);
+            const float angle = static_cast<float>(i) * rad_angle_step;
+            const float x = sin(angle);
+            const float y = cos(angle);
 
-            const Vector3d pp =
+            const Vector3f pp =
                 (radius * x * basis.get_tangent_u()) +
                 (radius * y * basis.get_tangent_v()) + p;
             ray.m_dir = normalize(pp - ray.m_org);
@@ -233,10 +233,10 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
             {
                 if (other_shading_point.hit_surface() && values->m_features & NPRContourFeatures::AllDifferenceFeatures)
                 {
-                    const double abs_x = abs(x);
-                    const double Eps = 1e-10;
+                    const float abs_x = abs(x);
+                    const float Eps = 1e-10f;
 
-                    if (feq(abs_x, 0.0, Eps) || feq(abs_x, 1.0, Eps))
+                    if (feq(abs_x, 0.0f, Eps) || feq(abs_x, 1.0f, Eps))
                     {
                         if (values->m_features & NPRContourFeatures::OcclusionEdges)
                         {
@@ -248,7 +248,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
 
                         if (values->m_features & NPRContourFeatures::CreaseEdges)
                         {
-                            const Vector3d& nc = other_shading_point.get_shading_normal();
+                            const Vector3f& nc = other_shading_point.get_shading_normal();
                             const float cos_nnc = static_cast<float>(dot(n, nc));
 
                             if (cos_nnc < values->m_cos_crease_threshold)

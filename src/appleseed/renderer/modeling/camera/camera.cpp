@@ -199,25 +199,25 @@ bool Camera::on_frame_begin(
 
 bool Camera::project_point(
     const float             time,
-    const Vector3d&         point,
-    Vector2d&               ndc) const
+    const Vector3f&         point,
+    Vector2f&               ndc) const
 {
     // Retrieve the camera transform.
-    Transformd scratch;
-    const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+    Transformf scratch;
+    const Transformf& transform = m_transform_sequence.evaluate(time, scratch);
 
     // Transform the point from world space to camera space.
-    const Vector3d point_camera = transform.point_to_local(point);
+    const Vector3f point_camera = transform.point_to_local(point);
 
     return project_camera_space_point(point_camera, ndc);
 }
 
-Vector2d Camera::extract_film_dimensions() const
+Vector2f Camera::extract_film_dimensions() const
 {
-    const Vector2d DefaultFilmDimensions(0.025, 0.025);     // in meters
-    const double DefaultAspectRatio = DefaultFilmDimensions[0] / DefaultFilmDimensions[1];
+    const Vector2f DefaultFilmDimensions(0.025f, 0.025f);     // in meters
+    const float DefaultAspectRatio = DefaultFilmDimensions[0] / DefaultFilmDimensions[1];
 
-    Vector2d film_dimensions;
+    Vector2f film_dimensions;
 
     if (has_params("film_width", "film_height"))
     {
@@ -226,20 +226,20 @@ Vector2d Camera::extract_film_dimensions() const
     }
     else if (has_params("film_width", "aspect_ratio"))
     {
-        const double aspect_ratio = get_greater_than_zero("aspect_ratio", DefaultAspectRatio);
+        const float aspect_ratio = get_greater_than_zero("aspect_ratio", DefaultAspectRatio);
         film_dimensions[0] = get_greater_than_zero("film_width", DefaultFilmDimensions[0]);
         film_dimensions[1] = film_dimensions[0] / aspect_ratio;
     }
     else if (has_params("film_height", "aspect_ratio"))
     {
-        const double aspect_ratio = get_greater_than_zero("aspect_ratio", DefaultAspectRatio);
+        const float aspect_ratio = get_greater_than_zero("aspect_ratio", DefaultAspectRatio);
         film_dimensions[1] = get_greater_than_zero("film_height", DefaultFilmDimensions[1]);
         film_dimensions[0] = film_dimensions[1] * aspect_ratio;
     }
     else
     {
         film_dimensions =
-            m_params.get_required<Vector2d>("film_dimensions", DefaultFilmDimensions);
+            m_params.get_required<Vector2f>("film_dimensions", DefaultFilmDimensions);
 
         if (film_dimensions[0] <= 0.0 || film_dimensions[1] <= 0.0)
         {
@@ -260,11 +260,11 @@ Vector2d Camera::extract_film_dimensions() const
     return film_dimensions;
 }
 
-double Camera::extract_near_z() const
+float Camera::extract_near_z() const
 {
-    const double DefaultNearZ = -0.001;         // in meters
+    const float DefaultNearZ = -0.001f;         // in meters
 
-    double near_z = m_params.get_optional<double>("near_z", DefaultNearZ);
+    float near_z = m_params.get_optional<float>("near_z", DefaultNearZ);
 
     if (near_z > 0.0)
     {
@@ -281,11 +281,11 @@ double Camera::extract_near_z() const
     return near_z;
 }
 
-Vector2d Camera::extract_shift() const
+Vector2f Camera::extract_shift() const
 {
-    return Vector2d(
-        m_params.get_optional<double>("shift_x", 0.0),
-        m_params.get_optional<double>("shift_y", 0.0));
+    return Vector2f(
+        m_params.get_optional<float>("shift_x", 0.0f),
+        m_params.get_optional<float>("shift_y", 0.0f));
 }
 
 void Camera::check_shutter_times_for_consistency() const
@@ -491,7 +491,7 @@ void Camera::initialize_ray(
     ShadingRay&             ray) const
 {
     ray.m_tmin = 0.0;
-    ray.m_tmax = numeric_limits<double>::max();
+    ray.m_tmax = numeric_limits<float>::max();
     ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 
@@ -644,11 +644,11 @@ bool Camera::has_params(const char* name1, const char* name2) const
     return has_param(name1) && has_param(name2);
 }
 
-double Camera::get_greater_than_zero(
+float Camera::get_greater_than_zero(
     const char*     name,
-    const double    default_value) const
+    const float    default_value) const
 {
-    const double value = m_params.get_required<double>(name, default_value);
+    const float value = m_params.get_required<float>(name, default_value);
 
     if (value <= 0.0)
     {

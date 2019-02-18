@@ -115,7 +115,7 @@ namespace
         vector<AABBType>*               triangle_bboxes,
         size_t&                         triangle_vertex_count)
     {
-        const Transformd& transform = object_instance.get_transform();
+        const Transformf& transform = object_instance.get_transform();
         const size_t triangle_count = tess.m_primitives.size();
 
         if (save_memory)
@@ -202,7 +202,7 @@ namespace
         const ObjectInstance&           object_instance,
         const size_t                    object_instance_index,
         const StaticTriangleTess&       tess,
-        const double                    time,
+        const float                     time,
         const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
         vector<TriangleVertexInfo>*     triangle_vertex_infos,
@@ -210,7 +210,7 @@ namespace
         vector<AABBType>*               triangle_bboxes,
         size_t&                         triangle_vertex_count)
     {
-        const Transformd& transform = object_instance.get_transform();
+        const Transformf& transform = object_instance.get_transform();
         const size_t motion_segment_count = tess.get_motion_segment_count();
         const size_t triangle_count = tess.m_primitives.size();
 
@@ -317,7 +317,7 @@ namespace
     template <typename AABBType>
     void collect_triangles(
         const TriangleTree::Arguments&  arguments,
-        const double                    time,
+        const float                     time,
         const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
         vector<TriangleVertexInfo>*     triangle_vertex_infos,
@@ -403,7 +403,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         format("while building triangle tree for assembly \"{0}\"", m_arguments.m_assembly.get_path()));
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
-    const double time = params.get_optional<double>("time", 0.5);
+    const float time = params.get_optional<float>("time", 0.5f);
     const bool save_memory = params.get_optional<bool>("save_temporary_memory", false);
 
     // Start stopwatch.
@@ -496,7 +496,7 @@ namespace
 
 void TriangleTree::build_bvh(
     const ParamArray&   params,
-    const double        time,
+    const float         time,
     const bool          save_memory,
     Statistics&         statistics)
 {
@@ -519,7 +519,7 @@ void TriangleTree::build_bvh(
         &triangle_vertex_infos,
         nullptr,
         &triangle_bboxes);
-    const double collection_time = stopwatch.measure().get_seconds();
+    const float collection_time = stopwatch.measure().get_seconds();
 
     // Store the number of static and moving triangles.
     m_static_triangle_count = count_static_triangles(triangle_vertex_infos);
@@ -556,7 +556,7 @@ void TriangleTree::build_bvh(
         triangle_keys.size(),
         max_leaf_size);
     statistics.merge(
-        bvh::TreeStatistics<TriangleTree>(*this, AABB3d(m_arguments.m_bbox)));
+        bvh::TreeStatistics<TriangleTree>(*this, AABB3f(m_arguments.m_bbox)));
 
     stopwatch.start();
 
@@ -589,7 +589,7 @@ void TriangleTree::build_bvh(
         triangle_keys,
         statistics);
 
-    const double store_time = stopwatch.measure().get_seconds();
+    const float store_time = stopwatch.measure().get_seconds();
 
     statistics.insert_time("collection time", collection_time);
     statistics.insert_time("partition time", builder.get_build_time());
@@ -598,7 +598,7 @@ void TriangleTree::build_bvh(
 
 void TriangleTree::build_sbvh(
     const ParamArray&   params,
-    const double        time,
+    const float         time,
     const bool          save_memory,
     Statistics&         statistics)
 {
@@ -612,7 +612,7 @@ void TriangleTree::build_sbvh(
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
     vector<GVector3> triangle_vertices;
-    vector<AABB3d> triangle_bboxes;
+    vector<AABB3f> triangle_bboxes;
     stopwatch.start();
     collect_triangles(
         m_arguments,
@@ -622,7 +622,7 @@ void TriangleTree::build_sbvh(
         &triangle_vertex_infos,
         &triangle_vertices,
         &triangle_bboxes);
-    const double collection_time = stopwatch.measure().get_seconds();
+    const float collection_time = stopwatch.measure().get_seconds();
 
     // Store the number of static and moving triangles.
     m_static_triangle_count = count_static_triangles(triangle_vertex_infos);
@@ -644,7 +644,7 @@ void TriangleTree::build_sbvh(
     const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
 
     // Create the partitioner.
-    typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d>> Partitioner;
+    typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3f>> Partitioner;
     TriangleItemHandler triangle_handler(
         triangle_vertex_infos,
         triangle_vertices,
@@ -659,7 +659,7 @@ void TriangleTree::build_sbvh(
 
     // Create the root leaf.
     Partitioner::LeafType* root_leaf = partitioner.create_root_leaf();
-    const AABB3d root_leaf_bbox = partitioner.compute_leaf_bbox(*root_leaf);
+    const AABB3f root_leaf_bbox = partitioner.compute_leaf_bbox(*root_leaf);
 
     // Build the tree.
     typedef bvh::SpatialBuilder<TriangleTree, Partitioner> Builder;
@@ -669,7 +669,7 @@ void TriangleTree::build_sbvh(
         partitioner,
         root_leaf,
         root_leaf_bbox);
-    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(m_arguments.m_bbox)));
+    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3f(m_arguments.m_bbox)));
 
     // Add splits statistics.
     const size_t spatial_splits = partitioner.get_spatial_split_count();
@@ -700,7 +700,7 @@ void TriangleTree::build_sbvh(
         triangle_keys,
         statistics);
 
-    const double store_time = stopwatch.measure().get_seconds();
+    const float store_time = stopwatch.measure().get_seconds();
 
     statistics.insert_time("collection time", collection_time);
     statistics.insert_time("partition time", builder.get_build_time());
@@ -784,7 +784,7 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
             node.set_left_bbox_index(m_node_bboxes.size());
 
             for (vector<GAABB3>::const_iterator i = left_bboxes.begin(); i != left_bboxes.end(); ++i)
-                m_node_bboxes.push_back(swizzle(AABB3d(*i)));
+                m_node_bboxes.push_back(swizzle(AABB3f(*i)));
         }
 
         if (right_bboxes.size() > 1)
@@ -792,7 +792,7 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
             node.set_right_bbox_index(m_node_bboxes.size());
 
             for (vector<GAABB3>::const_iterator i = right_bboxes.begin(); i != right_bboxes.end(); ++i)
-                m_node_bboxes.push_back(swizzle(AABB3d(*i)));
+                m_node_bboxes.push_back(swizzle(AABB3f(*i)));
         }
 
         const size_t bbox_count = max(left_bboxes.size(), right_bboxes.size());
@@ -840,7 +840,7 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
             {
                 bboxes[m + 1].invalidate();
 
-                const double time = static_cast<double>(m + 1) / max_motion_segment_count;
+                const float time = static_cast<float>(m + 1) / max_motion_segment_count;
 
                 for (size_t i = 0; i < item_count; ++i)
                 {
@@ -1351,9 +1351,9 @@ namespace
 
 bool TriangleLeafVisitor::visit(
     const TriangleTree::NodeType&           node,
-    const Ray3d&                            ray,
-    const RayInfo3d&                        ray_info,
-    double&                                 distance
+    const Ray3f&                            ray,
+    const RayInfo3f&                        ray_info,
+    float&                                  distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , bvh::TraversalStatistics&             stats
 #endif
@@ -1397,7 +1397,7 @@ bool TriangleLeafVisitor::visit(
             const TriangleReader triangle_reader(triangle);
 
             // Intersect the triangle.
-            double t, u, v;
+            float t, u, v;
             if (triangle_reader.m_triangle.intersect(ray, t, u, v))
             {
                 // Optionally filter intersections.
@@ -1430,7 +1430,7 @@ bool TriangleLeafVisitor::visit(
             }
 
             // Advance to the motion step immediately before the ray time.
-            const double base_time = m_shading_point.m_ray.m_time.m_normalized * motion_segment_count;
+            const float base_time = m_shading_point.m_ray.m_time.m_normalized * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
             reader += base_index * TriangleSize;
 
@@ -1452,7 +1452,7 @@ bool TriangleLeafVisitor::visit(
             const TriangleReader reader(triangle);
 
             // Intersect the triangle.
-            double t, u, v;
+            float t, u, v;
             if (reader.m_triangle.intersect(ray, t, u, v))
             {
                 // Optionally filter intersections.
@@ -1505,9 +1505,9 @@ void TriangleLeafVisitor::read_hit_triangle_data() const
 
 bool TriangleLeafProbeVisitor::visit(
     const TriangleTree::NodeType&           node,
-    const Ray3d&                            ray,
-    const RayInfo3d&                        ray_info,
-    double&                                 distance
+    const Ray3f&                            ray,
+    const RayInfo3f&                        ray_info,
+    float&                                  distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , bvh::TraversalStatistics&             stats
 #endif
@@ -1567,7 +1567,7 @@ bool TriangleLeafProbeVisitor::visit(
             }
 
             // Advance to the motion step immediately before the ray time.
-            const double base_time = m_ray_time * motion_segment_count;
+            const float base_time = m_ray_time * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
             reader += base_index * TriangleSize;
 

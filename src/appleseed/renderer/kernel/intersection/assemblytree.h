@@ -71,7 +71,7 @@ namespace renderer
 class AssemblyTree
   : public foundation::bvh::Tree<
                foundation::AlignedVector<
-                   foundation::bvh::Node<foundation::AABB3d>
+                   foundation::bvh::Node<foundation::AABB3f>
                >
            >
 {
@@ -122,7 +122,7 @@ class AssemblyTree
     };
 
     typedef std::vector<Item> ItemVector;
-    typedef std::vector<foundation::AABB3d> AABBVector;
+    typedef std::vector<foundation::AABB3f> AABBVector;
     typedef std::vector<const Assembly*> AssemblyVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
@@ -205,7 +205,7 @@ class AssemblyLeafVisitor
         const AssemblyTree::NodeType&               node,
         const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
-        double&                                     distance
+        float&                                      distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     stats
 #endif
@@ -256,7 +256,7 @@ class AssemblyLeafProbeVisitor
         const AssemblyTree::NodeType&               node,
         const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
-        double&                                     distance
+        float&                                      distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     stats
 #endif

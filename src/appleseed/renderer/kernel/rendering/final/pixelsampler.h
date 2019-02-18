@@ -65,17 +65,17 @@ class PixelSampler
     void sample(
         const int               sx,
         const int               sy,
-        foundation::Vector2d&   sample_position) const;
+        foundation::Vector2f&   sample_position) const;
     void sample(
         const int               sx,
         const int               sy,
-        foundation::Vector2d&   sample_position,
+        foundation::Vector2f&   sample_position,
         size_t&                 initial_instance) const;
 
   private:
     size_t                      m_subpixel_grid_size;
-    double                      m_rcp_subpixel_grid_size;   // 1.0 / subpixel_grid_size
-    double                      m_rcp_period;               // 1.0 / m_period
+    float                       m_rcp_subpixel_grid_size;   // 1.0 / subpixel_grid_size
+    float                       m_rcp_period;               // 1.0 / m_period
     size_t                      m_log_period;               // log2(m_period)
     size_t                      m_period;                   // m_sigma.size()
     size_t                      m_period_mask;              // m_period - 1
@@ -90,13 +90,13 @@ class PixelSampler
 APPLESEED_FORCE_INLINE void PixelSampler::sample(
     const int                   sx,
     const int                   sy,
-    foundation::Vector2d&       sample_position) const
+    foundation::Vector2f&       sample_position) const
 {
     // Compute the sample coordinates in image space.
     if (m_subpixel_grid_size == 1)
     {
-        sample_position[0] = sx + 0.5;
-        sample_position[1] = sy + 0.5;
+        sample_position[0] = sx + 0.5f;
+        sample_position[1] = sy + 0.5f;
     }
     else
     {
@@ -113,7 +113,7 @@ APPLESEED_FORCE_INLINE void PixelSampler::sample(
 APPLESEED_FORCE_INLINE void PixelSampler::sample(
     const int                   sx,
     const int                   sy,
-    foundation::Vector2d&       sample_position,
+    foundation::Vector2f&       sample_position,
     size_t&                     initial_instance) const
 {
     const size_t j = sx & m_period_mask;
@@ -126,8 +126,8 @@ APPLESEED_FORCE_INLINE void PixelSampler::sample(
     // Compute the sample coordinates in image space.
     if (m_subpixel_grid_size == 1)
     {
-        sample_position[0] = sx + 0.5;
-        sample_position[1] = sy + 0.5;
+        sample_position[0] = sx + 0.5f;
+        sample_position[1] = sy + 0.5f;
     }
     else
     {

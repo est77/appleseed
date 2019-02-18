@@ -123,8 +123,8 @@ TEST_SUITE(Renderer_Modeling_Volume)
         float integrate_volume_pdf(const Volume& volume)
         {
             ShadingRay shading_ray;
-            shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
-            shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
+            shading_ray.m_org = Vector3f(0.0f, 0.0f, 0.0f);
+            shading_ray.m_dir = Vector3f(1.0f, 0.0f, 0.0f);
             void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
             volume.prepare_inputs(m_arena, shading_ray, data);
 
@@ -146,8 +146,8 @@ TEST_SUITE(Renderer_Modeling_Volume)
         Vector3f get_sampling_bias(const Volume& volume)
         {
             ShadingRay shading_ray;
-            shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
-            shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
+            shading_ray.m_org = Vector3f(0.0f, 0.0f, 0.0f);
+            shading_ray.m_dir = Vector3f(1.0f, 0.0f, 0.0f);
 
             void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
             volume.prepare_inputs(m_arena, shading_ray, data);
@@ -171,8 +171,8 @@ TEST_SUITE(Renderer_Modeling_Volume)
         float get_aposteriori_average_cosine(const Volume& volume)
         {
             ShadingRay shading_ray;
-            shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
-            shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
+            shading_ray.m_org = Vector3f(0.0f, 0.0f, 0.0f);
+            shading_ray.m_dir = Vector3f(1.0f, 0.0f, 0.0f);
 
             void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
             volume.prepare_inputs(m_arena, shading_ray, data);
@@ -195,8 +195,8 @@ TEST_SUITE(Renderer_Modeling_Volume)
         vector<Vector2f> generate_samples_for_plot(const Volume& volume)
         {
             ShadingRay shading_ray;
-            shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
-            shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
+            shading_ray.m_org = Vector3f(0.0f, 0.0f, 0.0f);
+            shading_ray.m_dir = Vector3f(1.0f, 0.0f, 0.0f);
 
             void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
             volume.prepare_inputs(m_arena, shading_ray, data);

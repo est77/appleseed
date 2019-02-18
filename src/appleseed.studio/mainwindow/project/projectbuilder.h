@@ -175,7 +175,7 @@ inline void copy_transform_sequence(
     for (size_t i = 0, e = src_entity->transform_sequence().size(); i < e; ++i)
     {
         float time;
-        foundation::Transformd transform;
+        foundation::Transformf transform;
         src_entity->transform_sequence().get_transform(i, time, transform);
         dst_entity->transform_sequence().set_transform(time, transform);
     }
@@ -188,7 +188,7 @@ inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<renderer::EnvironmentEDF> new_entity(create_entity<renderer::EnvironmentEDF>(values));
-    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get(); 
+    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get();
 
     copy_transform_sequence(old_entity, new_entity_ptr);
 
@@ -226,7 +226,7 @@ inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
     const foundation::Dictionary&       values) const
 {
     const std::string object_name = old_entity->get_object_name();
-    const foundation::Transformd transform = old_entity->get_transform();
+    const foundation::Transformf transform = old_entity->get_transform();
     const foundation::StringDictionary front_material_mappings = old_entity->get_front_material_mappings();
     const foundation::StringDictionary back_material_mappings = old_entity->get_back_material_mappings();
     const std::string name = get_entity_name(values);
