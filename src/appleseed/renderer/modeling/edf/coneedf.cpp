@@ -197,11 +197,6 @@ namespace
             return sample_cone_uniform_pdf(m_cos_half_angle);
         }
 
-        float get_uncached_max_contribution() const override
-        {
-            return get_max_contribution("radiance", "radiance_multiplier", "exposure");
-        }
-
       private:
         typedef ConeEDFInputValues InputValues;
 

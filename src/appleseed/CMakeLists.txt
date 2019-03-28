@@ -219,6 +219,7 @@ set (foundation_math_intersection_sources
     foundation/math/intersection/frustumsegment.h
     foundation/math/intersection/planesegment.h
     foundation/math/intersection/rayaabb.h
+    foundation/math/intersection/rayparallelogram.h
     foundation/math/intersection/rayplane.h
     foundation/math/intersection/raysphere.h
     foundation/math/intersection/raytrianglehh.h
@@ -278,6 +279,8 @@ set (foundation_math_sampling_sources
     foundation/math/sampling/qmcsamplingcontext.h
     foundation/math/sampling/rngsamplingcontext.h
     foundation/math/sampling/sphericalimportancesampler.h
+    foundation/math/sampling/sphericalrectanglesampler.h
+    foundation/math/sampling/sphericaltrianglesampler.h
 )
 list (APPEND appleseed_sources
     ${foundation_math_sampling_sources}
@@ -522,6 +525,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_sphericalimportancesampler.cpp
     foundation/meta/tests/test_spline.cpp
+    foundation/meta/tests/test_stampedptr.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp
     foundation/meta/tests/test_stopwatch.cpp
@@ -896,6 +900,7 @@ set (foundation_utility_sources
     foundation/utility/settings.h
     foundation/utility/siphash.cpp
     foundation/utility/siphash.h
+    foundation/utility/stampedptr.h
     foundation/utility/statistics.cpp
     foundation/utility/statistics.h
     foundation/utility/stopwatch.h
@@ -1140,13 +1145,10 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightpathrecorder.h
     renderer/kernel/lighting/lightpathstream.cpp
     renderer/kernel/lighting/lightpathstream.h
-    renderer/kernel/lighting/lightsample.cpp
     renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/lightsamplerbase.cpp
     renderer/kernel/lighting/lightsamplerbase.h
-    renderer/kernel/lighting/lighttree.cpp
-    renderer/kernel/lighting/lighttree.h
-    renderer/kernel/lighting/lighttree_node.h
+    renderer/kernel/lighting/lighttypes.cpp
     renderer/kernel/lighting/lighttypes.h
     renderer/kernel/lighting/materialsamplers.cpp
     renderer/kernel/lighting/materialsamplers.h
@@ -1878,6 +1880,10 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/objecttraits.h
     renderer/modeling/object/proceduralobject.cpp
     renderer/modeling/object/proceduralobject.h
+    renderer/modeling/object/rectobject.cpp
+    renderer/modeling/object/rectobject.h
+    renderer/modeling/object/sphereobject.cpp
+    renderer/modeling/object/sphereobject.h
     renderer/modeling/object/triangle.h
 )
 list (APPEND appleseed_sources

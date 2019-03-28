@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Petra Gospodnetic, The appleseedhq Organization
+// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,79 +29,63 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-#include "foundation/math/bvh.h"
+#include "foundation/math/intersection/rayplane.h"
+#include "foundation/math/ray.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
+#include <cassert>
+#include <cmath>
 #include <cstddef>
 
-namespace renderer
+namespace foundation
 {
 
 //
-// LightTreeNode class implementation.
+// 3D ray-parallelogram intersection functions.
 //
 
-template <typename AABB>
-class LightTreeNode
-  : public foundation::bvh::Node<AABB>
+template <typename T>
+bool intersect_parallelogram(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     corner,
+    const Vector<T, 3>&     x,
+    const Vector<T, 3>&     y,
+    const Vector<T, 3>&     n,
+    T&                      t,
+    T&                      u,
+    T&                      v)
 {
-  public:
-    LightTreeNode()
-      : m_importance(0.0f)
-      , m_root(false)
-      , m_parent(0)
-    {
-    }
+    if (!intersect(ray, corner, n, t))
+        return false;
 
-    float get_importance() const
-    {
-        return m_importance;
-    }
+    if (t <= ray.m_tmin || t >= ray.m_tmax)
+        return false;
 
-    size_t get_level() const
-    {
-        return m_tree_level;
-    }
+    const Vector<T, 3> vi = ray.point_at(t) - corner;
 
-    size_t get_parent() const
-    {
-        return m_parent;
-    }
+    u = dot(x, vi);
+    if (u < T(0.0) || u > T(1.0))
+        return false;
 
-    bool is_root() const
-    {
-        return m_root;
-    }
+    v = dot(y, vi);
+    if (v < T(0.0) || v > T(1.0))
+        return false;
 
-    void set_importance(const float importance)
-    {
-        m_importance = importance;
-    }
+    return true;
+}
 
-    // todo: set this during the construction
-    void set_level(const size_t node_level)
-    {
-        m_tree_level = node_level;
-    }
+template <typename T>
+bool intersect_parallelogram(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     corner,
+    const Vector<T, 3>&     x,
+    const Vector<T, 3>&     y,
+    const Vector<T, 3>&     n)
+{
+    T t, u, v;
+    return intersect_parallelogram(ray, corner, x, y, n, t, u, v);
+}
 
-    // todo: set this during the construction
-    void set_parent(const size_t node_parent)
-    {
-        m_parent = node_parent;
-    }
-
-    // todo: set this during the construction
-    void set_root()
-    {
-        m_root = true;
-    }
-
-  private:
-    float   m_importance;
-    size_t  m_tree_level;
-    size_t  m_parent;
-    bool    m_root;
-};
-
-}   // namespace renderer
+}   // namespace foundation

@@ -176,7 +176,8 @@ Vector<T, 3> sample_spherical_triangle_uniform(
     const Vector<T, 3>& v0,
     const Vector<T, 3>& v1,
     const Vector<T, 3>& v2,
-    const Vector<T, 2>& eta);
+    const Vector<T, 2>& eta,
+    T*                  pdf = nullptr);
 
 
 //
@@ -569,7 +570,8 @@ Vector<T, 3> sample_spherical_triangle_uniform(
     const Vector<T, 3>& A,
     const Vector<T, 3>& B,
     const Vector<T, 3>& C,
-    const Vector<T, 2>& eta)
+    const Vector<T, 2>& eta,
+    T*                  triangle_area)
 {
     // Compute the arc lengths of the sides of the spherical triangle.
     T a, b, c;
@@ -606,6 +608,9 @@ Vector<T, 3> sample_spherical_triangle_uniform(
 
     // Use the other random variable to select cos(theta).
     const T z = T(1.0) - eta[1] * (T(1.0) - dot_C_hat_B);
+
+    if (triangle_area)
+        *triangle_area = area;
 
     // Construct the corresponding point on the sphere.
     return z * B + std::sqrt(T(1.0) - z * z) * normalize(C_hat - dot_C_hat_B * B);

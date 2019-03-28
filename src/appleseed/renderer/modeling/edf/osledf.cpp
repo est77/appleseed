@@ -225,12 +225,6 @@ namespace
             return probability;
         }
 
-        float get_uncached_max_contribution() const override
-        {
-            // We can't know the max contribution of OSL EDFs.
-            return numeric_limits<float>::max();
-        }
-
       private:
         auto_release_ptr<EDF> m_diffuse_edf;
 

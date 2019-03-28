@@ -131,12 +131,14 @@ void LightPathStream::hit_emitter(
     m_hit_emitter_data.push_back(data);
 }
 
-void LightPathStream::sampled_emitting_triangle(
-    const EmittingTriangle& triangle,
+void LightPathStream::sampled_emitting_shape(
+    const EmittingShape*    shape,
     const Vector3d&         emission_position,
     const Spectrum&         material_value,
     const Spectrum&         emitted_radiance)
 {
+    assert(shape != nullptr);
+
     Event event;
     event.m_type = EventType::SampledEmitter;
     event.m_data_index = static_cast<uint8>(m_sampled_emitter_data.size());
@@ -144,8 +146,8 @@ void LightPathStream::sampled_emitting_triangle(
 
     SampledEmitterData data;
     data.m_entity =
-        triangle.m_assembly_instance->get_assembly().object_instances().get_by_index(
-            triangle.m_object_instance_index);
+        shape->get_assembly_instance()->get_assembly().object_instances().get_by_index(
+            shape->get_object_instance_index());
     data.m_vertex_position = Vector3f(emission_position);
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);

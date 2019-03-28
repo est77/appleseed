@@ -68,6 +68,14 @@ T compute_spherical_triangle_area(
     const T             beta,
     const T             gamma);
 
+// Compute the surface area of a spherical triangle on the unit sphere,
+// given its vertices.
+template <typename T>
+T compute_spherical_triangle_area(
+    const Vector<T, 3>& A,
+    const Vector<T, 3>& B,
+    const Vector<T, 3>& C);
+
 
 //
 // Implementation.
@@ -121,6 +129,21 @@ T compute_spherical_triangle_area(
     const T             gamma)
 {
     return alpha + beta + gamma - Pi<T>();
+}
+
+template <typename T>
+T compute_spherical_triangle_area(
+    const Vector<T, 3>& A,
+    const Vector<T, 3>& B,
+    const Vector<T, 3>& C)
+{
+    T a, b, c;
+    compute_spherical_triangle_edge_lengths(A, B, C, a, b, c);
+
+    T alpha, beta, gamma;
+    compute_spherical_triangle_interior_angles(a, b, c, alpha, beta, gamma);
+
+    return compute_spherical_triangle_area(alpha, beta, gamma);
 }
 
 }   // namespace foundation

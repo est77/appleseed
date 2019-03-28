@@ -38,15 +38,12 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/cdf.h"
 
-// Standard headers.
-#include <functional>
-
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class AssemblyInstance; }
-namespace renderer      { class Material; }
-namespace renderer      { class MaterialArray; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class AssemblyInstance; }
+namespace renderer  { class Material; }
+namespace renderer  { class MaterialArray; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -62,9 +59,6 @@ class LightSamplerBase
   : public foundation::NonCopyable
 {
   public:
-    // Constructor.
-    explicit LightSamplerBase(const ParamArray& params);
-
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
 
@@ -74,7 +68,7 @@ class LightSamplerBase
         const size_t                        light_index,
         LightSample&                        light_sample,
         const float                         light_prob = 1.0f) const;
-  
+
   protected:
     struct Parameters
     {
@@ -84,55 +78,48 @@ class LightSamplerBase
     };
 
     typedef std::vector<NonPhysicalLightInfo> NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle> EmittingTriangleVector;
+    typedef std::vector<EmittingShape> EmittingShapeVector;
     typedef foundation::CDF<size_t, float> EmitterCDF;
-
-    typedef std::function<void (const NonPhysicalLightInfo&)> LightHandlingFunction;
-    typedef std::function<bool (const Material*, const float, const size_t)> TriangleHandlingFunction;
 
     const Parameters                        m_params;
 
     NonPhysicalLightVector                  m_non_physical_lights;
-    EmittingTriangleVector                  m_emitting_triangles;
+    EmittingShapeVector                     m_emitting_shapes;
 
     size_t                                  m_non_physical_light_count;
-    
+
     EmitterCDF                              m_non_physical_lights_cdf;
-    EmitterCDF                              m_emitting_triangles_cdf;
+    EmitterCDF                              m_emitting_shapes_cdf;
 
-    EmittingTriangleKeyHasher               m_triangle_key_hasher;
-    EmittingTriangleHashTable               m_emitting_triangle_hash_table;
+    EmittingShapeKeyHasher                  m_shape_key_hasher;
+    EmittingShapeHashTable                  m_emitting_shape_hash_table;
 
-    // Return metadata for parameters common to all light samplers.
-    static foundation::Dictionary get_params_metadata();
+    // Constructor.
+    explicit LightSamplerBase(const ParamArray& params);
 
-    // Build a hash table that allows to find the emitting triangle at a given shading point.
-    void build_emitting_triangle_hash_table();
+    // Build a hash table that allows to find the emitting shape at a given shading point.
+    void build_emitting_shape_hash_table();
 
-    // Recursively collect emitting triangles from a given set of assembly instances.
-    void collect_emitting_triangles(
+    // Recursively collect emitting shapes from a given set of assembly instances.
+    void collect_emitting_shapes(
         const AssemblyInstanceContainer&    assembly_instances,
-        const TransformSequence&            parent_transform_seq,
-        const TriangleHandlingFunction&     triangle_handling);
+        const TransformSequence&            parent_transform_seq);
 
-    // Collect emitting triangles from a given assembly.
-    void collect_emitting_triangles(
+    // Collect emitting shapes from a given assembly.
+    void collect_emitting_shapes(
         const Assembly&                     assembly,
         const AssemblyInstance&             assembly_instance,
-        const TransformSequence&            transform_sequence,
-        const TriangleHandlingFunction&     triangle_handling);
+        const TransformSequence&            transform_sequence);
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
         const AssemblyInstanceContainer&    assembly_instances,
-        const TransformSequence&            parent_transform_seq,
-        const LightHandlingFunction&        light_handling);
+        const TransformSequence&            parent_transform_seq);
 
     // Collect non-physical lights from a given assembly.
     void collect_non_physical_lights(
         const Assembly&                     assembly,
-        const TransformSequence&            transform_sequence,
-        const LightHandlingFunction&        light_handling);
+        const TransformSequence&            transform_sequence);
 
     void store_object_area_in_shadergroups(
         const AssemblyInstance*             assembly_instance,
@@ -140,19 +127,19 @@ class LightSamplerBase
         const float                         object_area,
         const MaterialArray&                materials);
 
-    // Sample a given emitting triangle.
-    void sample_emitting_triangle(
-        const ShadingRay::Time&             time,
-        const foundation::Vector2f&         s,
-        const size_t                        triangle_index,
-        const float                         triangle_prob,
-        LightSample&                        sample) const;
-
-    // Sample the set of emitting triangles.
-    void sample_emitting_triangles(
+    // Sample the set of emitting shapes.
+    void sample_emitting_shapes_uniform(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
+
+    bool sample_emitting_shapes_solid_angle(
+        const ShadingPoint&                 shading_point,
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        LightSample&                        light_sample) const;
+
+    void handle_emitting_shape(EmittingShape& shape);
 };
 
 

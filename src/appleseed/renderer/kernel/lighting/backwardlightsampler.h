@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsamplerbase.h"
-#include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 
@@ -69,7 +68,7 @@ class BackwardLightSampler
         const Scene&                        scene,
         const ParamArray&                   params = ParamArray());
 
-    // Return true if the scene contains at least one non-physical light or emitting triangle.
+    // Return true if the scene contains at least one non-physical light or emitting shape.
     bool has_lights() const;
 
     // Return true if the scene contains at least one light that can be hit by a ray.
@@ -79,30 +78,21 @@ class BackwardLightSampler
     bool has_lightset() const;
 
     // Sample the light set.
-    void sample_lightset(
+    bool sample_lightset(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
-    // Shading points are located on the light (emitting triangle) hit by the
+    // Shading points are located on the light (emitting shape) hit by the
     // path tracer, and the surface actually being illuminated, respectively.
     float evaluate_pdf(
         const ShadingPoint&                 light_shading_point,
         const ShadingPoint&                 surface_shading_point) const;
 
-  private:
-    bool                                    m_use_light_tree;
-
-    NonPhysicalLightVector                  m_light_tree_lights;
-    std::unique_ptr<LightTree>              m_light_tree;
-
-    void sample_light_tree(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        const ShadingPoint&                 shading_point,
-        LightSample&                        light_sample) const;
+    // Return the metadata of the light sampler parameters.
+    static foundation::Dictionary get_params_metadata();
 };
 
 
@@ -114,18 +104,17 @@ inline bool BackwardLightSampler::has_lights() const
 {
     return
         m_non_physical_lights_cdf.valid() ||
-        !m_emitting_triangles.empty() ||
-        !m_light_tree_lights.empty();
+        !m_emitting_shapes.empty();
 }
 
 inline bool BackwardLightSampler::has_hittable_lights() const
 {
-    return !m_emitting_triangles.empty();
+    return !m_emitting_shapes.empty();
 }
 
 inline bool BackwardLightSampler::has_lightset() const
 {
-    return !m_emitting_triangles.empty() || !m_light_tree_lights.empty();
+    return !m_emitting_shapes.empty();
 }
 
 }   // namespace renderer

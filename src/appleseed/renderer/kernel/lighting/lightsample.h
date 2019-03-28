@@ -30,7 +30,6 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
@@ -50,45 +49,45 @@ namespace renderer  { class ShadingPoint; }
 namespace renderer
 {
 //
-// A key to uniquely identify a light-emitting triangle in a hash table.
+// A key to uniquely identify a light-emitting shape in a hash table.
 //
 
-class EmittingTriangleKey
+class EmittingShapeKey
 {
   public:
     foundation::UniqueID            m_assembly_instance_uid;
     foundation::uint32              m_object_instance_index;
-    foundation::uint32              m_triangle_index;
+    foundation::uint32              m_primitive_index;
 
-    EmittingTriangleKey();
-    EmittingTriangleKey(
+    EmittingShapeKey();
+    EmittingShapeKey(
         const foundation::UniqueID  assembly_instance_uid,
         const size_t                object_instance_index,
-        const size_t                triangle_index);
+        const size_t                primitive_index);
 
-    bool operator==(const EmittingTriangleKey& rhs) const;
+    bool operator==(const EmittingShapeKey& rhs) const;
 };
 
 
 //
-// A hash table of light-emitting triangles.
+// A hash table of light-emitting shapes.
 //
 
-struct EmittingTriangleKeyHasher
+struct EmittingShapeKeyHasher
 {
-    size_t operator()(const EmittingTriangleKey& key) const;
+    size_t operator()(const EmittingShapeKey& key) const;
 };
 
 typedef foundation::HashTable<
-    EmittingTriangleKey,
-    EmittingTriangleKeyHasher,
-    const EmittingTriangle*
-> EmittingTriangleHashTable;
+    EmittingShapeKey,
+    EmittingShapeKeyHasher,
+    const EmittingShape*
+> EmittingShapeHashTable;
 
 
 //
 // Light sample: the result of sampling sets of non-physical lights and
-// light-emitting triangles.
+// light-emitting shapes.
 //
 
 class LightSample
@@ -96,8 +95,8 @@ class LightSample
   public:
     LightSample();
 
-    // Data for a light-emitting triangle sample.
-    const EmittingTriangle*     m_triangle;
+    // Data for a light-emitting shape sample.
+    const EmittingShape*        m_shape;
     foundation::Vector2f        m_bary;                         // barycentric coordinates of the sample
     foundation::Vector3d        m_point;                        // world space position of the sample
     foundation::Vector3d        m_shading_normal;               // world space shading normal at the sample, unit-length
@@ -119,43 +118,43 @@ class LightSample
 
 
 //
-// EmittingTriangleKey class implementation.
+// EmittingShapeKey class implementation.
 //
 
-inline EmittingTriangleKey::EmittingTriangleKey()
+inline EmittingShapeKey::EmittingShapeKey()
 {
 }
 
-inline EmittingTriangleKey::EmittingTriangleKey(
+inline EmittingShapeKey::EmittingShapeKey(
     const foundation::UniqueID              assembly_instance_uid,
     const size_t                            object_instance_index,
-    const size_t                            triangle_index)
+    const size_t                            primitive_index)
   : m_assembly_instance_uid(static_cast<foundation::uint32>(assembly_instance_uid))
   , m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
+  , m_primitive_index(static_cast<foundation::uint32>(primitive_index))
 {
 }
 
-inline bool EmittingTriangleKey::operator==(const EmittingTriangleKey& rhs) const
+inline bool EmittingShapeKey::operator==(const EmittingShapeKey& rhs) const
 {
     return
-        m_triangle_index == rhs.m_triangle_index &&
+        m_primitive_index == rhs.m_primitive_index &&
         m_object_instance_index == rhs.m_object_instance_index &&
         m_assembly_instance_uid == rhs.m_assembly_instance_uid;
 }
 
 
 //
-// EmittingTriangleKeyHasher class implementation.
+// EmittingShapeKeyHasher class implementation.
 //
 
-inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& key) const
+inline size_t EmittingShapeKeyHasher::operator()(const EmittingShapeKey& key) const
 {
     return
         foundation::mix_uint32(
             static_cast<foundation::uint32>(key.m_assembly_instance_uid),
             key.m_object_instance_index,
-            key.m_triangle_index);
+            key.m_primitive_index);
 }
 
 
@@ -164,9 +163,24 @@ inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& k
 //
 
 inline LightSample::LightSample()
-  : m_triangle(nullptr)
+  : m_shape(nullptr)
   , m_light(nullptr)
 {
 }
 
-}   // namespace renderer
+inline void LightSample::make_shading_point(
+    ShadingPoint&               shading_point,
+    const foundation::Vector3d& direction,
+    const Intersector&          intersector) const
+{
+    assert(m_shape && !m_light);
+
+    m_shape->make_shading_point(
+        shading_point,
+        m_point,
+        direction,
+        m_bary,
+        intersector);
+}
+
+}       // namespace renderer

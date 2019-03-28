@@ -197,11 +197,6 @@ namespace
             return cos_on * RcpPi<float>();
         }
 
-        float get_uncached_max_contribution() const override
-        {
-            return get_max_contribution("radiance", "radiance_multiplier", "exposure");
-        }
-
       private:
         typedef DiffuseEDFInputValues InputValues;
     };

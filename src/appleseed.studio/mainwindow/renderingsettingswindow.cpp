@@ -453,7 +453,7 @@ namespace
       public:
         explicit ImagePlaneSamplingPanel(QWidget* parent = nullptr)
           : RenderSettingsPanel("Image Plane Sampling", parent)
-        {   
+        {
         }
     };
 
@@ -680,7 +680,7 @@ namespace
         }
 
         void save_config(Configuration& config) const override
-        {            
+        {
             if (get_widget<bool>("general.unlimited_samples"))
                 config.get_parameters().remove_path("progressive_frame_renderer.max_average_spp");
             else set_config(config, "progressive_frame_renderer.max_average_spp", get_widget<int>("general.max_average_spp"));
@@ -1069,13 +1069,10 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             parent->addLayout(sublayout);
 
-            QComboBox* light_sampler = create_combobox("advanced.light_sampler.algorithm");
-            light_sampler->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
-            light_sampler->addItem("CDF", "cdf");
-            light_sampler->addItem("Light Tree", "lighttree");
-            sublayout->addRow("Light Sampler:", light_sampler);
-
-            sublayout->addRow(create_checkbox("advanced.light_sampler.enable_importance_sampling", "Enable Importance Sampling"));
+            QComboBox* light_sampling = create_combobox("advanced.light_sampler.algorithm");
+            light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
+            light_sampling->addItem("CDF", "cdf");
+            sublayout->addRow("Light Sampler:", light_sampling);
         }
 
         void create_pt_advanced_nee_dl_settings(QVBoxLayout* parent)
