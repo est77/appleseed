@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 #include "renderer/modeling/object/curveobject.h"
+#include "renderer/modeling/object/diskobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/objecttraits.h"
 #include "renderer/modeling/object/rectobject.h"
@@ -61,6 +62,7 @@ ObjectFactoryRegistrar::ObjectFactoryRegistrar(const SearchPaths& search_paths)
 {
     // Register built-in factories.
     impl->register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new DiskObjectFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new RectObjectFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new SphereObjectFactory()));

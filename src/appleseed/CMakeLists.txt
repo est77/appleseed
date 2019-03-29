@@ -219,6 +219,7 @@ set (foundation_math_intersection_sources
     foundation/math/intersection/frustumsegment.h
     foundation/math/intersection/planesegment.h
     foundation/math/intersection/rayaabb.h
+    foundation/math/intersection/raydisk.h
     foundation/math/intersection/rayparallelogram.h
     foundation/math/intersection/rayplane.h
     foundation/math/intersection/raysphere.h
@@ -1861,6 +1862,8 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/curveobjectreader.h
     renderer/modeling/object/curveobjectwriter.cpp
     renderer/modeling/object/curveobjectwriter.h
+    renderer/modeling/object/diskobject.cpp
+    renderer/modeling/object/diskobject.h
     renderer/modeling/object/iobjectfactory.cpp
     renderer/modeling/object/iobjectfactory.h
     renderer/modeling/object/meshobject.cpp
