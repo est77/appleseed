@@ -60,9 +60,6 @@ class BackwardLightSampler
   : public LightSamplerBase
 {
   public:
-    // Return parameters metadata.
-    static foundation::Dictionary get_params_metadata();
-
     // Constructor.
     BackwardLightSampler(
         const Scene&                        scene,
