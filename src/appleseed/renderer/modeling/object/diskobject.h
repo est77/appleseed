@@ -60,11 +60,19 @@ class APPLESEED_DLLSYMBOL DiskObject
 
     const char* get_model() const override;
 
+    bool on_frame_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch) override;
+
     GAABB3 compute_local_bbox() const override;
 
     size_t get_material_slot_count() const override;
 
     const char* get_material_slot(const size_t index) const override;
+
+    double get_uncached_radius() const;
 
     void intersect(
         const ShadingRay&           ray,

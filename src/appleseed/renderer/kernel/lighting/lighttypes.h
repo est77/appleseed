@@ -33,6 +33,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/stampedptr.h"
 
@@ -77,10 +78,19 @@ class EmittingShape
   public:
     enum ShapeType
     {
-        TriangleShape = 0,
+        DiskShape = 0,
+        TriangleShape,
         SphereShape,
         RectShape
     };
+
+    static EmittingShape create_disk_shape(
+        const AssemblyInstance*     assembly_instance,
+        const size_t                object_instance_index,
+        const Material*             material,
+        const foundation::Vector3d& center,
+        const double                radius,
+        const foundation::Matrix4d& object_to_world);
 
     static EmittingShape create_triangle_shape(
         const AssemblyInstance*     assembly_instance,
@@ -157,6 +167,14 @@ class EmittingShape
   private:
     friend class LightSamplerBase;
 
+    struct Disk
+    {
+        foundation::Vector3d    m_center;   // world space center of the disk
+        foundation::Vector3d    m_normal;   // world space normal of the disk
+        double                  m_radius;   // disk radius
+        foundation::Matrix4d    m_object_to_world;
+    };
+
     struct Triangle
     {
         foundation::Vector3d        m_v0, m_v1, m_v2;   // world space vertices of the shape
@@ -183,6 +201,7 @@ class EmittingShape
 
     union Geom
     {
+        Disk     m_disk;
         Triangle m_triangle;
         Sphere   m_sphere;
         Rect     m_rect;

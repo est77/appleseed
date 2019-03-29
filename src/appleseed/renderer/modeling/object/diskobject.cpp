@@ -62,7 +62,6 @@ DiskObject::DiskObject(
     const char*            name,
     const ParamArray&      params)
   : ProceduralObject(name, params)
-  , m_radius(m_params.get_optional<double>("radius", 1.0))
 {
 }
 
@@ -76,9 +75,22 @@ const char* DiskObject::get_model() const
     return Model;
 }
 
+bool DiskObject::on_frame_begin(
+    const Project&         project,
+    const BaseGroup*       parent,
+    OnFrameBeginRecorder&  recorder,
+    IAbortSwitch*          abort_switch)
+{
+    if (!ProceduralObject::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    m_radius = get_uncached_radius();
+    return true;
+}
+
 GAABB3 DiskObject::compute_local_bbox() const
 {
-    const auto r = static_cast<GScalar>(m_radius);
+    const auto r = static_cast<GScalar>(get_uncached_radius());
     GAABB3 bbox(
         GVector3(-r, -r, GScalar(0)),
         GVector3(r, r, GScalar(0)));
@@ -93,6 +105,11 @@ size_t DiskObject::get_material_slot_count() const
 const char* DiskObject::get_material_slot(const size_t index) const
 {
     return "default";
+}
+
+double DiskObject::get_uncached_radius() const
+{
+    return m_params.get_optional<double>("radius", 1.0);
 }
 
 void DiskObject::intersect(
