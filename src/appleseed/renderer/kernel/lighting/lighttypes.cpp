@@ -78,9 +78,12 @@ EmittingShape EmittingShape::create_disk_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
     const Material*             material,
-    const Vector3d&             center,
-    const double                radius,
-    const Matrix4d&             object_to_world)
+    const Vector3d&             o,
+    const Vector3d&             c,
+    const double                r,
+    const Vector3d&             n,
+    const Vector3d&             x,
+    const Vector3d&             y)
 {
     EmittingShape shape(
         DiskShape,
@@ -89,16 +92,14 @@ EmittingShape EmittingShape::create_disk_shape(
         0,
         material);
 
-    shape.m_geom.m_disk.m_center = center;
-    shape.m_geom.m_disk.m_radius = radius;
-    shape.m_geom.m_disk.m_object_to_world = object_to_world;
+    shape.m_geom.m_disk.m_origin = o;
+    shape.m_geom.m_disk.m_center = c;
+    shape.m_geom.m_disk.m_radius = r;
+    shape.m_geom.m_disk.m_geometric_normal = n;
+    shape.m_geom.m_disk.m_x = x;
+    shape.m_geom.m_disk.m_y = y;
 
-    // Compute world's space disk's normal.
-    Vector4d homogeneous_normal = object_to_world * Vector4d(0.0, 0.0, 1.0, 1.0);
-    Vector3d n = normalize(Vector3d(homogeneous_normal.x, homogeneous_normal.y, homogeneous_normal.z));
-    shape.m_geom.m_disk.m_normal = n;
-
-    shape.m_area = TwoPi<float>() * 0.5f * square(static_cast<float>(radius));
+    shape.m_area = TwoPi<float>() * 0.5f * square(static_cast<float>(r));
 
     if (shape.m_area != 0.0f)
         shape.m_rcp_area = 1.0f / shape.m_area;
@@ -226,18 +227,22 @@ void EmittingShape::sample_uniform(
 
     if (shape_type == DiskShape)
     {
-        // Set the world space shading and geometric normal.
-        light_sample.m_shading_normal = m_geom.m_disk.m_normal;
-        light_sample.m_geometric_normal = m_geom.m_disk.m_normal;
+        Vector2f bary = sample_disk_uniform(s);
 
         // Compute the world space position of the sample.
-        Vector2d sample(sample_disk_uniform(s));
-        Vector4d world_sample = m_geom.m_disk.m_object_to_world * Vector4d(sample.x, sample.y, 0.0, 1.0);
-        light_sample.m_point = Vector3d(world_sample.x, world_sample.y, world_sample.z);
+        Vector3d p =
+            m_geom.m_disk.m_center +
+            static_cast<double>(bary[0]) * m_geom.m_disk.m_x +
+            static_cast<double>(bary[1]) * m_geom.m_disk.m_y;
+
+        light_sample.m_point = p;
 
         // Set the barycentric coordinates.
-        light_sample.m_bary[0] = static_cast<float>(sample[0]);
-        light_sample.m_bary[1] = static_cast<float>(sample[1]);
+        light_sample.m_bary = bary;
+
+        // Set the world space shading and geometric normal.
+        light_sample.m_shading_normal = m_geom.m_disk.m_geometric_normal;
+        light_sample.m_geometric_normal = m_geom.m_disk.m_geometric_normal;
     }
     else if (shape_type == TriangleShape)
     {
@@ -322,7 +327,12 @@ bool EmittingShape::sample_solid_angle(
 
     const auto shape_type = get_shape_type();
 
-    if (shape_type == TriangleShape)
+    if (shape_type == DiskShape)
+    {
+        sample_uniform(s, shape_prob, light_sample);
+        return true;
+    }
+    else if (shape_type == TriangleShape)
     {
         const Vector3d o = shading_point.get_point();
 
@@ -520,7 +530,11 @@ float EmittingShape::evaluate_pdf_solid_angle(
 
     const float shape_probability = get_shape_prob();
 
-    if (shape_type == TriangleShape)
+    if (shape_type == DiskShape)
+    {
+        return evaluate_pdf_uniform();
+    }
+    else if (shape_type == TriangleShape)
     {
         // Side check
         const double eps = 1.0e-6;
@@ -618,14 +632,10 @@ void EmittingShape::make_shading_point(
 
     if (shape_type == DiskShape)
     {
-        // Compute the world space position of the sample.
-        Vector4d world_sample = m_geom.m_disk.m_object_to_world * Vector4d(bary.x, bary.y, 0.0, 1.0);
-        const Vector3d p = Vector3d(world_sample.x, world_sample.y, world_sample.z);        
-
-        const Vector3d dpdu(-TwoPi<double>() * bary.y, TwoPi<double>() * bary.x, 0.0);
-        const double dist_sqr = square(bary.x) + square(bary.y);
-        const double dist = sqrt(dist_sqr);
-        const Vector3d dpdv = Vector3d(bary.x, bary.y, 0.0) * (-m_geom.m_disk.m_radius / dist);
+        const Vector3d p =
+            m_geom.m_rect.m_origin +
+            static_cast<double>(bary[0]) * m_geom.m_rect.m_x +
+            static_cast<double>(bary[1]) * m_geom.m_rect.m_y;
 
         intersector.make_procedural_surface_shading_point(
             shading_point,
@@ -636,9 +646,9 @@ void EmittingShape::make_shading_point(
             get_object_instance_index(),
             get_primitive_index(),
             p,
-            m_geom.m_disk.m_normal,
-            dpdu,
-            dpdv);
+            m_geom.m_rect.m_geometric_normal,
+            m_geom.m_rect.m_x,
+            cross(m_geom.m_rect.m_x, m_geom.m_rect.m_geometric_normal));
     }
     else if (shape_type == TriangleShape)
     {

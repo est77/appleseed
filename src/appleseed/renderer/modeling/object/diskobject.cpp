@@ -112,6 +112,25 @@ double DiskObject::get_uncached_radius() const
     return m_params.get_optional<double>("radius", 1.0);
 }
 
+Vector3d DiskObject::get_uncached_center() const
+{
+    return Vector3d(0.0, 0.0, 0.0);
+}
+
+void DiskObject::get_origin_and_axes(
+    Vector3d&              origin,
+    Vector3d&              x,
+    Vector3d&              y,
+    Vector3d&              n) const
+{
+    const double radius = get_uncached_radius();
+
+    origin = Vector3d(-0.5 * radius, -0.5 * radius, 0.0);
+    x = Vector3d(radius, 0.0, 0.0);
+    y = Vector3d(0.0, radius, 0.0);
+    n = Vector3d(0.0, 0.0, 1.0);
+}
+
 void DiskObject::intersect(
     const ShadingRay&      ray,
     IntersectionResult&    result) const

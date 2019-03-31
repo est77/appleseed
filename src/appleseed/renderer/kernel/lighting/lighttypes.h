@@ -88,9 +88,12 @@ class EmittingShape
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
         const Material*             material,
-        const foundation::Vector3d& center,
-        const double                radius,
-        const foundation::Matrix4d& object_to_world);
+        const foundation::Vector3d& o,
+        const foundation::Vector3d& c,
+        const double                r,
+        const foundation::Vector3d& n,
+        const foundation::Vector3d& x,
+        const foundation::Vector3d& y);
 
     static EmittingShape create_triangle_shape(
         const AssemblyInstance*     assembly_instance,
@@ -169,10 +172,11 @@ class EmittingShape
 
     struct Disk
     {
-        foundation::Vector3d    m_center;   // world space center of the disk
-        foundation::Vector3d    m_normal;   // world space normal of the disk
-        double                  m_radius;   // disk radius
-        foundation::Matrix4d    m_object_to_world;
+        foundation::Vector3d    m_origin;               // world space origin of the disk (bottom left)
+        foundation::Vector3d    m_center;               // world space center of the disk
+        foundation::Vector3d    m_geometric_normal;     // world space geometric normal, unit-length
+        double                  m_radius;               // world space disk radius
+        foundation::Vector3d    m_x, m_y;               // world space x and y axes
     };
 
     struct Triangle

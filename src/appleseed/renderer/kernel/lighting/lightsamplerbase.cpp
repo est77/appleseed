@@ -311,17 +311,30 @@ void LightSamplerBase::collect_emitting_shapes(
             // Retrieve the disk.
             const DiskObject& disk= static_cast<const DiskObject&>(object);
 
-            const Matrix4d& xform = global_transform.get_local_to_parent();
+            // Retrieve object instance space geometry of the disk.
+            double r = disk.get_uncached_radius();
+            Vector3d c = disk.get_uncached_center();
+            Vector3d o, x, y, n;
+            disk.get_origin_and_axes(o, x, y, n);
 
+            if (object_instance->must_flip_normals())
+                n = -n;
+
+            // Transform disk to world space.
+            c = global_transform.point_to_parent(c);
+            o = global_transform.point_to_parent(o);
+            x = global_transform.vector_to_parent(x);
+            y = global_transform.vector_to_parent(y);
+            n = global_transform.normal_to_parent(n);
+
+            const Matrix4d& xform = global_transform.get_local_to_parent();
             Vector3d center, scale;
             Quaterniond rot;
             xform.decompose(scale, rot, center);
 
-            double radius = disk.get_uncached_radius();
-
             if (feq(scale.x, scale.y) && feq(scale.x, scale.z))
             {
-                radius *= scale.x;
+                r *= scale.x;
             }
             else
             {
@@ -330,7 +343,7 @@ void LightSamplerBase::collect_emitting_shapes(
                     disk.get_name());
             }
 
-            if (radius == 0.0)
+            if (r == 0.0)
             {
                 RENDERER_LOG_WARNING(
                     "disk object \"%s\" has zero radius; it will be ignored.",
@@ -343,9 +356,12 @@ void LightSamplerBase::collect_emitting_shapes(
                 &assembly_instance,
                 object_instance_index,
                 material,
-                center,
-                radius,
-                xform);
+                o,
+                c,
+                r,
+                n,
+                x,
+                y);
 
             // Invoke the shape handling function.
             handle_emitting_shape(emitting_shape);

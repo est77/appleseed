@@ -62,7 +62,7 @@
                 <parameter name="filename" value="_geometry/92f13de66988c94c2c4ad076c6bc6bc0.binarymesh" />
             </object>
             <object name="disk_obj" model="disk_object">
-                <parameter name="radius" value="0.5" />
+                <parameter name="radius" value="1" />
             </object>
             <object_instance name="floor" object="floorShape_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -105,9 +105,9 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 1.000000000000000 0.000000000000000 0.550000000000000
-                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
+                        0.500000000000000 0.000000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 0.500000000000000 0.000000000000000 0.550000000000000
+                        0.000000000000000 0.000000000000000 0.500000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
