@@ -129,6 +129,7 @@ option (WITH_PYTHON2_BINDINGS               "Build Python bindings for Python 2"
 option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"                        OFF)
 option (WITH_EMBREE                         "Include support for Embree intersection backend"           OFF)
 option (WITH_GPU                            "Build GPU support"                                         OFF)
+option (WITH_ARNOLD_RENDER_DEVICE           "Build Arnold render device (for testing only)"             OFF)
 option (WITH_SPECTRAL_SUPPORT               "Include support for spectral colors"                       ON)
 option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       ON)
 option (INSTALL_HEADERS                     "Install header files"                                      ON)
@@ -278,6 +279,13 @@ if (WITH_GPU)
 
     find_package (CUDA 9.0 REQUIRED)
     find_package (OptiX REQUIRED)
+endif ()
+
+if (WITH_ARNOLD_RENDER_DEVICE)
+    set (APPLESEED_WITH_ARNOLD_RENDER_DEVICE ON)
+    add_definitions (-DAPPLESEED_WITH_ARNOLD_RENDER_DEVICE)
+
+    find_package (Arnold REQUIRED)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)

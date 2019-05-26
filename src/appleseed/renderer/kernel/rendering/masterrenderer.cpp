@@ -31,6 +31,9 @@
 #include "masterrenderer.h"
 
 // appleseed.renderer headers.
+#ifdef APPLESEED_WITH_ARNOLD_RENDER_DEVICE
+#include "renderer/device/ai/airenderdevice.h"
+#endif
 #include "renderer/device/cpu/cpurenderdevice.h"
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/lightpathrecorder.h"
@@ -190,6 +193,13 @@ struct MasterRenderer::Impl
             if (dynamic_cast<const CPURenderDevice*>(m_render_device.get()) == nullptr)
                 m_render_device.reset(new CPURenderDevice(m_project, m_params));
         }
+#ifdef APPLESEED_WITH_ARNOLD_RENDER_DEVICE
+        else if (device_name == "arnold")
+        {
+            if (dynamic_cast<const AiRenderDevice*>(m_render_device.get()) == nullptr)
+                m_render_device.reset(new AiRenderDevice(m_project, m_params));
+        }
+#endif
         else
         {
             RENDERER_LOG_ERROR("unknown render device: %s.", device_name.c_str());

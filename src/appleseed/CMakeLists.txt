@@ -39,6 +39,9 @@ if (WITH_GPU)
     )
 endif ()
 
+if (WITH_ARNOLD_RENDER_DEVICE)
+    include_directories(${ARNOLD_INCLUDE_DIRS})
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -1021,6 +1024,20 @@ list (APPEND appleseed_sources
 source_group ("renderer\\device" FILES
     ${renderer_device_sources}
 )
+
+if (WITH_ARNOLD_RENDER_DEVICE)
+    set (renderer_device_ai_sources
+        renderer/device/ai/airenderdevice.cpp
+        renderer/device/ai/airenderdevice.h
+        renderer/device/ai/driver.cpp
+    )
+    list (APPEND appleseed_sources
+        ${renderer_device_ai_sources}
+    )
+    source_group ("renderer\\device\\ai" FILES
+        ${renderer_device_ai_sources}
+    )
+endif()
 
 set (renderer_device_cpu_sources
     renderer/device/cpu/cpurendercontext.cpp
@@ -2214,6 +2231,10 @@ if (WITH_GPU)
         ${OPTIX_LIBRARIES}
         ${CUDA_CUDA_LIBRARY}
     )
+endif ()
+
+if (WITH_ARNOLD_RENDER_DEVICE)
+    target_link_libraries (appleseed ${ARNOLD_LIBRARIES})
 endif ()
 
 target_link_libraries (appleseed

@@ -53,6 +53,10 @@ string get_render_device(const ParamArray& params)
     std::vector<std::string> devices;
     devices.emplace_back("cpu");
 
+#ifdef APPLESEED_WITH_ARNOLD_RENDER_DEVICE
+    devices.emplace_back("arnold");
+#endif
+
     const string device =
         params.get_optional<string>(
             "device",

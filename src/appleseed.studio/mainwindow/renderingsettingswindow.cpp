@@ -446,6 +446,9 @@ namespace
             QComboBox* device_combobox = create_combobox("device");
             device_combobox->setToolTip(m_params_metadata.get_path("device.help"));
             device_combobox->addItem("CPU", "cpu");
+#ifdef APPLESEED_WITH_ARNOLD_RENDER_DEVICE
+            device_combobox->addItem("Arnold", "arnold");
+#endif
             parent->addRow("Device:", device_combobox);
 
             create_direct_link("device", "device", "cpu");

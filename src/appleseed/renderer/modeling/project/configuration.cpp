@@ -88,7 +88,15 @@ Dictionary Configuration::get_metadata()
                         "cpu",
                         Dictionary()
                             .insert("label", "CPU")
-                            .insert("help", "CPU device"))));
+                            .insert("help", "CPU device"))
+#ifdef APPLESEED_WITH_ARNOLD_RENDER_DEVICE
+                    .insert(
+                        "arnold",
+                        Dictionary()
+                            .insert("label", "Arnold")
+                            .insert("help", "Arnold device"))
+#endif
+    ));
 
     metadata.insert(
         "spectrum_mode",
