@@ -1309,9 +1309,6 @@ namespace
         {
             for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
                 update_bsdf_inputs(*i);
-
-            for (each<MaterialContainer> i = assembly.materials(); i; ++i)
-                update_material_inputs(*i);
         }
 
         static void update_bsdf_inputs(BSDF& bsdf)
@@ -1325,23 +1322,6 @@ namespace
                     params.insert("roughness", 0.5f);
                 if (!params.strings().exist("sheen_tint"))
                     params.insert("sheen_tint", 0.5f);
-            }
-        }
-
-        static void update_material_inputs(Material& material)
-        {
-            // Don't rely on DisneyMaterialFactory().get_model() because appleseed needs
-            // to be able to update projects even when built without Disney material support
-            // (i.e. the APPLESEED_WITH_DISNEY_MATERIAL preprocessor symbol is undefined).
-            if (strcmp(material.get_model(), "disney_material") == 0)
-            {
-                ParamArray& params = material.get_parameters();
-                for (each<DictionaryDictionary> i = params.dictionaries(); i; ++i)
-                {
-                    Dictionary& layer_params = i->value();
-                    if (!layer_params.strings().exist("roughness"))
-                        layer_params.insert("roughness", 0.5f);
-                }
             }
         }
     };

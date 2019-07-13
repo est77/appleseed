@@ -56,9 +56,6 @@ class MaterialItem
 
     QMenu* get_single_item_context_menu() const override;
 
-  public slots:
-    void slot_export();
-
   private:
     void slot_edit(AttributeEditor* attribute_editor) override;
 };

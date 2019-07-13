@@ -30,9 +30,6 @@
 #include "materialitem.h"
 
 // appleseed.studio headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "mainwindow/project/disneymaterialcustomui.h"
-#endif
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/tools.h"
 #include "utility/miscellaneous.h"
@@ -80,17 +77,7 @@ MaterialItem::MaterialItem(
 
 QMenu* MaterialItem::get_single_item_context_menu() const
 {
-    QMenu* menu = ItemBase::get_single_item_context_menu();
-
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    if (strcmp(m_entity->get_model(), "disney_material") == 0)
-    {
-        menu->addSeparator();
-        menu->addAction("Export...", this, SLOT(slot_export()));
-    }
-#endif
-
-    return menu;
+    return ItemBase::get_single_item_context_menu();
 }
 
 void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
@@ -105,17 +92,6 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
         new EntityBrowser<Assembly>(m_parent));
 
     unique_ptr<CustomEntityUI> custom_entity_ui;
-
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    if (strcmp(m_entity->get_model(), "disney_material") == 0)
-    {
-        custom_entity_ui =
-            unique_ptr<CustomEntityUI>(
-                new DisneyMaterialCustomUI(
-                    m_editor_context.m_project,
-                    m_editor_context.m_settings));
-    }
-#endif
 
     const Dictionary values = get_values();
 
@@ -148,42 +124,6 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)));
-    }
-}
-
-void MaterialItem::slot_export()
-{
-    const char* project_path = m_editor_context.m_project.get_path();
-    const bf::path project_root_path = bf::path(project_path).parent_path();
-    const bf::path file_path = absolute("material.dmt", project_root_path);
-    const bf::path file_root_path = file_path.parent_path();
-
-    QString filepath =
-        get_save_filename(
-            nullptr,
-            "Export...",
-            "Disney Materials (*.dmt)",
-            m_editor_context.m_settings,
-            SETTINGS_FILE_DIALOG_PROJECTS);
-
-    if (!filepath.isEmpty())
-    {
-        if (QFileInfo(filepath).suffix().isEmpty())
-            filepath += ".dmt";
-
-        filepath = QDir::toNativeSeparators(filepath);
-
-        ParamArray parameters = m_entity->get_parameters();
-        parameters.insert("__name", m_entity->get_name());
-        parameters.insert("__model", m_entity->get_model());
-
-        SettingsFileWriter writer;
-        if (!writer.write(filepath.toStdString().c_str(), parameters))
-        {
-            show_error_message_box(
-                "Exporting Error",
-                "Failed to export the Disney Material file " + filepath.toStdString() + ".");
-        }
     }
 }
 
