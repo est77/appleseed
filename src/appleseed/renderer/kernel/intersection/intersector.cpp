@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/intersection/assemblytree.h"
+#include "renderer/kernel/intersection/instancetree.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -264,13 +264,13 @@ bool Intersector::trace(
         parent_shading_point->refine_and_offset();
 
     // Retrieve assembly tree.
-    const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
+    const InstanceTree& instance_tree = m_trace_context.get_instance_tree();
 
     // Check the intersection between the ray and the assembly tree.
-    AssemblyTreeIntersector intersector;
-    AssemblyLeafVisitor visitor(
+    InstanceTreeIntersector intersector;
+    InstanceLeafVisitor visitor(
         shading_point,
-        assembly_tree,
+        instance_tree,
         m_triangle_tree_cache,
         m_curve_tree_cache,
         parent_shading_point
@@ -279,12 +279,12 @@ bool Intersector::trace(
 #endif
         );
     intersector.intersect_no_motion(
-        assembly_tree,
+        instance_tree,
         shading_point.m_ray,
         ray_info,
         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        , m_assembly_tree_traversal_stats
+        , m_instance_tree_traversal_stats
 #endif
         );
 
@@ -319,12 +319,12 @@ bool Intersector::trace_probe(
         parent_shading_point->refine_and_offset();
 
     // Retrieve assembly tree.
-    const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
+    const InstanceTree& instance_tree = m_trace_context.get_instance_tree();
 
     // Check the intersection between the ray and the assembly tree.
-    AssemblyTreeProbeIntersector intersector;
-    AssemblyLeafProbeVisitor visitor(
-        assembly_tree,
+    InstanceTreeProbeIntersector intersector;
+    InstanceLeafProbeVisitor visitor(
+        instance_tree,
         m_triangle_tree_cache,
         m_curve_tree_cache,
         parent_shading_point
@@ -333,12 +333,12 @@ bool Intersector::trace_probe(
 #endif
         );
     intersector.intersect_no_motion(
-        assembly_tree,
+        instance_tree,
         ray,
         ray_info,
         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        , m_assembly_tree_traversal_stats
+        , m_instance_tree_traversal_stats
 #endif
         );
 
@@ -527,7 +527,7 @@ StatisticsVector Intersector::get_statistics() const
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     vec.insert(
         "assembly tree intersection statistics",
-        m_assembly_tree_traversal_stats.get_statistics());
+        m_instance_tree_traversal_stats.get_statistics());
 
     vec.insert(
         "triangle trees intersection statistics",

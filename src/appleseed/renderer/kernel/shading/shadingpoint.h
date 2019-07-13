@@ -272,8 +272,8 @@ class ShadingPoint
     };
 
   private:
-    friend class AssemblyLeafProbeVisitor;
-    friend class AssemblyLeafVisitor;
+    friend class InstanceLeafProbeVisitor;
+    friend class InstanceLeafVisitor;
     friend class CurveLeafVisitor;
     friend class EmbreeScene;
     friend class Intersector;

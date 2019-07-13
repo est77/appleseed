@@ -48,13 +48,13 @@ namespace renderer
 //
 
 // Maximum number of assemblies per leaf.
-const size_t AssemblyTreeMaxLeafSize = 1;
+const size_t InstanceTreeMaxLeafSize = 1;
 
 // Relative cost of traversing an interior node.
-const double AssemblyTreeInteriorNodeTraversalCost = 1.0;
+const double InstanceTreeInteriorNodeTraversalCost = 1.0;
 
 // Relative cost of intersecting an assembly.
-const double AssemblyTreeTriangleIntersectionCost = 10.0;
+const double InstanceTreeTriangleIntersectionCost = 10.0;
 
 
 //

@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/intersection/assemblytree.h"
+#include "renderer/kernel/intersection/instancetree.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/intersection/triangletree.h"
@@ -58,7 +58,7 @@ namespace renderer
 
 TraceContext::TraceContext(const Scene& scene)
   : m_scene(scene)
-  , m_assembly_tree(new AssemblyTree(scene))
+  , m_instance_tree(new InstanceTree(scene))
 {
     RENDERER_LOG_DEBUG(
         "data structures size:\n"
@@ -78,12 +78,12 @@ TraceContext::TraceContext(const Scene& scene)
 
 TraceContext::~TraceContext()
 {
-    delete m_assembly_tree;
+    delete m_instance_tree;
 }
 
 void TraceContext::update()
 {
-    m_assembly_tree->update();
+    m_instance_tree->update();
 }
 
 }   // namespace renderer

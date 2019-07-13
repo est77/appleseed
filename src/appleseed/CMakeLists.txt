@@ -1095,11 +1095,11 @@ source_group ("renderer\\kernel\\denoising" FILES
 )
 
 set (renderer_kernel_intersection_sources
-    renderer/kernel/intersection/assemblytree.cpp
-    renderer/kernel/intersection/assemblytree.h
     renderer/kernel/intersection/curvekey.h
     renderer/kernel/intersection/curvetree.cpp
     renderer/kernel/intersection/curvetree.h
+    renderer/kernel/intersection/instancetree.cpp
+    renderer/kernel/intersection/instancetree.h
     renderer/kernel/intersection/intersectionfilter.cpp
     renderer/kernel/intersection/intersectionfilter.h
     renderer/kernel/intersection/intersectionsettings.h

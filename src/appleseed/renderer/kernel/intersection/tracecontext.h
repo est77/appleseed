@@ -36,7 +36,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class AssemblyTree; }
+namespace renderer  { class InstanceTree; }
 namespace renderer  { class Scene; }
 
 namespace renderer
@@ -63,14 +63,14 @@ class APPLESEED_DLLSYMBOL TraceContext
     const Scene& get_scene() const;
 
     // Get the assembly tree.
-    const AssemblyTree& get_assembly_tree() const;
+    const InstanceTree& get_instance_tree() const;
 
     // Synchronize the trace context with the scene.
     void update();
 
   private:
     const Scene&    m_scene;
-    AssemblyTree*   m_assembly_tree;
+    InstanceTree*   m_instance_tree;
 };
 
 
@@ -83,9 +83,9 @@ inline const Scene& TraceContext::get_scene() const
     return m_scene;
 }
 
-inline const AssemblyTree& TraceContext::get_assembly_tree() const
+inline const InstanceTree& TraceContext::get_instance_tree() const
 {
-    return *m_assembly_tree;
+    return *m_instance_tree;
 }
 
 }   // namespace renderer

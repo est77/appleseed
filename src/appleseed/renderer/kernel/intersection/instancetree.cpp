@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "assemblytree.h"
+#include "instancetree.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -75,27 +75,27 @@ namespace renderer
 {
 
 //
-// AssemblyTree class implementation.
+// InstanceTree class implementation.
 //
 
-AssemblyTree::AssemblyTree(const Scene& scene)
+InstanceTree::InstanceTree(const Scene& scene)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_scene(scene)
 {
 }
 
-AssemblyTree::~AssemblyTree()
+InstanceTree::~InstanceTree()
 {
     RENDERER_LOG_INFO("deleting assembly tree...");
 }
 
-void AssemblyTree::update()
+void InstanceTree::update()
 {
-    rebuild_assembly_tree();
+    rebuild_instance_tree();
     update_tree_hierarchy();
 }
 
-size_t AssemblyTree::get_memory_size() const
+size_t InstanceTree::get_memory_size() const
 {
     return
           TreeType::get_memory_size()
@@ -105,7 +105,7 @@ size_t AssemblyTree::get_memory_size() const
         + m_assembly_versions.size() * sizeof(pair<UniqueID, VersionID>);
 }
 
-void AssemblyTree::collect_assembly_instances(
+void InstanceTree::collect_assembly_instances(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq,
     AABBVector&                         assembly_instance_bboxes)
@@ -148,7 +148,7 @@ void AssemblyTree::collect_assembly_instances(
     }
 }
 
-void AssemblyTree::rebuild_assembly_tree()
+void InstanceTree::rebuild_instance_tree()
 {
     // Clear the current tree.
     clear();
@@ -173,16 +173,16 @@ void AssemblyTree::rebuild_assembly_tree()
     typedef bvh::SAHPartitioner<AABBVector> Partitioner;
     Partitioner partitioner(
         assembly_instance_bboxes,
-        AssemblyTreeMaxLeafSize,
-        AssemblyTreeInteriorNodeTraversalCost,
-        AssemblyTreeTriangleIntersectionCost);
+        InstanceTreeMaxLeafSize,
+        InstanceTreeInteriorNodeTraversalCost,
+        InstanceTreeTriangleIntersectionCost);
 
     // Build the assembly tree.
-    typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
+    typedef bvh::Builder<InstanceTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(*this, partitioner, m_items.size(), AssemblyTreeMaxLeafSize);
+    builder.build<DefaultWallclockTimer>(*this, partitioner, m_items.size(), InstanceTreeMaxLeafSize);
     statistics.insert_time("build time", builder.get_build_time());
-    statistics.merge(bvh::TreeStatistics<AssemblyTree>(*this, AABB3d(m_scene.compute_bbox())));
+    statistics.merge(bvh::TreeStatistics<InstanceTree>(*this, AABB3d(m_scene.compute_bbox())));
 
     if (!m_items.empty())
     {
@@ -208,7 +208,7 @@ void AssemblyTree::rebuild_assembly_tree()
             statistics).to_string().c_str());
 }
 
-void AssemblyTree::store_items_in_leaves(Statistics& statistics)
+void InstanceTree::store_items_in_leaves(Statistics& statistics)
 {
     size_t leaf_count = 0;
     size_t fat_leaf_count = 0;
@@ -241,7 +241,7 @@ void AssemblyTree::store_items_in_leaves(Statistics& statistics)
     statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
-void AssemblyTree::update_tree_hierarchy()
+void InstanceTree::update_tree_hierarchy()
 {
     // Collect all assemblies in the scene.
     AssemblyVector assemblies;
@@ -286,7 +286,7 @@ void AssemblyTree::update_tree_hierarchy()
     update_triangle_trees();
 }
 
-void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
+void InstanceTree::collect_unique_assemblies(AssemblyVector& assemblies) const
 {
     assert(assemblies.empty());
 
@@ -302,7 +302,7 @@ void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
         assemblies.end());
 }
 
-void AssemblyTree::delete_unused_child_trees(const AssemblyVector& assemblies)
+void InstanceTree::delete_unused_child_trees(const AssemblyVector& assemblies)
 {
     set<UniqueID> assembly_uids;
 
@@ -358,7 +358,7 @@ namespace
     }
 }
 
-void AssemblyTree::create_child_trees(const Assembly& assembly)
+void InstanceTree::create_child_trees(const Assembly& assembly)
 {
     // Create a triangle tree if there are mesh objects.
     if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
@@ -369,7 +369,7 @@ void AssemblyTree::create_child_trees(const Assembly& assembly)
         create_curve_tree(assembly);
 }
 
-void AssemblyTree::create_triangle_tree(const Assembly& assembly)
+void InstanceTree::create_triangle_tree(const Assembly& assembly)
 {
     const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
     Lazy<TriangleTree>* tree = m_triangle_tree_repository.acquire(hash);
@@ -397,7 +397,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
     m_triangle_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
-void AssemblyTree::create_curve_tree(const Assembly& assembly)
+void InstanceTree::create_curve_tree(const Assembly& assembly)
 {
     const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory().get_model());
     Lazy<CurveTree>* tree = m_curve_tree_repository.acquire(hash);
@@ -425,13 +425,13 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
     m_curve_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
-void AssemblyTree::delete_child_trees(const UniqueID assembly_id)
+void InstanceTree::delete_child_trees(const UniqueID assembly_id)
 {
     delete_triangle_tree(assembly_id);
     delete_curve_tree(assembly_id);
 }
 
-void AssemblyTree::delete_triangle_tree(const UniqueID assembly_id)
+void InstanceTree::delete_triangle_tree(const UniqueID assembly_id)
 {
     const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly_id);
     if (it != m_triangle_trees.end())
@@ -441,7 +441,7 @@ void AssemblyTree::delete_triangle_tree(const UniqueID assembly_id)
     }
 }
 
-void AssemblyTree::delete_curve_tree(const UniqueID assembly_id)
+void InstanceTree::delete_curve_tree(const UniqueID assembly_id)
 {
     const CurveTreeContainer::iterator it = m_curve_trees.find(assembly_id);
     if (it != m_curve_trees.end())
@@ -466,7 +466,7 @@ namespace
     };
 }
 
-void AssemblyTree::update_triangle_trees()
+void InstanceTree::update_triangle_trees()
 {
     UpdateTrees<TriangleTree> update_trees;
     m_triangle_tree_repository.for_each(update_trees);
@@ -524,11 +524,11 @@ namespace
 
 
 //
-// AssemblyLeafVisitor class implementation.
+// InstanceLeafVisitor class implementation.
 //
 
-bool AssemblyLeafVisitor::visit(
-    const AssemblyTree::NodeType&       node,
+bool InstanceLeafVisitor::visit(
+    const InstanceTree::NodeType&       node,
     const ShadingRay&                   ray,
     const ShadingRay::RayInfoType&      ray_info,
     double&                             distance
@@ -540,15 +540,15 @@ bool AssemblyLeafVisitor::visit(
     // Retrieve the assembly instances for this leaf.
     const size_t assembly_instance_index = node.get_item_index();
     const size_t assembly_instance_count = node.get_item_count();
-    const AssemblyTree::Item* items =
-        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(AssemblyTree::Item)
-            ? &node.get_user_data<AssemblyTree::Item>()     // items are stored in the leaf node
+    const InstanceTree::Item* items =
+        assembly_instance_count <= InstanceTree::NodeType::MaxUserDataSize / sizeof(InstanceTree::Item)
+            ? &node.get_user_data<InstanceTree::Item>()     // items are stored in the leaf node
             : &m_tree.m_items[assembly_instance_index];     // items are stored in the tree
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
         // Retrieve the assembly instance.
-        const AssemblyTree::Item& item = items[i];
+        const InstanceTree::Item& item = items[i];
         const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
 
         // Skip this assembly instance if it isn't visible for this ray.
@@ -715,11 +715,11 @@ bool AssemblyLeafVisitor::visit(
 
 
 //
-// AssemblyLeafProbeVisitor class implementation.
+// InstanceLeafProbeVisitor class implementation.
 //
 
-bool AssemblyLeafProbeVisitor::visit(
-    const AssemblyTree::NodeType&       node,
+bool InstanceLeafProbeVisitor::visit(
+    const InstanceTree::NodeType&       node,
     const ShadingRay&                   ray,
     const ShadingRay::RayInfoType&      ray_info,
     double&                             distance
@@ -730,15 +730,15 @@ bool AssemblyLeafProbeVisitor::visit(
 {
     // Retrieve the assembly instances for this leaf.
     const size_t assembly_instance_count = node.get_item_count();
-    const AssemblyTree::Item* items =
-        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(AssemblyTree::Item)
-            ? &node.get_user_data<AssemblyTree::Item>()     // items are stored in the leaf node
+    const InstanceTree::Item* items =
+        assembly_instance_count <= InstanceTree::NodeType::MaxUserDataSize / sizeof(InstanceTree::Item)
+            ? &node.get_user_data<InstanceTree::Item>()     // items are stored in the leaf node
             : &m_tree.m_items[node.get_item_index()];       // items are stored in the tree
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
         // Retrieve the assembly instance.
-        const AssemblyTree::Item& item = items[i];
+        const InstanceTree::Item& item = items[i];
         const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
 
         // Skip this assembly instance if it isn't visible for this ray.

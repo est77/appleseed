@@ -65,7 +65,7 @@ namespace renderer
 // Assembly tree.
 //
 
-class AssemblyTree
+class InstanceTree
   : public foundation::bvh::Tree<
                foundation::AlignedVector<
                    foundation::bvh::Node<foundation::AABB3d>
@@ -74,20 +74,20 @@ class AssemblyTree
 {
   public:
     // Constructor, builds the tree for a given scene.
-    explicit AssemblyTree(const Scene& scene);
+    explicit InstanceTree(const Scene& scene);
 
     // Destructor.
-    ~AssemblyTree();
+    ~InstanceTree();
 
-    // Update the assembly tree and all the child trees.
+    // Update the instance tree and all the child trees.
     void update();
 
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
   private:
-    friend class AssemblyLeafVisitor;
-    friend class AssemblyLeafProbeVisitor;
+    friend class InstanceLeafVisitor;
+    friend class InstanceLeafProbeVisitor;
     friend class Intersector;
 
     struct Item
@@ -131,7 +131,7 @@ class AssemblyTree
         const TransformSequence&                parent_transform_seq,
         AABBVector&                             assembly_instance_bboxes);
 
-    void rebuild_assembly_tree();
+    void rebuild_instance_tree();
     void store_items_in_leaves(foundation::Statistics& statistics);
 
     void update_tree_hierarchy();
@@ -151,17 +151,17 @@ class AssemblyTree
 
 
 //
-// Assembly leaf visitor, used during tree intersection.
+// Instance leaf visitor, used during tree intersection.
 //
 
-class AssemblyLeafVisitor
+class InstanceLeafVisitor
   : public foundation::NonCopyable
 {
   public:
     // Constructor.
-    AssemblyLeafVisitor(
+    InstanceLeafVisitor(
         ShadingPoint&                               shading_point,
-        const AssemblyTree&                         tree,
+        const InstanceTree&                         tree,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
         const ShadingPoint*                         parent_shading_point
@@ -173,7 +173,7 @@ class AssemblyLeafVisitor
 
     // Visit a leaf.
     bool visit(
-        const AssemblyTree::NodeType&               node,
+        const InstanceTree::NodeType&               node,
         const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
         double&                                     distance
@@ -184,7 +184,7 @@ class AssemblyLeafVisitor
 
   private:
     ShadingPoint&                                   m_shading_point;
-    const AssemblyTree&                             m_tree;
+    const InstanceTree&                             m_tree;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
@@ -196,17 +196,17 @@ class AssemblyLeafVisitor
 
 
 //
-// Assembly leaf visitor for probe rays, only return boolean answers
+// Instance leaf visitor for probe rays, only return boolean answers
 // (whether an intersection was found or not).
 //
 
-class AssemblyLeafProbeVisitor
+class InstanceLeafProbeVisitor
   : public ProbeVisitorBase
 {
   public:
     // Constructor.
-    AssemblyLeafProbeVisitor(
-        const AssemblyTree&                         tree,
+    InstanceLeafProbeVisitor(
+        const InstanceTree&                         tree,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
         const ShadingPoint*                         parent_shading_point
@@ -218,7 +218,7 @@ class AssemblyLeafProbeVisitor
 
     // Visit a leaf.
     bool visit(
-        const AssemblyTree::NodeType&               node,
+        const InstanceTree::NodeType&               node,
         const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
         double&                                     distance
@@ -228,7 +228,7 @@ class AssemblyLeafProbeVisitor
         );
 
   private:
-    const AssemblyTree&                             m_tree;
+    const InstanceTree&                             m_tree;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
@@ -244,25 +244,25 @@ class AssemblyLeafProbeVisitor
 //
 
 typedef foundation::bvh::Intersector<
-    AssemblyTree,
-    AssemblyLeafVisitor,
+    InstanceTree,
+    InstanceLeafVisitor,
     ShadingRay
-> AssemblyTreeIntersector;
+> InstanceTreeIntersector;
 
 typedef foundation::bvh::Intersector<
-    AssemblyTree,
-    AssemblyLeafProbeVisitor,
+    InstanceTree,
+    InstanceLeafProbeVisitor,
     ShadingRay
-> AssemblyTreeProbeIntersector;
+> InstanceTreeProbeIntersector;
 
 
 //
-// AssemblyLeafVisitor class implementation.
+// InstanceLeafVisitor class implementation.
 //
 
-inline AssemblyLeafVisitor::AssemblyLeafVisitor(
+inline InstanceLeafVisitor::InstanceLeafVisitor(
     ShadingPoint&                                   shading_point,
-    const AssemblyTree&                             tree,
+    const InstanceTree&                             tree,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
     const ShadingPoint*                             parent_shading_point
@@ -285,11 +285,11 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
 
 
 //
-// AssemblyLeafProbeVisitor class implementation.
+// InstanceLeafProbeVisitor class implementation.
 //
 
-inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
-    const AssemblyTree&                             tree,
+inline InstanceLeafProbeVisitor::InstanceLeafProbeVisitor(
+    const InstanceTree&                             tree,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
     const ShadingPoint*                             parent_shading_point
