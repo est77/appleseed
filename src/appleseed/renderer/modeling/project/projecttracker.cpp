@@ -159,6 +159,15 @@ struct ProjectTracker::Impl
         collect_relations_from(scene.texture_instances());
         collect_relations_from(scene.shader_groups());
         collect_relations_from(scene.assembly_instances());
+        collect_relations_from(scene.bsdfs());
+        collect_relations_from(scene.bssrdfs());
+        collect_relations_from(scene.edfs());
+        collect_relations_from(scene.surface_shaders());
+        collect_relations_from(scene.materials());
+        collect_relations_from(scene.lights());
+        collect_relations_from(scene.objects());
+        collect_relations_from(scene.object_instances());
+        collect_relations_from(scene.volumes());
 
         collect_relations_from(scene.cameras());
 
@@ -355,7 +364,7 @@ struct ProjectTracker::Impl
             LOG_INFO(logger, FMT_ENTITY " is referenced by:",
                 kv.first->get_path().c_str(),
                 kv.first->get_uid());
-            
+
             for (const auto& incoming_ref : kv.second)
             {
                 if (incoming_ref.m_input_name == nullptr)
@@ -402,7 +411,7 @@ struct ProjectTracker::Impl
             LOG_INFO(logger, FMT_ENTITY " has references to:",
                 kv.first->get_path().c_str(),
                 kv.first->get_uid());
-            
+
             for (const auto& outgoing_ref : kv.second)
             {
                 LOG_INFO(logger, "    " FMT_ENTITY,
@@ -445,6 +454,16 @@ struct ProjectTracker::Impl
         remove_unused_entities_from(scene.texture_instances());
         remove_unused_entities_from(scene.shader_groups());
         remove_unused_entities_from(scene.assembly_instances());
+
+        remove_unused_entities_from(scene.bsdfs());
+        remove_unused_entities_from(scene.bssrdfs());
+        remove_unused_entities_from(scene.edfs());
+        remove_unused_entities_from(scene.surface_shaders());
+        remove_unused_entities_from(scene.materials());
+        remove_unused_entities_from(scene.lights());
+        remove_unused_entities_from(scene.objects());
+        remove_unused_entities_from(scene.object_instances());
+        remove_unused_entities_from(scene.volumes());
 
         remove_unused_entities_from(scene.environment_edfs());
         remove_unused_entities_from(scene.environment_shaders());

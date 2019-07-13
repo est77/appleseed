@@ -235,6 +235,16 @@ void InputBinder::build_scene_symbol_table()
         insert_entities(m_scene_symbols, m_scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
         insert_entities(m_scene_symbols, m_scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
         insert_entities(m_scene_symbols, m_scene.shader_groups(), SymbolTable::SymbolShaderGroup);
+        insert_entities(m_scene_symbols, m_scene.bsdfs(), SymbolTable::SymbolBSDF);
+        insert_entities(m_scene_symbols, m_scene.bssrdfs(), SymbolTable::SymbolBSSRDF);
+        insert_entities(m_scene_symbols, m_scene.edfs(), SymbolTable::SymbolEDF);
+        insert_entities(m_scene_symbols, m_scene.shader_groups(), SymbolTable::SymbolShaderGroup);
+        insert_entities(m_scene_symbols, m_scene.surface_shaders(), SymbolTable::SymbolSurfaceShader);
+        insert_entities(m_scene_symbols, m_scene.materials(), SymbolTable::SymbolMaterial);
+        insert_entities(m_scene_symbols, m_scene.lights(), SymbolTable::SymbolLight);
+        insert_entities(m_scene_symbols, m_scene.objects(), SymbolTable::SymbolObject);
+        insert_entities(m_scene_symbols, m_scene.object_instances(), SymbolTable::SymbolObjectInstance);
+        insert_entities(m_scene_symbols, m_scene.volumes(), SymbolTable::SymbolVolume);
 
         if (m_scene.get_environment())
             m_scene_symbols.insert(m_scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
@@ -338,6 +348,94 @@ void InputBinder::bind_scene_entities_inputs()
         bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolEnvironment),
             *m_scene.get_environment());
+    }
+
+    // Bind BSDFs inputs.
+    for (auto& bsdf : m_scene.bsdfs())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolBSDF),
+            bsdf);
+    }
+
+    // Bind BSSRDFs inputs.
+    for (auto& bssrdf : m_scene.bssrdfs())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolBSSRDF),
+            bssrdf);
+    }
+
+    // Bind EDFs inputs.
+    for (auto& edf : m_scene.edfs())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolEDF),
+            edf);
+    }
+
+    // Bind volumes inputs.
+    for (auto& volume : m_scene.volumes())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolVolume),
+            volume);
+    }
+
+    // Bind ShaderGroups inputs.
+    for (auto& shader_group : m_scene.shader_groups())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolShaderGroup),
+            shader_group);
+    }
+
+    // Bind surface shaders inputs.
+    for (auto& surface_shader : m_scene.surface_shaders())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
+            surface_shader);
+    }
+
+    // Bind materials inputs.
+    for (auto& material : m_scene.materials())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolMaterial),
+            material);
+    }
+
+    // Bind lights inputs.
+    for (auto& light : m_scene.lights())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolLight),
+            light);
+    }
+
+    // Bind objects inputs.
+    for (auto& object : m_scene.objects())
+    {
+        bind_entity_inputs(
+            SymbolTable::symbol_name(SymbolTable::SymbolObject),
+            object);
+    }
+
+    // Bind objects to object instances. This must be done before binding materials.
+    for (auto& object_instance : m_scene.object_instances())
+    {
+        object_instance.unbind_object();
+        object_instance.bind_object(m_scene.objects());
+        object_instance.check_object();
+    }
+
+    // Bind materials to object instances.
+    for (auto& object_instance : m_scene.object_instances())
+    {
+        object_instance.unbind_materials();
+        object_instance.bind_materials(m_scene.materials());
+        object_instance.check_materials();
     }
 
     // Bind assemblies to assembly instances.
@@ -572,6 +670,15 @@ bool InputBinder::try_bind_scene_entity_to_input(
           BIND(SymbolTable::SymbolShaderGroup, m_scene.shader_groups());
           BIND(SymbolTable::SymbolEnvironmentEDF, m_scene.environment_edfs());
           BIND(SymbolTable::SymbolEnvironmentShader, m_scene.environment_shaders());
+          BIND(SymbolTable::SymbolBSDF, m_scene.bsdfs());
+          BIND(SymbolTable::SymbolBSSRDF, m_scene.bssrdfs());
+          BIND(SymbolTable::SymbolEDF, m_scene.edfs());
+          BIND(SymbolTable::SymbolSurfaceShader, m_scene.surface_shaders());
+          BIND(SymbolTable::SymbolMaterial, m_scene.materials());
+          BIND(SymbolTable::SymbolLight, m_scene.lights());
+          BIND(SymbolTable::SymbolObject, m_scene.objects());
+          BIND(SymbolTable::SymbolObjectInstance, m_scene.object_instances());
+          BIND(SymbolTable::SymbolVolume, m_scene.volumes());
           case SymbolTable::SymbolNotFound: break;
           assert_otherwise;
         }
@@ -795,6 +902,15 @@ InputBinder::ReferencedEntity InputBinder::find_entity_in_scene(
       case SymbolTable::SymbolShaderGroup: return ReferencedEntity(m_scene.shader_groups(), name);
       case SymbolTable::SymbolEnvironmentEDF: return ReferencedEntity(m_scene.environment_edfs(), name);
       case SymbolTable::SymbolEnvironmentShader: return ReferencedEntity(m_scene.environment_shaders(), name);
+      case SymbolTable::SymbolBSDF: return ReferencedEntity(m_scene.bsdfs(), name);
+      case SymbolTable::SymbolBSSRDF: return ReferencedEntity(m_scene.bssrdfs(), name);
+      case SymbolTable::SymbolEDF: return ReferencedEntity(m_scene.edfs(), name);
+      case SymbolTable::SymbolSurfaceShader: return ReferencedEntity(m_scene.surface_shaders(), name);
+      case SymbolTable::SymbolMaterial: return ReferencedEntity(m_scene.materials(), name);
+      case SymbolTable::SymbolLight: return ReferencedEntity(m_scene.lights(), name);
+      case SymbolTable::SymbolObject: return ReferencedEntity(m_scene.objects(), name);
+      case SymbolTable::SymbolObjectInstance: return ReferencedEntity(m_scene.object_instances(), name);
+      case SymbolTable::SymbolVolume: return ReferencedEntity(m_scene.volumes(), name);
       case SymbolTable::SymbolNotFound: break;
       default: break;               // might be a scalar
     }

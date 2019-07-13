@@ -2327,6 +2327,18 @@ namespace
                     static_cast<AssemblyInstanceElementHandler*>(handler)->get_assembly_instance());
                 break;
 
+              case ElementBSDF:
+                insert(
+                    m_scene->bsdfs(),
+                    static_cast<BSDFElementHandler*>(handler)->get_entity());
+                break;
+
+              case ElementBSSRDF:
+                insert(
+                    m_scene->bssrdfs(),
+                    static_cast<BSSRDFElementHandler*>(handler)->get_entity());
+                break;
+
               case ElementColor:
                 insert(
                     m_scene->colors(),
@@ -2340,6 +2352,12 @@ namespace
                     if (camera.get())
                         m_scene->cameras().insert(camera);
                 }
+                break;
+
+              case ElementEDF:
+                insert(
+                    m_scene->edfs(),
+                    static_cast<EDFElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementEnvironment:
@@ -2370,6 +2388,41 @@ namespace
                     static_cast<EnvironmentShaderElementHandler*>(handler)->get_entity());
                 break;
 
+              case ElementLight:
+                insert(
+                    m_scene->lights(),
+                    static_cast<LightElementHandler*>(handler)->get_entity());
+                break;
+
+              case ElementMaterial:
+                insert(
+                    m_scene->materials(),
+                    static_cast<MaterialElementHandler*>(handler)->get_entity());
+                break;
+
+              case ElementShaderGroup:
+                insert(
+                    m_scene->shader_groups(),
+                    static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
+                break;
+
+              case ElementSurfaceShader:
+                insert(
+                    m_scene->surface_shaders(),
+                    static_cast<SurfaceShaderElementHandler*>(handler)->get_entity());
+                break;
+
+              case ElementObject:
+                for (Object* object : static_cast<ObjectElementHandler*>(handler)->get_objects())
+                    insert(m_scene->objects(), auto_release_ptr<Object>(object));
+                break;
+
+              case ElementObjectInstance:
+                insert(
+                    m_scene->object_instances(),
+                    static_cast<ObjectInstanceElementHandler*>(handler)->get_object_instance());
+                break;
+
               case ElementTexture:
                 insert(
                     m_scene->textures(),
@@ -2382,10 +2435,10 @@ namespace
                     static_cast<TextureInstanceElementHandler*>(handler)->get_texture_instance());
                 break;
 
-              case ElementShaderGroup:
+              case ElementVolume:
                 insert(
-                    m_scene->shader_groups(),
-                    static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
+                    m_scene->volumes(),
+                    static_cast<VolumeElementHandler*>(handler)->get_entity());
                 break;
 
               default:

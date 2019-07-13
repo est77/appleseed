@@ -35,6 +35,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/utility/messagecontext.h"
@@ -240,12 +241,12 @@ Object* ObjectInstance::find_object() const
 
     while (parent)
     {
-        if (dynamic_cast<const Assembly*>(parent) == nullptr)
-            break;
+        Object* object = nullptr;
 
-        Object* object =
-            static_cast<const Assembly*>(parent)
-                ->objects().get_by_name(impl->m_object_name.c_str());
+        if (const auto* assembly = dynamic_cast<const Assembly*>(parent))
+            object = assembly->objects().get_by_name(impl->m_object_name.c_str());
+        else if (const auto* scene = dynamic_cast<const Scene*>(parent))
+            object = scene->objects().get_by_name(impl->m_object_name.c_str());
 
         if (object)
             return object;

@@ -79,46 +79,14 @@ UniqueID Assembly::get_class_uid()
     return g_class_uid;
 }
 
-struct Assembly::Impl
-{
-    BSDFContainer               m_bsdfs;
-    BSSRDFContainer             m_bssrdfs;
-    EDFContainer                m_edfs;
-    SurfaceShaderContainer      m_surface_shaders;
-    MaterialContainer           m_materials;
-    LightContainer              m_lights;
-    ObjectContainer             m_objects;
-    ObjectInstanceContainer     m_object_instances;
-    VolumeContainer             m_volumes;
-
-    explicit Impl(Entity* parent)
-      : m_bsdfs(parent)
-      , m_bssrdfs(parent)
-      , m_edfs(parent)
-      , m_surface_shaders(parent)
-      , m_materials(parent)
-      , m_lights(parent)
-      , m_objects(parent)
-      , m_object_instances(parent)
-      , m_volumes(parent)
-    {
-    }
-};
-
 Assembly::Assembly(
     const char*         name,
     const ParamArray&   params)
   : Entity(g_class_uid, params)
   , BaseGroup(this)
-  , impl(new Impl(this))
   , m_has_render_data(false)
 {
     set_name(name);
-}
-
-Assembly::~Assembly()
-{
-    delete impl;
 }
 
 void Assembly::release()
@@ -129,66 +97,6 @@ void Assembly::release()
 const char* Assembly::get_model() const
 {
     return Model;
-}
-
-BSDFContainer& Assembly::bsdfs() const
-{
-    return impl->m_bsdfs;
-}
-
-BSSRDFContainer& Assembly::bssrdfs() const
-{
-    return impl->m_bssrdfs;
-}
-
-EDFContainer& Assembly::edfs() const
-{
-    return impl->m_edfs;
-}
-
-SurfaceShaderContainer& Assembly::surface_shaders() const
-{
-    return impl->m_surface_shaders;
-}
-
-MaterialContainer& Assembly::materials() const
-{
-    return impl->m_materials;
-}
-
-LightContainer& Assembly::lights() const
-{
-    return impl->m_lights;
-}
-
-ObjectContainer& Assembly::objects() const
-{
-    return impl->m_objects;
-}
-
-ObjectInstanceContainer& Assembly::object_instances() const
-{
-    return impl->m_object_instances;
-}
-
-VolumeContainer& Assembly::volumes() const
-{
-    return impl->m_volumes;
-}
-
-void Assembly::clear()
-{
-    BaseGroup::clear();
-
-    impl->m_bsdfs.clear();
-    impl->m_bssrdfs.clear();
-    impl->m_edfs.clear();
-    impl->m_surface_shaders.clear();
-    impl->m_materials.clear();
-    impl->m_lights.clear();
-    impl->m_objects.clear();
-    impl->m_object_instances.clear();
-    impl->m_volumes.clear();
 }
 
 GAABB3 Assembly::compute_local_bbox() const
@@ -207,64 +115,8 @@ GAABB3 Assembly::compute_non_hierarchical_local_bbox() const
 {
     return
         compute_parent_bbox<GAABB3>(
-            impl->m_object_instances.begin(),
-            impl->m_object_instances.end());
-}
-
-void Assembly::collect_asset_paths(StringArray& paths) const
-{
-    BaseGroup::collect_asset_paths(paths);
-
-    invoke_collect_asset_paths(bsdfs(), paths);
-    invoke_collect_asset_paths(bssrdfs(), paths);
-    invoke_collect_asset_paths(edfs(), paths);
-    invoke_collect_asset_paths(surface_shaders(), paths);
-    invoke_collect_asset_paths(materials(), paths);
-    invoke_collect_asset_paths(lights(), paths);
-    invoke_collect_asset_paths(objects(), paths);
-    invoke_collect_asset_paths(object_instances(), paths);
-    invoke_collect_asset_paths(volumes(), paths);
-}
-
-void Assembly::update_asset_paths(const StringDictionary& mappings)
-{
-    BaseGroup::update_asset_paths(mappings);
-
-    invoke_update_asset_paths(bsdfs(), mappings);
-    invoke_update_asset_paths(bssrdfs(), mappings);
-    invoke_update_asset_paths(edfs(), mappings);
-    invoke_update_asset_paths(surface_shaders(), mappings);
-    invoke_update_asset_paths(materials(), mappings);
-    invoke_update_asset_paths(lights(), mappings);
-    invoke_update_asset_paths(objects(), mappings);
-    invoke_update_asset_paths(object_instances(), mappings);
-    invoke_update_asset_paths(volumes(), mappings);
-}
-
-bool Assembly::on_render_begin(
-    const Project&          project,
-    const BaseGroup*        parent,
-    OnRenderBeginRecorder&  recorder,
-    IAbortSwitch*           abort_switch)
-{
-    if (!Entity::on_render_begin(project, parent, recorder, abort_switch))
-        return false;
-
-    if (!BaseGroup::on_render_begin(project, parent, recorder, abort_switch))
-        return false;
-
-    bool success = true;
-    success = success && invoke_on_render_begin(bsdfs(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(bssrdfs(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(edfs(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(surface_shaders(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(materials(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(lights(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(objects(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(object_instances(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(volumes(), project, this, recorder, abort_switch);
-
-    return success;
+            object_instances().begin(),
+            object_instances().end());
 }
 
 bool Assembly::on_frame_begin(
@@ -277,19 +129,6 @@ bool Assembly::on_frame_begin(
         return false;
 
     if (!BaseGroup::on_frame_begin(project, parent, recorder, abort_switch))
-        return false;
-
-    bool success = true;
-    success = success && invoke_on_frame_begin(bsdfs(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(bssrdfs(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(edfs(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(surface_shaders(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(materials(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(lights(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(objects(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(object_instances(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(volumes(), project, this, recorder, abort_switch);
-    if (!success)
         return false;
 
     // Collect procedural object instances.
@@ -354,6 +193,48 @@ auto_release_ptr<Assembly> AssemblyFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<Assembly>(new Assembly(name, params));
+}
+
+void invoke_collect_asset_paths(
+    AssemblyContainer&                  assemblies,
+    foundation::StringArray&            paths)
+{
+    for (auto& assembly : assemblies)
+    {
+        auto& group = static_cast<BaseGroup&>(assembly);
+        group.collect_asset_paths(paths);
+    }
+}
+
+void invoke_update_asset_paths(
+    AssemblyContainer&                  assemblies,
+    const foundation::StringDictionary& mappings)
+{
+    for (auto& assembly : assemblies)
+    {
+        auto& group = static_cast<BaseGroup&>(assembly);
+        group.update_asset_paths(mappings);
+    }
+}
+
+bool invoke_on_render_begin(
+    AssemblyContainer&      assemblies,
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnRenderBeginRecorder&  recorder,
+    IAbortSwitch*           abort_switch)
+{
+    for (auto& assembly : assemblies)
+    {
+        if (foundation::is_aborted(abort_switch))
+            return false;
+
+        auto& group = static_cast<BaseGroup&>(assembly);
+        if (!group.on_render_begin(project, parent, recorder, abort_switch))
+            return false;
+    }
+
+    return true;
 }
 
 }   // namespace renderer

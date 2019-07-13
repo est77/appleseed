@@ -156,7 +156,6 @@
                                             </xsd:complexContent>
                                         </xsd:complexType>
                                     </xsd:element>
-                                    <xsd:element ref="color"/>
                                     <xsd:element name="environment">
                                         <xsd:complexType>
                                             <xsd:complexContent>
@@ -190,9 +189,19 @@
                                             </xsd:complexContent>
                                         </xsd:complexType>
                                     </xsd:element>
+                                    <xsd:element ref="bsdf"/>
+                                    <xsd:element ref="bssrdf"/>
+                                    <xsd:element ref="color"/>
+                                    <xsd:element ref="edf"/>
+                                    <xsd:element ref="light"/>
+                                    <xsd:element ref="material"/>
+                                    <xsd:element ref="object"/>
+                                    <xsd:element ref="object_instance"/>
+                                    <xsd:element ref="shader_group"/>
+                                    <xsd:element ref="surface_shader"/>
                                     <xsd:element ref="texture"/>
                                     <xsd:element ref="texture_instance"/>
-                                    <xsd:element ref="shader_group"/>
+                                    <xsd:element ref="volume"/>
                                 </xsd:choice>
                             </xsd:extension>
                         </xsd:complexContent>

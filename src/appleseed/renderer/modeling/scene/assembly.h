@@ -56,7 +56,6 @@ namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
-namespace renderer      { class ObjectInstance; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class ParamArray; }
@@ -93,36 +92,6 @@ class APPLESEED_DLLSYMBOL Assembly
     // Delete this instance.
     void release() override;
 
-    // Access the BSDFs.
-    BSDFContainer& bsdfs() const;
-
-    // Access the BSSRDFs.
-    BSSRDFContainer& bssrdfs() const;
-
-    // Access the EDFs.
-    EDFContainer& edfs() const;
-
-    // Access the surface shaders.
-    SurfaceShaderContainer& surface_shaders() const;
-
-    // Access the materials.
-    MaterialContainer& materials() const;
-
-    // Access the lights.
-    LightContainer& lights() const;
-
-    // Access the objects.
-    ObjectContainer& objects() const;
-
-    // Access the object instances.
-    ObjectInstanceContainer& object_instances() const;
-
-    // Access the volumes.
-    VolumeContainer& volumes() const;
-
-    // Clear the assembly contents.
-    void clear();
-
     // Compute the local space bounding box of the assembly, including all child assemblies,
     // over the shutter interval.
     GAABB3 compute_local_bbox() const;
@@ -130,16 +99,6 @@ class APPLESEED_DLLSYMBOL Assembly
     // Compute the local space bounding box of this assembly, excluding all child assemblies,
     // over the shutter interval.
     GAABB3 compute_non_hierarchical_local_bbox() const;
-
-    // Expose asset file paths referenced by this entity to the outside.
-    void collect_asset_paths(foundation::StringArray& paths) const override;
-    void update_asset_paths(const foundation::StringDictionary& mappings) override;
-
-    bool on_render_begin(
-        const Project&              project,
-        const BaseGroup*            parent,
-        OnRenderBeginRecorder&      recorder,
-        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     bool on_frame_begin(
         const Project&              project,
@@ -172,16 +131,30 @@ class APPLESEED_DLLSYMBOL Assembly
         const char*                 name,
         const ParamArray&           params);
 
-    // Destructor.
-    ~Assembly() override;
-
   private:
     friend class AssemblyFactory;
-
-    struct Impl;
-    Impl* impl;
 };
 
+//
+// This overloads are needed to avoid compiler errors
+// because the methods they call are defined in both Entity
+// and BaseGroup base classes.
+//
+
+void invoke_collect_asset_paths(
+    AssemblyContainer&                  assemblies,
+    foundation::StringArray&            paths);
+
+void invoke_update_asset_paths(
+    AssemblyContainer&                  assemblies,
+    const foundation::StringDictionary& mappings);
+
+bool invoke_on_render_begin(
+    AssemblyContainer&                  assemblies,
+    const Project&                      project,
+    const BaseGroup*                    parent,
+    OnRenderBeginRecorder&              recorder,
+    foundation::IAbortSwitch*           abort_switch);
 
 //
 // Assembly factory.

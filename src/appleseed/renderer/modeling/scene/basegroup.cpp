@@ -32,12 +32,21 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/color/colorentity.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
@@ -49,18 +58,36 @@ namespace renderer
 
 struct BaseGroup::Impl
 {
+    BSDFContainer               m_bsdfs;
+    BSSRDFContainer             m_bssrdfs;
     ColorContainer              m_colors;
+    EDFContainer                m_edfs;
+    LightContainer              m_lights;
+    MaterialContainer           m_materials;
+    ObjectContainer             m_objects;
+    ObjectInstanceContainer     m_object_instances;
+    ShaderGroupContainer        m_shader_groups;
+    SurfaceShaderContainer      m_surface_shaders;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
-    ShaderGroupContainer        m_shader_groups;
+    VolumeContainer             m_volumes;
     AssemblyContainer           m_assemblies;
     AssemblyInstanceContainer   m_assembly_instances;
 
     explicit Impl(Entity* parent)
-      : m_colors(parent)
+      : m_bsdfs(parent)
+      , m_bssrdfs(parent)
+      , m_colors(parent)
+      , m_edfs(parent)
+      , m_lights(parent)
+      , m_materials(parent)
+      , m_objects(parent)
+      , m_object_instances(parent)
+      , m_shader_groups(parent)
+      , m_surface_shaders(parent)
       , m_textures(parent)
       , m_texture_instances(parent)
-      , m_shader_groups(parent)
+      , m_volumes(parent)
       , m_assemblies(parent)
       , m_assembly_instances(parent)
     {
@@ -77,9 +104,54 @@ BaseGroup::~BaseGroup()
     delete impl;
 }
 
+BSDFContainer& BaseGroup::bsdfs() const
+{
+    return impl->m_bsdfs;
+}
+
+BSSRDFContainer& BaseGroup::bssrdfs() const
+{
+    return impl->m_bssrdfs;
+}
+
 ColorContainer& BaseGroup::colors() const
 {
     return impl->m_colors;
+}
+
+EDFContainer& BaseGroup::edfs() const
+{
+    return impl->m_edfs;
+}
+
+LightContainer& BaseGroup::lights() const
+{
+    return impl->m_lights;
+}
+
+MaterialContainer& BaseGroup::materials() const
+{
+    return impl->m_materials;
+}
+
+ShaderGroupContainer& BaseGroup::shader_groups() const
+{
+    return impl->m_shader_groups;
+}
+
+SurfaceShaderContainer& BaseGroup::surface_shaders() const
+{
+    return impl->m_surface_shaders;
+}
+
+ObjectContainer& BaseGroup::objects() const
+{
+    return impl->m_objects;
+}
+
+ObjectInstanceContainer& BaseGroup::object_instances() const
+{
+    return impl->m_object_instances;
 }
 
 TextureContainer& BaseGroup::textures() const
@@ -92,17 +164,27 @@ TextureInstanceContainer& BaseGroup::texture_instances() const
     return impl->m_texture_instances;
 }
 
-ShaderGroupContainer& BaseGroup::shader_groups() const
+VolumeContainer& BaseGroup::volumes() const
 {
-    return impl->m_shader_groups;
+    return impl->m_volumes;
 }
 
 void BaseGroup::clear()
 {
+    impl->m_bsdfs.clear();
+    impl->m_bssrdfs.clear();
     impl->m_colors.clear();
-    impl->m_textures.clear();
-    impl->m_texture_instances.clear();
+    impl->m_edfs.clear();
+    impl->m_lights.clear();
+    impl->m_materials.clear();
+    impl->m_object_instances.clear();
+    impl->m_objects.clear();
     impl->m_shader_groups.clear();
+    impl->m_surface_shaders.clear();
+    impl->m_texture_instances.clear();
+    impl->m_textures.clear();
+    impl->m_volumes.clear();
+
     impl->m_assemblies.clear();
     impl->m_assembly_instances.clear();
 }
@@ -160,20 +242,38 @@ AssemblyInstanceContainer& BaseGroup::assembly_instances() const
 
 void BaseGroup::collect_asset_paths(StringArray& paths) const
 {
+    invoke_collect_asset_paths(bsdfs(), paths);
+    invoke_collect_asset_paths(bssrdfs(), paths);
     invoke_collect_asset_paths(colors(), paths);
-    invoke_collect_asset_paths(textures(), paths);
-    invoke_collect_asset_paths(texture_instances(), paths);
+    invoke_collect_asset_paths(edfs(), paths);
+    invoke_collect_asset_paths(lights(), paths);
+    invoke_collect_asset_paths(materials(), paths);
+    invoke_collect_asset_paths(object_instances(), paths);
+    invoke_collect_asset_paths(objects(), paths);
     invoke_collect_asset_paths(shader_groups(), paths);
+    invoke_collect_asset_paths(surface_shaders(), paths);
+    invoke_collect_asset_paths(texture_instances(), paths);
+    invoke_collect_asset_paths(textures(), paths);
+    invoke_collect_asset_paths(volumes(), paths);
     invoke_collect_asset_paths(assemblies(), paths);
     invoke_collect_asset_paths(assembly_instances(), paths);
 }
 
 void BaseGroup::update_asset_paths(const StringDictionary& mappings)
 {
+    invoke_update_asset_paths(bsdfs(), mappings);
+    invoke_update_asset_paths(bssrdfs(), mappings);
     invoke_update_asset_paths(colors(), mappings);
-    invoke_update_asset_paths(textures(), mappings);
-    invoke_update_asset_paths(texture_instances(), mappings);
+    invoke_update_asset_paths(edfs(), mappings);
+    invoke_update_asset_paths(lights(), mappings);
+    invoke_update_asset_paths(materials(), mappings);
+    invoke_update_asset_paths(object_instances(), mappings);
+    invoke_update_asset_paths(objects(), mappings);
     invoke_update_asset_paths(shader_groups(), mappings);
+    invoke_update_asset_paths(surface_shaders(), mappings);
+    invoke_update_asset_paths(texture_instances(), mappings);
+    invoke_update_asset_paths(textures(), mappings);
+    invoke_update_asset_paths(volumes(), mappings);
     invoke_update_asset_paths(assemblies(), mappings);
     invoke_update_asset_paths(assembly_instances(), mappings);
 }
@@ -185,10 +285,20 @@ bool BaseGroup::on_render_begin(
     IAbortSwitch*               abort_switch)
 {
     bool success = true;
+    success = success && invoke_on_render_begin(bsdfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(bssrdfs(), project, this, recorder, abort_switch);
     success = success && invoke_on_render_begin(colors(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(textures(), project, this, recorder, abort_switch);
-    success = success && invoke_on_render_begin(texture_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(edfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(lights(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(materials(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(object_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(objects(), project, this, recorder, abort_switch);
     success = success && invoke_on_render_begin(shader_groups(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(surface_shaders(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(texture_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(textures(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(volumes(), project, this, recorder, abort_switch);
+
     success = success && invoke_on_render_begin(assemblies(), project, this, recorder, abort_switch);
     success = success && invoke_on_render_begin(assembly_instances(), project, this, recorder, abort_switch);
     return success;
@@ -201,10 +311,19 @@ bool BaseGroup::on_frame_begin(
     IAbortSwitch*               abort_switch)
 {
     bool success = true;
+    success = success && invoke_on_frame_begin(bsdfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(bssrdfs(), project, this, recorder, abort_switch);
     success = success && invoke_on_frame_begin(colors(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(textures(), project, this, recorder, abort_switch);
-    success = success && invoke_on_frame_begin(texture_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(edfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(lights(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(materials(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(object_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(objects(), project, this, recorder, abort_switch);
     success = success && invoke_on_frame_begin(shader_groups(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(surface_shaders(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(texture_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(textures(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(volumes(), project, this, recorder, abort_switch);
     success = success && invoke_on_frame_begin(assemblies(), project, this, recorder, abort_switch);
     success = success && invoke_on_frame_begin(assembly_instances(), project, this, recorder, abort_switch);
     return success;

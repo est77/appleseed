@@ -40,6 +40,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Entity; }
+namespace renderer      { class ObjectInstance; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class OSLShadingSystem; }
@@ -56,8 +57,35 @@ namespace renderer
 class APPLESEED_DLLSYMBOL BaseGroup
 {
   public:
+    // Access the BSDFs.
+    BSDFContainer& bsdfs() const;
+
+    // Access the BSSRDFs.
+    BSSRDFContainer& bssrdfs() const;
+
     // Access the colors.
     ColorContainer& colors() const;
+
+    // Access the EDFs.
+    EDFContainer& edfs() const;
+
+    // Access the lights.
+    LightContainer& lights() const;
+
+    // Access the materials.
+    MaterialContainer& materials() const;
+
+    // Access the objects.
+    ObjectContainer& objects() const;
+
+    // Access the object instances.
+    ObjectInstanceContainer& object_instances() const;
+
+    // Access the OSL shader groups.
+    ShaderGroupContainer& shader_groups() const;
+
+    // Access the surface shaders.
+    SurfaceShaderContainer& surface_shaders() const;
 
     // Access the textures.
     TextureContainer& textures() const;
@@ -65,8 +93,8 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Access the texture instances.
     TextureInstanceContainer& texture_instances() const;
 
-    // Access the OSL shader groups.
-    ShaderGroupContainer& shader_groups() const;
+    // Access the volumes.
+    VolumeContainer& volumes() const;
 
     // Clear the base group contents.
     void clear();

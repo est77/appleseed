@@ -781,11 +781,20 @@ namespace
             write_collection(scene.colors());
             write_collection(scene.textures());
             write_collection(scene.texture_instances());
+            write_collection(scene.edfs());
             write_collection(scene.environment_edfs());
             write_collection(scene.environment_shaders());
             if (scene.get_environment())
                 write(*scene.get_environment());
+            write_collection(scene.lights());
+            write_collection(scene.bsdfs());
+            write_collection(scene.bssrdfs());
             write_collection(scene.shader_groups());
+            write_collection(scene.surface_shaders());
+            write_collection(scene.materials());
+            write_object_collection(scene.objects());
+            write_collection(scene.object_instances());
+            write_collection(scene.volumes());
             write_collection(scene.assemblies());
             write_collection(scene.assembly_instances());
         }

@@ -261,12 +261,47 @@ namespace
 
 bool Scene::uses_alpha_mapping() const
 {
+    // Regarding transparency in the Tracer,
+    // we only care about camera and shadow rays.
+    const VisibilityFlags::Type visibility_mask =
+        VisibilityFlags::CameraRay |
+        VisibilityFlags::ShadowRay;
+
+    // Check the scene contents.
+    for (const_each<ObjectInstanceContainer> i = object_instances(); i; ++i)
+    {
+        // Skip invisible object instances.
+        if ((i->get_vis_flags() & visibility_mask) == 0)
+            continue;
+
+        if (i->uses_alpha_mapping())
+            return true;
+    }
+
+    // Check the scene assemblies.
     set<UniqueID> visited_assemblies;
     return assembly_instances_use_alpha_mapping(assembly_instances(), visited_assemblies);
 }
 
 bool Scene::has_participating_media() const
 {
+    // Regarding participating media in the Tracer,
+    // we only care about camera and shadow rays.
+    const VisibilityFlags::Type visibility_mask =
+        VisibilityFlags::CameraRay |
+        VisibilityFlags::ShadowRay;
+
+    // Check the assembly contents.
+    for (const_each<ObjectInstanceContainer> i = object_instances(); i; ++i)
+    {
+        // Skip invisible object instances.
+        if ((i->get_vis_flags() & visibility_mask) == 0)
+            continue;
+
+        if (i->has_participating_media())
+            return true;
+    }
+
     set<UniqueID> visited_assemblies;
     return assembly_instances_has_participating_media(assembly_instances(), visited_assemblies);
 }
