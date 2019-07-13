@@ -721,7 +721,7 @@ namespace
             element.write(XMLElement::HasChildElements);
 
             write_params(object_instance.get_parameters());
-            write_transform(object_instance.get_transform());
+            write_transform_sequence(object_instance.transform_sequence());
             write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_mappings());
             write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_mappings());
         }

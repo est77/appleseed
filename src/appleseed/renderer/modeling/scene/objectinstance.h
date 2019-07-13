@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -95,6 +96,10 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     // Return the name of the instantiated object.
     const char* get_object_name() const;
+
+    // Access the transform sequence of the instance.
+    TransformSequence& transform_sequence();
+    const TransformSequence& transform_sequence() const;
 
     // Return the transform of this instance.
     const foundation::Transformd& get_transform() const;
@@ -199,6 +204,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     struct Impl;
     Impl* impl;
 
+    TransformSequence   m_transform_sequence;
     foundation::uint32  m_vis_flags;
     foundation::int8    m_medium_priority;
     RayBiasMethod       m_ray_bias_method;
@@ -242,12 +248,30 @@ class APPLESEED_DLLSYMBOL ObjectInstanceFactory
         const foundation::Transformd&       transform,
         const foundation::StringDictionary& front_material_mappings,
         const foundation::StringDictionary& back_material_mappings = foundation::StringDictionary());
+
+    // Create a new object instance.
+    static foundation::auto_release_ptr<ObjectInstance> create(
+        const char*                         name,
+        const ParamArray&                   params,
+        const char*                         object_name,
+        const foundation::StringDictionary& front_material_mappings,
+        const foundation::StringDictionary& back_material_mappings = foundation::StringDictionary());
 };
 
 
 //
 // ObjectInstance class implementation.
 //
+
+inline TransformSequence& ObjectInstance::transform_sequence()
+{
+    return m_transform_sequence;
+}
+
+inline const TransformSequence& ObjectInstance::transform_sequence() const
+{
+    return m_transform_sequence;
+}
 
 inline bool ObjectInstance::transform_swaps_handedness() const
 {

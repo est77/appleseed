@@ -152,8 +152,9 @@ ObjectInstance::ObjectInstance(
   , impl(new Impl())
 {
     set_name(name);
-
+    m_transform_sequence.set_transform(0.0f, transform);
     impl->m_transform = transform;
+
     impl->m_object_name = object_name;
     impl->m_front_material_mappings = front_material_mappings;
     impl->m_back_material_mappings = back_material_mappings;
@@ -217,6 +218,11 @@ const char* ObjectInstance::get_object_name() const
     return impl->m_object_name.c_str();
 }
 
+const foundation::Transformd& ObjectInstance::get_transform() const
+{
+    return impl->m_transform;
+}
+
 bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
 {
     // If it is the same object instance, the SSS set is also the same.
@@ -228,11 +234,6 @@ bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
         return false;
 
     return impl->m_sss_set_identifier == other.impl->m_sss_set_identifier;
-}
-
-const Transformd& ObjectInstance::get_transform() const
-{
-    return impl->m_transform;
 }
 
 Object* ObjectInstance::find_object() const
@@ -268,7 +269,7 @@ GAABB3 ObjectInstance::compute_parent_bbox() const
 
     return
         object != nullptr
-            ? impl->m_transform.to_parent(object->compute_local_bbox())
+            ? get_transform().to_parent(object->compute_local_bbox())
             : GAABB3::invalid();
 }
 
@@ -484,7 +485,13 @@ bool ObjectInstance::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_transform_swaps_handedness = get_transform().swaps_handedness();
+    m_transform_sequence.optimize();
+
+    if (!m_transform_sequence.prepare())
+        RENDERER_LOG_WARNING("object instance \"%s\" has one or more invalid transforms.", get_name());
+
+    m_transform_swaps_handedness = m_transform_sequence.swaps_handedness(get_transform());
+    impl->m_transform = m_transform_sequence.get_earliest_transform();
 
     const OnFrameBeginMessageContext context("object instance", this);
 
@@ -579,6 +586,24 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
                 params,
                 object_name,
                 transform,
+                front_material_mappings,
+                back_material_mappings));
+}
+
+auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const char*             object_name,
+    const StringDictionary& front_material_mappings,
+    const StringDictionary& back_material_mappings)
+{
+    return
+        auto_release_ptr<ObjectInstance>(
+            new ObjectInstance(
+                name,
+                params,
+                object_name,
+                Transformd::identity(),
                 front_material_mappings,
                 back_material_mappings));
 }

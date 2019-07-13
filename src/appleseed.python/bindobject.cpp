@@ -136,6 +136,16 @@ namespace
         return UnalignedTransformd(obj->get_transform());
     }
 
+    TransformSequence& get_transform_sequence(ObjectInstance* obj)
+    {
+        return obj->transform_sequence();
+    }
+
+    void set_transform_sequence(ObjectInstance* obj, const TransformSequence& seq)
+    {
+        obj->transform_sequence() = seq;
+    }
+
     string obj_inst_get_obj_name(const ObjectInstance* obj)
     {
         return obj->get_object_name();
@@ -179,6 +189,8 @@ void bind_object()
         .def("__init__", bpy::make_constructor(create_obj_instance_with_back_mat))
         .def("get_object_name", &obj_inst_get_obj_name)
         .def("find_object", &ObjectInstance::find_object, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("transform_sequence", get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_transform_sequence", set_transform_sequence)
         .def("get_transform", &obj_inst_get_transform)
         .def("bbox", &ObjectInstance::compute_parent_bbox)
         .def("get_front_material_mappings", &obj_inst_get_front_material_mappings)

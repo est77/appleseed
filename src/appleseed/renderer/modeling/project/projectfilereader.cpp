@@ -1702,6 +1702,8 @@ namespace
                     get_earliest_transform(),
                     m_front_material_mappings,
                     m_back_material_mappings);
+
+            copy_transform_sequence_to(m_object_instance->transform_sequence());
         }
 
         void end_child_element(
