@@ -44,7 +44,6 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -302,46 +301,6 @@ void Scene::update_asset_paths(const StringDictionary& mappings)
 
     invoke_update_asset_paths(environment_edfs(), mappings);
     invoke_update_asset_paths(environment_shaders(), mappings);
-}
-
-namespace
-{
-    bool invoke_procedural_expand(
-        Assembly&               assembly,
-        const Project&          project,
-        const Assembly*         parent,
-        IAbortSwitch*           abort_switch)
-    {
-        ProceduralAssembly* proc_assembly =
-            dynamic_cast<ProceduralAssembly*>(&assembly);
-
-        if (proc_assembly)
-        {
-            if (!proc_assembly->expand_contents(project, parent, abort_switch))
-                return false;
-        }
-
-        for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-        {
-            if (!invoke_procedural_expand(*i, project, &assembly, abort_switch))
-                return false;
-        }
-
-        return true;
-    }
-}
-
-bool Scene::expand_procedural_assemblies(
-    const Project&          project,
-    IAbortSwitch*           abort_switch)
-{
-    for (each<AssemblyContainer> i = assemblies(); i; ++i)
-    {
-        if (!invoke_procedural_expand(*i, project, nullptr, abort_switch))
-            return false;
-    }
-
-    return true;
 }
 
 bool Scene::on_render_begin(

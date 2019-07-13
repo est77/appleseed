@@ -298,13 +298,6 @@ struct MasterRenderer::Impl
             // Construct an abort switch that will allow to abort initialization.
             RendererControllerAbortSwitch abort_switch(renderer_controller);
 
-            // Expand procedural assemblies before scene entities inputs are bound.
-            if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
-            {
-                renderer_controller.on_rendering_abort();
-                return RenderingResult::Aborted;
-            }
-
             // Bind scene entities inputs.
             if (!bind_scene_entities_inputs())
             {

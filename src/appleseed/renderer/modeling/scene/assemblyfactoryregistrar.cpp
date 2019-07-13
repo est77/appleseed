@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
-#include "renderer/modeling/scene/archiveassembly.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblytraits.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
@@ -59,7 +58,6 @@ AssemblyFactoryRegistrar::AssemblyFactoryRegistrar(const SearchPaths& search_pat
   : impl(new Impl())
 {
     // Register built-in factories.
-    impl->register_factory(auto_release_ptr<FactoryType>(new ArchiveAssemblyFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new AssemblyFactory()));
 }
 

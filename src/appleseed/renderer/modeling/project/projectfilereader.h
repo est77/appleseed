@@ -37,7 +37,6 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class EventCounters; }
 namespace renderer  { class Project; }
 
@@ -71,14 +70,6 @@ class APPLESEED_DLLSYMBOL ProjectFileReader
     // Return 0 if the requested built-in project does not exist.
     foundation::auto_release_ptr<Project> load_builtin(
         const char*                     project_name);
-
-    // Read an archive from disk.
-    // Return 0 if reading or parsing the file failed.
-    foundation::auto_release_ptr<Assembly> read_archive(
-        const char*                     archive_filepath,
-        const char*                     schema_filepath,
-        const foundation::SearchPaths&  search_paths,
-        const int                       options = Defaults);
 
   private:
     foundation::auto_release_ptr<Project> load_project_file(

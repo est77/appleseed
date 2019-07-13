@@ -58,7 +58,6 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shader.h"
@@ -345,61 +344,42 @@ namespace
             XMLElement element("assembly", m_file, m_indenter);
             element.add_attribute("name", assembly.get_name());
 
-            // Don't write the assembly model for normal assemblies
-            // to preserve compatibility with older appleseed versions.
-            if (strcmp(assembly.get_model(), AssemblyFactory().get_model()) != 0)
-                element.add_attribute("model", assembly.get_model());
+            element.write(
+                !assembly.get_parameters().empty() ||
+                !assembly.colors().empty() ||
+                !assembly.textures().empty() ||
+                !assembly.texture_instances().empty() ||
+                !assembly.bsdfs().empty() ||
+                !assembly.bssrdfs().empty() ||
+                !assembly.edfs().empty() ||
+                !assembly.shader_groups().empty() ||
+                !assembly.surface_shaders().empty() ||
+                !assembly.materials().empty() ||
+                !assembly.lights().empty() ||
+                !assembly.objects().empty() ||
+                !assembly.object_instances().empty() ||
+                !assembly.volumes().empty() ||
+                !assembly.assemblies().empty() ||
+                !assembly.assembly_instances().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
-            // Don't write the content of the assembly if it was
-            // generated procedurally.
-            if (dynamic_cast<const ProceduralAssembly*>(&assembly) != nullptr)
-            {
-                element.write(
-                    !assembly.get_parameters().empty()
-                        ? XMLElement::HasChildElements
-                        : XMLElement::HasNoContent);
-
-                write_params(assembly.get_parameters());
-            }
-            else
-            {
-                element.write(
-                    !assembly.get_parameters().empty() ||
-                    !assembly.colors().empty() ||
-                    !assembly.textures().empty() ||
-                    !assembly.texture_instances().empty() ||
-                    !assembly.bsdfs().empty() ||
-                    !assembly.bssrdfs().empty() ||
-                    !assembly.edfs().empty() ||
-                    !assembly.shader_groups().empty() ||
-                    !assembly.surface_shaders().empty() ||
-                    !assembly.materials().empty() ||
-                    !assembly.lights().empty() ||
-                    !assembly.objects().empty() ||
-                    !assembly.object_instances().empty() ||
-                    !assembly.volumes().empty() ||
-                    !assembly.assemblies().empty() ||
-                    !assembly.assembly_instances().empty()
-                        ? XMLElement::HasChildElements
-                        : XMLElement::HasNoContent);
-
-                write_params(assembly.get_parameters());
-                write_collection(assembly.colors());
-                write_collection(assembly.textures());
-                write_collection(assembly.texture_instances());
-                write_collection(assembly.bsdfs());
-                write_collection(assembly.bssrdfs());
-                write_collection(assembly.edfs());
-                write_collection(assembly.shader_groups());
-                write_collection(assembly.surface_shaders());
-                write_collection(assembly.materials());
-                write_collection(assembly.lights());
-                write_object_collection(assembly.objects());
-                write_collection(assembly.object_instances());
-                write_collection(assembly.volumes());
-                write_collection(assembly.assemblies());
-                write_collection(assembly.assembly_instances());
-            }
+            write_params(assembly.get_parameters());
+            write_collection(assembly.colors());
+            write_collection(assembly.textures());
+            write_collection(assembly.texture_instances());
+            write_collection(assembly.bsdfs());
+            write_collection(assembly.bssrdfs());
+            write_collection(assembly.edfs());
+            write_collection(assembly.shader_groups());
+            write_collection(assembly.surface_shaders());
+            write_collection(assembly.materials());
+            write_collection(assembly.lights());
+            write_object_collection(assembly.objects());
+            write_collection(assembly.object_instances());
+            write_collection(assembly.volumes());
+            write_collection(assembly.assemblies());
+            write_collection(assembly.assembly_instances());
         }
 
         // Write an <assembly_instance> element.
