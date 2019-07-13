@@ -87,113 +87,17 @@
                 <xsd:choice minOccurs="0" maxOccurs="unbounded">
                     <xsd:element name="assembly" type="assembly"/>
                     <xsd:element name="assembly_instance" type="assembly_instance"/>
-                    <xsd:element name="bsdf">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="bssrdf">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
+                    <xsd:element ref="bsdf"/>
+                    <xsd:element ref="bssrdf"/>
                     <xsd:element ref="color"/>
-                    <xsd:element name="edf">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="volume">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="light">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:sequence>
-                                        <xsd:element name="transform" type="transform" minOccurs="0" maxOccurs="unbounded"/>
-                                    </xsd:sequence>
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="material">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="object">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="object_instance">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:sequence>
-                                        <xsd:sequence>
-                                            <xsd:element name="transform" type="transform" minOccurs="0" maxOccurs="unbounded"/>
-                                        </xsd:sequence>
-                                        <xsd:element name="assign_material" minOccurs="0" maxOccurs="unbounded">
-                                            <xsd:complexType>
-                                                <xsd:attribute name="slot" type="xsd:string" use="required"/>
-                                                <xsd:attribute name="side" type="xsd:string" use="optional"/>
-                                                <xsd:attribute name="material" type="xsd:string" use="required"/>
-                                            </xsd:complexType>
-                                        </xsd:element>
-                                    </xsd:sequence>
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="object" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element ref="shader_group" />
-                    <xsd:element name="surface_shader">
-                        <xsd:complexType>
-                            <xsd:complexContent>
-                                <xsd:extension base="parameterSet">
-                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                </xsd:extension>
-                            </xsd:complexContent>
-                        </xsd:complexType>
-                    </xsd:element>
+                    <xsd:element ref="edf"/>
+                    <xsd:element ref="volume"/>
+                    <xsd:element ref="light"/>
+                    <xsd:element ref="material"/>
+                    <xsd:element ref="object"/>
+                    <xsd:element ref="object_instance"/>
+                    <xsd:element ref="shader_group"/>
+                    <xsd:element ref="surface_shader"/>
                     <xsd:element ref="texture"/>
                     <xsd:element ref="texture_instance"/>
                 </xsd:choice>
@@ -294,22 +198,6 @@
                         </xsd:complexContent>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="rules" minOccurs="0">
-                    <xsd:complexType>
-                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                            <xsd:element name="render_layer_assignment">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:choice>
-                    </xsd:complexType>
-                </xsd:element>
                 <xsd:element name="output">
                     <xsd:complexType>
                         <xsd:all>
@@ -378,6 +266,26 @@
             <xsd:attribute name="format_revision" type="xsd:positiveInteger" use="optional"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="bsdf">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="bssrdf">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="color">
         <xsd:complexType>
             <xsd:complexContent>
@@ -387,6 +295,71 @@
                         <xsd:element name="alpha" minOccurs="0"/>
                     </xsd:sequence>
                     <xsd:attribute name="name" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="edf">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="light">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:sequence>
+                        <xsd:element name="transform" type="transform" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="material">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="object">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="object_instance">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:sequence>
+                        <xsd:sequence>
+                            <xsd:element name="transform" type="transform" minOccurs="0" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                        <xsd:element name="assign_material" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:attribute name="slot" type="xsd:string" use="required"/>
+                                <xsd:attribute name="side" type="xsd:string" use="optional"/>
+                                <xsd:attribute name="material" type="xsd:string" use="required"/>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="object" type="xsd:string" use="required"/>
                 </xsd:extension>
             </xsd:complexContent>
         </xsd:complexType>
@@ -424,6 +397,16 @@
             <xsd:attribute name="name" type="xsd:string" use="required"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="surface_shader">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="texture">
         <xsd:complexType>
             <xsd:complexContent>
@@ -443,6 +426,16 @@
                     </xsd:sequence>
                     <xsd:attribute name="name" type="xsd:string" use="required"/>
                     <xsd:attribute name="texture" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="volume">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
                 </xsd:extension>
             </xsd:complexContent>
         </xsd:complexType>
