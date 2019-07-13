@@ -143,6 +143,9 @@ class APPLESEED_DLLSYMBOL Scene
     // Render-time data are available between on_render_begin() and on_render_end() calls.
     const RenderData& get_render_data() const;
 
+    // todo (est.): remove me asap.!!!
+    void do_bump_version_id() override;
+
   private:
     friend class SceneFactory;
 

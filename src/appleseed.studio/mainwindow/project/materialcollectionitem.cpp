@@ -30,7 +30,7 @@
 #include "materialcollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityeditorwindow.h"
@@ -82,8 +82,8 @@ namespace
 MaterialCollectionItem::MaterialCollectionItem(
     EntityEditorContext&    editor_context,
     MaterialContainer&      materials,
-    Assembly&               parent,
-    AssemblyItem*           parent_item)
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item)
   : Base(editor_context, g_class_uid, "Materials", parent, parent_item)
   , m_parent(parent)
   , m_parent_item(parent_item)
@@ -147,7 +147,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
             model));
 
     unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
-        new EntityBrowser<Assembly>(Base::m_parent));
+        new EntityBrowser<BaseGroup>(Base::m_parent));
 
     unique_ptr<CustomEntityUI> custom_entity_ui;
 

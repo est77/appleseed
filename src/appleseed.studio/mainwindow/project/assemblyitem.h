@@ -40,26 +40,6 @@
 #include <QList>
 #include <QObject>
 
-// Forward declarations.
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
-namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity> class InstanceCollectionItem; } }
-namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class MaterialCollectionItem; } }
-namespace appleseed { namespace studio { class ObjectCollectionItem; } }
-namespace appleseed { namespace studio { class ObjectInstanceItem; } }
-namespace renderer  { class Assembly; }
-namespace renderer  { class BaseGroup; }
-namespace renderer  { class BSDF; }
-namespace renderer  { class BSSRDF; }
-namespace renderer  { class EDF; }
-namespace renderer  { class Light; }
-namespace renderer  { class Material; }
-namespace renderer  { class Object; }
-namespace renderer  { class ObjectInstance; }
-namespace renderer  { class SurfaceShader; }
-class QMenu;
-
 namespace appleseed {
 namespace studio {
 
@@ -79,22 +59,6 @@ class AssemblyItem
 
     QMenu* get_single_item_context_menu() const override;
 
-    void add_item(renderer::BSDF* bsdf);
-    void add_item(renderer::BSSRDF* bssrdf);
-    void add_item(renderer::EDF* edf);
-    void add_item(renderer::SurfaceShader* surface_shader);
-    void add_item(renderer::Material* material);
-    void add_item(renderer::Light* light);
-    void add_item(renderer::Object* object);
-    void add_item(renderer::ObjectInstance* object_instance);
-    void add_item(renderer::Volume* volume);
-
-    typedef InstanceCollectionItem<renderer::ObjectInstance, ObjectInstanceItem, renderer::Assembly> ObjectInstanceCollectionItem;
-
-    MaterialCollectionItem& get_material_collection_item() const;
-    ObjectCollectionItem& get_object_collection_item() const;
-    ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
-
     void instantiate(const std::string& name);
 
   private:
@@ -106,34 +70,11 @@ class AssemblyItem
     renderer::BaseGroup&            m_parent;
     BaseGroupItem*                  m_parent_item;
 
-    typedef CollectionItem<renderer::BSDF, renderer::Assembly, AssemblyItem> BSDFCollectionItem;
-    typedef CollectionItem<renderer::BSSRDF, renderer::Assembly, AssemblyItem> BSSRDFCollectionItem;
-    typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
-    typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
-    typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
-    typedef CollectionItem<renderer::Volume, renderer::Assembly, AssemblyItem> VolumeCollectionItem;
-
-    BSDFCollectionItem*             m_bsdf_collection_item;
-    BSSRDFCollectionItem*           m_bssrdf_collection_item;
-    EDFCollectionItem*              m_edf_collection_item;
-    SurfaceShaderCollectionItem*    m_surface_shader_collection_item;
-    MaterialCollectionItem*         m_material_collection_item;
-    LightCollectionItem*            m_light_collection_item;
-    ObjectCollectionItem*           m_object_collection_item;
-    ObjectInstanceCollectionItem*   m_object_instance_collection_item;
-    VolumeCollectionItem*           m_volume_collection_item;
-
     void slot_instantiate() override;
     void do_instantiate(const std::string& name);
 
     void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
-
-    template <typename Entity, typename EntityContainer>
-    CollectionItem<Entity, renderer::Assembly, AssemblyItem>* add_single_model_collection_item(EntityContainer& entities);
-
-    template <typename Entity, typename EntityContainer>
-    CollectionItem<Entity, renderer::Assembly, AssemblyItem>* add_multi_model_collection_item(EntityContainer& entities);
 };
 
 }   // namespace studio

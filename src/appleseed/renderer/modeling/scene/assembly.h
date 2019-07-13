@@ -122,6 +122,9 @@ class APPLESEED_DLLSYMBOL Assembly
     // Render-time data are available between on_frame_begin() and on_frame_end() calls.
     const RenderData& get_render_data() const;
 
+    // todo (est.): remove me asap.!!!
+    void do_bump_version_id() override;
+
   protected:
     bool        m_has_render_data;
     RenderData  m_render_data;

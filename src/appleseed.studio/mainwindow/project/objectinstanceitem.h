@@ -46,7 +46,7 @@
 namespace appleseed     { namespace studio { class EntityEditorContext; } }
 namespace appleseed     { namespace studio { class ObjectInstanceItem; } }
 namespace foundation    { class Dictionary; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class ObjectInstance; }
 class QMenu;
 class QString;
@@ -58,11 +58,11 @@ namespace studio {
 typedef InstanceCollectionItem<
     renderer::ObjectInstance,
     ObjectInstanceItem,
-    renderer::Assembly
+    renderer::BaseGroup
 > ObjectInstanceCollectionItem;
 
 class ObjectInstanceItem
-  : public SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem>
+  : public SingleModelEntityItem<renderer::ObjectInstance, renderer::BaseGroup, ObjectInstanceCollectionItem>
 {
     Q_OBJECT
 
@@ -73,10 +73,10 @@ class ObjectInstanceItem
     ObjectInstanceItem(
         EntityEditorContext&            editor_context,
         renderer::ObjectInstance*       object_instance,
-        renderer::Assembly&             parent,
+        renderer::BaseGroup&            parent,
         ObjectInstanceCollectionItem*   collection_item);
 
-    const renderer::Assembly& get_assembly() const;
+    const renderer::BaseGroup& get_base_group() const;
 
     QMenu* get_single_item_context_menu() const override;
     QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
@@ -99,7 +99,7 @@ class ObjectInstanceItem
   private:
     friend class EntityDeletionAction<ObjectInstanceItem>;
 
-    typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
+    typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::BaseGroup, ObjectInstanceCollectionItem> Base;
 
     void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();

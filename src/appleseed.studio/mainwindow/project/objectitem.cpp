@@ -32,7 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
-#include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itemregistry.h"
@@ -67,8 +67,8 @@ namespace studio {
 ObjectItem::ObjectItem(
     EntityEditorContext&    editor_context,
     Object*                 object,
-    Assembly&               parent,
-    AssemblyItem*           parent_item)
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item)
   : Base(editor_context, object)
   , m_parent(parent)
   , m_parent_item(parent_item)
@@ -121,7 +121,7 @@ void ObjectItem::do_instantiate(const string& name)
     m_parent_item->add_item(object_instance.get());
     m_parent.object_instances().insert(object_instance);
 
-    m_parent.bump_version_id();
+    m_parent.do_bump_version_id();
     m_editor_context.m_project_builder.slot_notify_project_modification();
 }
 
@@ -154,10 +154,10 @@ namespace
 
     void remove_object_instances(
         ItemRegistry&                       item_registry,
-        Assembly&                           assembly,
+        BaseGroup&                          base_group,
         const UniqueID                      object_uid)
     {
-        ObjectInstanceContainer& object_instances = assembly.object_instances();
+        ObjectInstanceContainer& object_instances = base_group.object_instances();
 
         // Collect the object instances to remove.
         const vector<UniqueID> remove_list =
@@ -171,10 +171,10 @@ namespace
         }
 
         if (!remove_list.empty())
-            assembly.bump_version_id();
+            base_group.do_bump_version_id();
 
         // Recurse into child assemblies.
-        for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
+        for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
             remove_object_instances(item_registry, *i, object_uid);
     }
 }

@@ -34,7 +34,9 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstanceitem.h"
 #include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
+#include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 
@@ -128,15 +130,23 @@ QMenu* SceneItem::get_single_item_context_menu() const
     QMenu* menu = ItemBase::get_single_item_context_menu();
 
     menu->addSeparator();
+    menu->addAction("Import Objects...", &get_object_collection_item(), SLOT(slot_import_objects()));
     menu->addAction("Import Textures...", &get_texture_collection_item(), SLOT(slot_import_textures()));
 
     menu->addSeparator();
     menu->addAction("Create Assembly...", &get_assembly_collection_item(), SLOT(slot_create()));
+    menu->addAction("Create BSDF...", &get_bsdf_collection_item(), SLOT(slot_create()));
+    menu->addAction("Create BSSRDF...", &get_bssrdf_collection_item(), SLOT(slot_create()));
     menu->addAction("Create Camera...", m_camera_collection_item, SLOT(slot_create()));
     menu->addAction("Create Color...", &get_color_collection_item(), SLOT(slot_create()));
+    menu->addAction("Create EDF...", &get_edf_collection_item(), SLOT(slot_create()));
     menu->addAction("Create Environment EDF...", m_environment_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Environment Shader...", m_environment_shader_collection_item, SLOT(slot_create()));
 
+    QMenu* submenu = menu->addMenu("Create Material...");
+    submenu->addAction("Create Generic Material...", &get_material_collection_item(), SLOT(slot_create_generic()));
+
+    menu->addAction("Create Surface Shader...", &get_surface_shader_collection_item(), SLOT(slot_create()));
     return menu;
 }
 

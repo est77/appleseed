@@ -148,6 +148,9 @@ class MaterialAssignmentEditorWindow
 
     void assign_materials(const SlotValueCollection& slot_values);
 
+    template <typename ParentEntityType>
+    void do_open_entity_browser(const ParentEntityType& parent);
+
   private slots:
     void slot_change_back_material_mode(int index);
     void slot_open_entity_browser();

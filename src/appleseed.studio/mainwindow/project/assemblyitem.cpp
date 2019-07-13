@@ -35,10 +35,8 @@
 #include "mainwindow/project/assemblyinstanceitem.h"
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entityeditorcontext.h"
-#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/materialcollectionitem.h"
-#include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -49,17 +47,10 @@
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/bsdf.h"
-#include "renderer/api/bssrdf.h"
-#include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
-#include "renderer/api/light.h"
-#include "renderer/api/material.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
-#include "renderer/api/surfaceshader.h"
 #include "renderer/api/utility.h"
-#include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -103,57 +94,6 @@ AssemblyItem::AssemblyItem(
 
     set_allow_edition(false);
 
-    insertChild(
-        3,
-        m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly.bsdfs()));
-
-    insertChild(
-        4,
-        m_bssrdf_collection_item = add_multi_model_collection_item<BSSRDF>(assembly.bssrdfs()));
-
-    insertChild(
-        5,
-        m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly.edfs()));
-
-    insertChild(
-        6,
-        m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders()));
-
-    insertChild(
-        7,
-        m_material_collection_item = new MaterialCollectionItem(
-            m_editor_context,
-            assembly.materials(),
-            assembly,
-            this));
-
-    insertChild(
-        8,
-        m_light_collection_item = add_multi_model_collection_item<Light>(assembly.lights()));
-
-    insertChild(
-        9,
-        m_object_collection_item =
-            new ObjectCollectionItem(
-                m_editor_context,
-                assembly.objects(),
-                assembly,
-                this));
-
-    insertChild(
-        10,
-        m_object_instance_collection_item =
-            new ObjectInstanceCollectionItem(
-                m_editor_context,
-                new_guid(),
-                EntityTraits<ObjectInstance>::get_human_readable_collection_type_name(),
-                assembly));
-    m_object_instance_collection_item->add_items(assembly.object_instances());
-
-    insertChild(
-        11,
-        m_volume_collection_item = add_multi_model_collection_item<Volume>(assembly.volumes()));
-
     m_editor_context.m_item_registry.insert(m_assembly, this);
 }
 
@@ -170,84 +110,24 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
 
     menu->addSeparator();
-    menu->addAction("Import Objects...", m_object_collection_item, SLOT(slot_import_objects()));
+    menu->addAction("Import Objects...", &get_object_collection_item(), SLOT(slot_import_objects()));
     menu->addAction("Import Textures...", &get_texture_collection_item(), SLOT(slot_import_textures()));
 
     menu->addSeparator();
     menu->addAction("Create Assembly...", &get_assembly_collection_item(), SLOT(slot_create()));
-    menu->addAction("Create BSDF...", m_bsdf_collection_item, SLOT(slot_create()));
-    menu->addAction("Create BSSRDF...", m_bssrdf_collection_item, SLOT(slot_create()));
+    menu->addAction("Create BSDF...", &get_bsdf_collection_item(), SLOT(slot_create()));
+    menu->addAction("Create BSSRDF...", &get_bssrdf_collection_item(), SLOT(slot_create()));
     menu->addAction("Create Color...", &get_color_collection_item(), SLOT(slot_create()));
-    menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
-    menu->addAction("Create Light...", m_light_collection_item, SLOT(slot_create()));
-    menu->addAction("Create Volume...", m_volume_collection_item, SLOT(slot_create()));
+    menu->addAction("Create EDF...", &get_edf_collection_item(), SLOT(slot_create()));
+    menu->addAction("Create Light...", &get_light_collection_item(), SLOT(slot_create()));
+    menu->addAction("Create Volume...", &get_volume_collection_item(), SLOT(slot_create()));
 
     QMenu* submenu = menu->addMenu("Create Material...");
-    submenu->addAction("Create Generic Material...", m_material_collection_item, SLOT(slot_create_generic()));
+    submenu->addAction("Create Generic Material...", &get_material_collection_item(), SLOT(slot_create_generic()));
 
-    menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));
+    menu->addAction("Create Surface Shader...", &get_surface_shader_collection_item(), SLOT(slot_create()));
 
     return menu;
-}
-
-void AssemblyItem::add_item(BSDF* bsdf)
-{
-    m_bsdf_collection_item->add_item(bsdf);
-}
-
-void AssemblyItem::add_item(BSSRDF* bssrdf)
-{
-    m_bssrdf_collection_item->add_item(bssrdf);
-}
-
-void AssemblyItem::add_item(EDF* edf)
-{
-    m_edf_collection_item->add_item(edf);
-}
-
-void AssemblyItem::add_item(SurfaceShader* surface_shader)
-{
-    m_surface_shader_collection_item->add_item(surface_shader);
-}
-
-void AssemblyItem::add_item(Material* material)
-{
-    m_material_collection_item->add_item(material);
-}
-
-void AssemblyItem::add_item(Light* light)
-{
-    m_light_collection_item->add_item(light);
-}
-
-void AssemblyItem::add_item(Object* object)
-{
-    m_object_collection_item->add_item(object);
-}
-
-void AssemblyItem::add_item(ObjectInstance* object_instance)
-{
-    m_object_instance_collection_item->add_item(object_instance);
-}
-
-void AssemblyItem::add_item(Volume* volume)
-{
-    m_volume_collection_item->add_item(volume);
-}
-
-MaterialCollectionItem& AssemblyItem::get_material_collection_item() const
-{
-    return *m_material_collection_item;
-}
-
-ObjectCollectionItem& AssemblyItem::get_object_collection_item() const
-{
-    return *m_object_collection_item;
-}
-
-AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_collection_item() const
-{
-    return *m_object_instance_collection_item;
 }
 
 void AssemblyItem::instantiate(const string& name)
@@ -288,38 +168,6 @@ void AssemblyItem::do_instantiate(const string& name)
 
     m_editor_context.m_project.get_scene()->bump_version_id();
     m_editor_context.m_project_builder.slot_notify_project_modification();
-}
-
-template <typename Entity, typename EntityContainer>
-CollectionItem<Entity, Assembly, AssemblyItem>* AssemblyItem::add_single_model_collection_item(EntityContainer& entities)
-{
-    CollectionItem<Entity, Assembly, AssemblyItem>* item =
-        new SingleModelCollectionItem<Entity, Assembly, AssemblyItem>(
-            m_editor_context,
-            new_guid(),
-            EntityTraits<Entity>::get_human_readable_collection_type_name(),
-            m_assembly,
-            this);
-
-    item->add_items(entities);
-
-    return item;
-}
-
-template <typename Entity, typename EntityContainer>
-CollectionItem<Entity, Assembly, AssemblyItem>* AssemblyItem::add_multi_model_collection_item(EntityContainer& entities)
-{
-    CollectionItem<Entity, Assembly, AssemblyItem>* item =
-        new MultiModelCollectionItem<Entity, Assembly, AssemblyItem>(
-            m_editor_context,
-            new_guid(),
-            EntityTraits<Entity>::get_human_readable_collection_type_name(),
-            m_assembly,
-            this);
-
-    item->add_items(entities);
-
-    return item;
 }
 
 namespace

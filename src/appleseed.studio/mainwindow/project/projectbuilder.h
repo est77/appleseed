@@ -188,7 +188,7 @@ inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<renderer::EnvironmentEDF> new_entity(create_entity<renderer::EnvironmentEDF>(values));
-    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get(); 
+    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get();
 
     copy_transform_sequence(old_entity, new_entity_ptr);
 
@@ -222,7 +222,7 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
 template <>
 inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
     renderer::ObjectInstance*           old_entity,
-    renderer::Assembly&                 parent,
+    renderer::BaseGroup&                parent,
     const foundation::Dictionary&       values) const
 {
     const std::string object_name = old_entity->get_object_name();
@@ -247,7 +247,7 @@ inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::ObjectInstance>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::ObjectInstance>::insert_entity(new_entity, parent);
 
-    parent.bump_version_id();
+    parent.do_bump_version_id();
     slot_notify_project_modification();
 
     return new_entity_ptr;
@@ -284,7 +284,7 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
 template <>
 inline renderer::Light* ProjectBuilder::edit_entity(
     renderer::Light*                    old_entity,
-    renderer::Assembly&                 parent,
+    renderer::BaseGroup&                parent,
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<renderer::Light> new_entity(create_entity<renderer::Light>(values));

@@ -78,8 +78,8 @@ namespace
 ObjectCollectionItem::ObjectCollectionItem(
     EntityEditorContext&    editor_context,
     ObjectContainer&        objects,
-    Assembly&               parent,
-    AssemblyItem*           parent_item)
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item)
   : CollectionItemBase<Object>(editor_context, g_class_uid, "Objects")
   , m_parent(parent)
   , m_parent_item(parent_item)
@@ -190,7 +190,7 @@ void ObjectCollectionItem::insert_objects(const string& path) const
 
     if (!mesh_objects.empty())
     {
-        m_parent.bump_version_id();
+        m_parent.do_bump_version_id();
         m_editor_context.m_project_builder.slot_notify_project_modification();
     }
 }

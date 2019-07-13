@@ -404,13 +404,13 @@ namespace
     };
 }
 
-void MaterialAssignmentEditorWindow::slot_open_entity_browser()
+template <typename ParentEntityType>
+void MaterialAssignmentEditorWindow::do_open_entity_browser(const ParentEntityType& parent)
 {
     QPushButton* browse_button = qobject_cast<QPushButton*>(QObject::sender());
     const SlotInfo& slot_info = m_slot_infos[browse_button];
 
-    EntityBrowser<Assembly> entity_browser(
-        *static_cast<const Assembly*>(m_object_instance.get_parent()));
+    EntityBrowser<ParentEntityType> entity_browser(parent);
 
     stringstream window_title;
     window_title << slot_info.m_slot_name;
@@ -432,6 +432,17 @@ void MaterialAssignmentEditorWindow::slot_open_entity_browser()
 
     browser_window->showNormal();
     browser_window->activateWindow();
+}
+
+void MaterialAssignmentEditorWindow::slot_open_entity_browser()
+{
+    const Entity* parent = m_object_instance.get_parent();
+    if (const auto* p = dynamic_cast<const Assembly*>(parent))
+        do_open_entity_browser(*p);
+    else if (const auto* p = dynamic_cast<const Scene*>(parent))
+        do_open_entity_browser(*p);
+    else
+        assert(false);
 }
 
 void MaterialAssignmentEditorWindow::slot_entity_browser_accept(

@@ -43,7 +43,7 @@ namespace appleseed {
 namespace studio {
 
 class MaterialItem
-  : public FixedModelEntityItem<renderer::Material, renderer::Assembly, MaterialCollectionItem>
+  : public FixedModelEntityItem<renderer::Material, renderer::BaseGroup, MaterialCollectionItem>
 {
     Q_OBJECT
 
@@ -51,7 +51,7 @@ class MaterialItem
     MaterialItem(
         EntityEditorContext&        editor_context,
         renderer::Material*         entity,
-        renderer::Assembly&         parent,
+        renderer::BaseGroup&        parent,
         MaterialCollectionItem*     collection_item);
 
     QMenu* get_single_item_context_menu() const override;

@@ -159,6 +159,11 @@ void Assembly::on_frame_end(
     Entity::on_frame_end(project, parent);
 }
 
+void Assembly::do_bump_version_id()
+{
+    bump_version_id();
+}
+
 
 //
 // AssemblyFactory class implementation.

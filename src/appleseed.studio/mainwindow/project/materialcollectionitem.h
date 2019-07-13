@@ -29,7 +29,7 @@
 #pragma once
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
@@ -37,13 +37,13 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace renderer  { class Assembly; }
+namespace renderer  { class BaseGroup; }
 
 namespace appleseed {
 namespace studio {
 
 class MaterialCollectionItem
-  : public CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem>
+  : public CollectionItem<renderer::Material, renderer::BaseGroup, BaseGroupItem>
 {
     Q_OBJECT
 
@@ -51,11 +51,11 @@ class MaterialCollectionItem
     MaterialCollectionItem(
         EntityEditorContext&            editor_context,
         renderer::MaterialContainer&    materials,
-        renderer::Assembly&             parent,
-        AssemblyItem*                   parent_item);
+        renderer::BaseGroup&            parent,
+        BaseGroupItem*                  parent_item);
 
   protected:
-    typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> Base;
+    typedef CollectionItem<renderer::Material, renderer::BaseGroup, BaseGroupItem> Base;
 
     QMenu* get_single_item_context_menu() const override;
 
@@ -68,8 +68,8 @@ class MaterialCollectionItem
 
     void do_create_material(const char* model);
 
-    renderer::Assembly& m_parent;
-    AssemblyItem*       m_parent_item;
+    renderer::BaseGroup& m_parent;
+    BaseGroupItem*       m_parent_item;
 };
 
 }   // namespace studio

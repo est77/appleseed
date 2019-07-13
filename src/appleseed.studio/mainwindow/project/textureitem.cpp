@@ -120,7 +120,7 @@ void TextureItem::do_instantiate(const string& name)
     m_parent.texture_instances().insert(texture_instance);
 
     // todo: not currently supported.
-    // m_parent.bump_version_id();
+    m_parent.do_bump_version_id();
 
     m_editor_context.m_project_builder.slot_notify_project_modification();
 }

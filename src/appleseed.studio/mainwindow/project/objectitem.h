@@ -41,10 +41,10 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
-namespace renderer  { class Assembly; }
+namespace renderer  { class BaseGroup; }
 namespace renderer  { class Object; }
 class QMenu;
 
@@ -60,8 +60,8 @@ class ObjectItem
     ObjectItem(
         EntityEditorContext&    editor_context,
         renderer::Object*       object,
-        renderer::Assembly&     parent,
-        AssemblyItem*           parent_item);
+        renderer::BaseGroup&    parent,
+        BaseGroupItem*          parent_item);
 
     QMenu* get_single_item_context_menu() const override;
 
@@ -74,8 +74,8 @@ class ObjectItem
 
     typedef EntityItemBase<renderer::Object> Base;
 
-    renderer::Assembly&         m_parent;
-    AssemblyItem*               m_parent_item;
+    renderer::BaseGroup&        m_parent;
+    BaseGroupItem*              m_parent_item;
 
     void do_instantiate(const std::string& name);
 

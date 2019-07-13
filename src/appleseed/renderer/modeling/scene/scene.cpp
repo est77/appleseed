@@ -410,6 +410,11 @@ void Scene::on_frame_end(
     Entity::on_frame_end(project, parent);
 }
 
+void Scene::do_bump_version_id()
+{
+    bump_version_id();
+}
+
 
 //
 // SceneFactory class implementation.

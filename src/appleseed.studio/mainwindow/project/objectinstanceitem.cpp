@@ -31,7 +31,6 @@
 #include "objectinstanceitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/entityeditorcontext.h"
@@ -103,14 +102,14 @@ const char* ObjectInstanceItem::DefaultSlotName = "default";
 ObjectInstanceItem::ObjectInstanceItem(
     EntityEditorContext&            editor_context,
     ObjectInstance*                 object_instance,
-    Assembly&                       parent,
+    BaseGroup&                      parent,
     ObjectInstanceCollectionItem*   collection_item)
   : Base(editor_context, object_instance, parent, collection_item)
 {
     update_style();
 }
 
-const Assembly& ObjectInstanceItem::get_assembly() const
+const BaseGroup& ObjectInstanceItem::get_base_group() const
 {
     return m_parent;
 }
@@ -130,7 +129,8 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 
 namespace
 {
-    bool are_in_same_assembly(
+    /*
+    bool are_in_same_basegroup(
         const QList<ItemBase*>& items,
         const UniqueID          assembly_uid)
     {
@@ -144,12 +144,13 @@ namespace
 
         return true;
     }
+    */
 }
 
 QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
-    if (!are_in_same_assembly(items, m_parent.get_uid()))
-        return nullptr;
+    //if (!are_in_same_basegroup(items, m_parent.get_uid()))
+    //    return nullptr;
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
 
@@ -217,7 +218,7 @@ void ObjectInstanceItem::slot_assign_material()
             treeWidget(),
             window_title.toStdString());
 
-    EntityBrowser<Assembly> entity_browser(m_parent);
+    EntityBrowser<BaseGroup> entity_browser(m_parent);
 
     browser_window->add_items_page(
         "material",
@@ -368,8 +369,8 @@ void ObjectInstanceItem::do_delete()
     m_parent.object_instances().remove(
         m_parent.object_instances().get_by_uid(m_entity_uid));
 
-    // Mark the assembly and the project as modified.
-    m_parent.bump_version_id();
+    // Mark the basegroup and the project as modified.
+    m_parent.do_bump_version_id();
     m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the object instance item.

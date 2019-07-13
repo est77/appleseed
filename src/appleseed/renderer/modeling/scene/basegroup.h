@@ -132,6 +132,9 @@ class APPLESEED_DLLSYMBOL BaseGroup
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
+    // todo (est): remove me asap.!!!
+    virtual void do_bump_version_id() = 0;
+
   protected:
     // Constructor.
     explicit BaseGroup(Entity* parent = nullptr);

@@ -64,9 +64,9 @@ namespace studio {
 MaterialItem::MaterialItem(
     EntityEditorContext&        editor_context,
     Material*                   entity,
-    Assembly&                   parent,
+    BaseGroup&                  parent,
     MaterialCollectionItem*     collection_item)
-  : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(
+  : FixedModelEntityItem<Material, BaseGroup, MaterialCollectionItem>(
         editor_context,
         entity,
         parent,
@@ -89,7 +89,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
             m_entity->get_model()));
 
     unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
-        new EntityBrowser<Assembly>(m_parent));
+        new EntityBrowser<BaseGroup>(m_parent));
 
     unique_ptr<CustomEntityUI> custom_entity_ui;
 

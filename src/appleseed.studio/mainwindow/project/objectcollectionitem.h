@@ -46,7 +46,7 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 class QMenu;
@@ -64,8 +64,8 @@ class ObjectCollectionItem
     ObjectCollectionItem(
         EntityEditorContext&        editor_context,
         renderer::ObjectContainer&  objects,
-        renderer::Assembly&         parent,
-        AssemblyItem*               parent_item);
+        renderer::BaseGroup&        parent,
+        BaseGroupItem*              parent_item);
 
     QMenu* get_single_item_context_menu() const override;
 
@@ -75,8 +75,8 @@ class ObjectCollectionItem
     void slot_import_objects();
 
   private:
-    renderer::Assembly&             m_parent;
-    AssemblyItem*                   m_parent_item;
+    renderer::BaseGroup&             m_parent;
+    BaseGroupItem*                   m_parent_item;
 
     ItemBase* create_item(renderer::Object* object) override;
 
