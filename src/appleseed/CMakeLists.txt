@@ -1118,12 +1118,6 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/triangletree.h
     renderer/kernel/intersection/trianglevertexinfo.h
 )
-if (WITH_EMBREE)
-    list (APPEND renderer_kernel_intersection_sources
-        renderer/kernel/intersection/embreescene.cpp
-        renderer/kernel/intersection/embreescene.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_kernel_intersection_sources}
 )

@@ -68,10 +68,6 @@ class APPLESEED_DLLSYMBOL TraceContext
     // Synchronize the trace context with the scene.
     void update();
 
-#ifdef APPLESEED_WITH_EMBREE
-    void set_use_embree(const bool value);
-#endif
-
   private:
     const Scene&    m_scene;
     AssemblyTree*   m_assembly_tree;

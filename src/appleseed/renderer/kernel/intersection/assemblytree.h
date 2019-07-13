@@ -31,9 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
-#ifdef APPLESEED_WITH_EMBREE
-#include "renderer/kernel/intersection/embreescene.h"
-#endif
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/treerepository.h"
 #include "renderer/kernel/intersection/triangletree.h"
@@ -88,13 +85,6 @@ class AssemblyTree
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
-#ifdef APPLESEED_WITH_EMBREE
-
-    bool use_embree() const;
-    void set_use_embree(const bool value);
-
-#endif
-
   private:
     friend class AssemblyLeafVisitor;
     friend class AssemblyLeafProbeVisitor;
@@ -136,15 +126,6 @@ class AssemblyTree
     TreeRepository<CurveTree>       m_curve_tree_repository;
     CurveTreeContainer              m_curve_trees;
 
-#ifdef APPLESEED_WITH_EMBREE
-
-    TreeRepository<EmbreeScene>     m_embree_scene_repository;
-    EmbreeSceneContainer            m_embree_scenes;
-    bool                            m_use_embree;
-    bool                            m_dirty; // is used to determine triangle tree / embree switch
-
-#endif
-
     void collect_assembly_instances(
         const AssemblyInstanceContainer&        assembly_instances,
         const TransformSequence&                parent_transform_seq,
@@ -160,13 +141,6 @@ class AssemblyTree
     void create_child_trees(const Assembly& assembly);
     void create_triangle_tree(const Assembly& assembly);
     void create_curve_tree(const Assembly& assembly);
-
-#ifdef APPLESEED_WITH_EMBREE
-
-    void create_embree_scene(const Assembly& assembly);
-    void delete_embree_scene(const foundation::UniqueID assembly_id);
-
-#endif
 
     void delete_child_trees(const foundation::UniqueID assembly_id);
     void delete_triangle_tree(const foundation::UniqueID assembly_id);
@@ -190,9 +164,6 @@ class AssemblyLeafVisitor
         const AssemblyTree&                         tree,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
-#ifdef APPLESEED_WITH_EMBREE
-        EmbreeSceneAccessCache&                     embree_scene_cache,
-#endif
         const ShadingPoint*                         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     triangle_tree_stats
@@ -216,9 +187,6 @@ class AssemblyLeafVisitor
     const AssemblyTree&                             m_tree;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
-#ifdef APPLESEED_WITH_EMBREE
-    EmbreeSceneAccessCache&                         m_embree_scene_cache;
-#endif
     const ShadingPoint*                             m_parent_shading_point;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
@@ -241,9 +209,6 @@ class AssemblyLeafProbeVisitor
         const AssemblyTree&                         tree,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
-#ifdef APPLESEED_WITH_EMBREE
-        EmbreeSceneAccessCache&                     embree_scene_cache,
-#endif
         const ShadingPoint*                         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     triangle_tree_stats
@@ -266,9 +231,6 @@ class AssemblyLeafProbeVisitor
     const AssemblyTree&                             m_tree;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
-#ifdef APPLESEED_WITH_EMBREE
-    EmbreeSceneAccessCache&                         m_embree_scene_cache;
-#endif
     const ShadingPoint*                             m_parent_shading_point;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
@@ -303,9 +265,6 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
     const AssemblyTree&                             tree,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
-#ifdef APPLESEED_WITH_EMBREE
-    EmbreeSceneAccessCache&                         embree_scene_cache,
-#endif
     const ShadingPoint*                             parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&         triangle_tree_stats
@@ -316,9 +275,6 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
   , m_tree(tree)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
-#ifdef APPLESEED_WITH_EMBREE
-  , m_embree_scene_cache(embree_scene_cache)
-#endif
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)
@@ -336,9 +292,6 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
     const AssemblyTree&                             tree,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
-#ifdef APPLESEED_WITH_EMBREE
-    EmbreeSceneAccessCache&                         embree_scene_cache,
-#endif
     const ShadingPoint*                             parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&         triangle_tree_stats
@@ -348,9 +301,6 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
   : m_tree(tree)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
-#ifdef APPLESEED_WITH_EMBREE
-  , m_embree_scene_cache(embree_scene_cache)
-#endif
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)

@@ -81,10 +81,6 @@ namespace renderer
 AssemblyTree::AssemblyTree(const Scene& scene)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_scene(scene)
-#ifdef APPLESEED_WITH_EMBREE
-  , m_use_embree(false)
-  , m_dirty(false)
-#endif
 {
 }
 
@@ -269,11 +265,7 @@ void AssemblyTree::update_tree_hierarchy()
 
         if (stored_version_it != m_assembly_versions.end())
         {
-            if ((stored_version_it->second == current_version_id)
-#ifdef APPLESEED_WITH_EMBREE
-                && !m_dirty
-#endif
-                )
+            if ((stored_version_it->second == current_version_id))
             {
                 // The child trees of this assembly are up-to-date.
                 continue;
@@ -292,10 +284,6 @@ void AssemblyTree::update_tree_hierarchy()
 
     // Update child trees.
     update_triangle_trees();
-
-#ifdef APPLESEED_WITH_EMBREE
-    m_dirty = false;
-#endif
 }
 
 void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
@@ -372,24 +360,13 @@ namespace
 
 void AssemblyTree::create_child_trees(const Assembly& assembly)
 {
-#ifdef APPLESEED_WITH_EMBREE
+    // Create a triangle tree if there are mesh objects.
+    if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
+        create_triangle_tree(assembly);
 
-    if (use_embree())
-    {
-        create_embree_scene(assembly);
-    }
-    else
-
-#endif
-    {
-        // Create a triangle tree if there are mesh objects.
-        if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
-            create_triangle_tree(assembly);
-
-        // Create a curve tree if there are curve objects.
-        if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
-            create_curve_tree(assembly);
-    }
+    // Create a curve tree if there are curve objects.
+    if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
+        create_curve_tree(assembly);
 }
 
 void AssemblyTree::create_triangle_tree(const Assembly& assembly)
@@ -448,62 +425,10 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
     m_curve_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
-#ifdef APPLESEED_WITH_EMBREE
-
-bool AssemblyTree::use_embree() const
-{
-    return m_use_embree;
-}
-
-void AssemblyTree::set_use_embree(const bool value)
-{
-    if (value != m_use_embree)
-    {
-        m_dirty = true;
-        m_use_embree = value;
-    }
-}
-
-void AssemblyTree::create_embree_scene(const Assembly& assembly)
-{
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
-    Lazy<EmbreeScene>* scene = m_embree_scene_repository.acquire(hash);
-
-    if (scene == nullptr)
-    {
-        unique_ptr<ILazyFactory<EmbreeScene>> embree_scene_factory(
-            new EmbreeSceneFactory(
-                EmbreeScene::Arguments(
-                    m_scene.get_embree_device(),
-                    assembly
-                )));
-
-        scene = new Lazy<EmbreeScene>(move(embree_scene_factory));
-        m_embree_scene_repository.insert(hash, scene);
-    }
-
-    m_embree_scenes.insert(make_pair(assembly.get_uid(), scene));
-}
-
-void AssemblyTree::delete_embree_scene(const UniqueID assembly_id)
-{
-    const EmbreeSceneContainer::iterator it = m_embree_scenes.find(assembly_id);
-    if (it != m_embree_scenes.end())
-    {
-        m_embree_scene_repository.release(it->second);
-        m_embree_scenes.erase(it);
-    }
-}
-
-#endif
-
 void AssemblyTree::delete_child_trees(const UniqueID assembly_id)
 {
     delete_triangle_tree(assembly_id);
     delete_curve_tree(assembly_id);
-#ifdef APPLESEED_WITH_EMBREE
-    delete_embree_scene(assembly_id);
-#endif
 }
 
 void AssemblyTree::delete_triangle_tree(const UniqueID assembly_id)
@@ -649,59 +574,43 @@ bool AssemblyLeafVisitor::visit(
             local_shading_point.m_ray);
         const RayInfo3d local_ray_info(local_shading_point.m_ray);
 
-#ifdef APPLESEED_WITH_EMBREE
+        // Retrieve the triangle tree of this assembly.
+        const TriangleTree* triangle_tree =
+            m_triangle_tree_cache.access(
+                item.m_assembly_uid,
+                m_tree.m_triangle_trees);
 
-        if (m_tree.use_embree())
+        if (triangle_tree)
         {
-            const EmbreeScene& embree_scene =
-                *m_embree_scene_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_embree_scenes);
-
-            embree_scene.intersect(local_shading_point);
-        }
-        else
-
-#endif
-        {
-            // Retrieve the triangle tree of this assembly.
-            const TriangleTree* triangle_tree =
-                m_triangle_tree_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_triangle_trees);
-
-            if (triangle_tree)
+            // Check the intersection between the ray and the triangle tree.
+            TriangleTreeIntersector intersector;
+            TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
+            if (triangle_tree->get_moving_triangle_count() > 0)
             {
-                // Check the intersection between the ray and the triangle tree.
-                TriangleTreeIntersector intersector;
-                TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
-                if (triangle_tree->get_moving_triangle_count() > 0)
-                {
-                    intersector.intersect_motion(
-                        *triangle_tree,
-                        local_shading_point.m_ray,
-                        local_ray_info,
-                        local_shading_point.m_ray.m_time.m_normalized,
-                        visitor
+                intersector.intersect_motion(
+                    *triangle_tree,
+                    local_shading_point.m_ray,
+                    local_ray_info,
+                    local_shading_point.m_ray.m_time.m_normalized,
+                    visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                        , m_triangle_tree_stats
+                    , m_triangle_tree_stats
 #endif
-                        );
-                }
-                else
-                {
-                    intersector.intersect_no_motion(
-                        *triangle_tree,
-                        local_shading_point.m_ray,
-                        local_ray_info,
-                        visitor
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                        , m_triangle_tree_stats
-#endif
-                        );
-                }
-                visitor.read_hit_triangle_data();
+                    );
             }
+            else
+            {
+                intersector.intersect_no_motion(
+                    *triangle_tree,
+                    local_shading_point.m_ray,
+                    local_ray_info,
+                    visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , m_triangle_tree_stats
+#endif
+                    );
+            }
+            visitor.read_hit_triangle_data();
         }
 
         // Retrieve the curve tree of this assembly.
@@ -853,68 +762,48 @@ bool AssemblyLeafProbeVisitor::visit(
             local_ray);
         const RayInfo3d local_ray_info(local_ray);
 
-#ifdef APPLESEED_WITH_EMBREE
+        // Retrieve the triangle tree of this assembly.
+        const TriangleTree* triangle_tree =
+            m_triangle_tree_cache.access(
+                item.m_assembly_uid,
+                m_tree.m_triangle_trees);
 
-        if (m_tree.use_embree())
+        if (triangle_tree)
         {
-            const EmbreeScene& embree_scene =
-                *m_embree_scene_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_embree_scenes);
+            // Check the intersection between the ray and the triangle tree.
+            TriangleTreeProbeIntersector intersector;
+            TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time.m_normalized, local_ray.m_flags);
+            if (triangle_tree->get_moving_triangle_count() > 0)
+            {
+                intersector.intersect_motion(
+                    *triangle_tree,
+                    local_ray,
+                    local_ray_info,
+                    local_ray.m_time.m_normalized,
+                    visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , m_triangle_tree_stats
+#endif
+                    );
+            }
+            else
+            {
+                intersector.intersect_no_motion(
+                    *triangle_tree,
+                    local_ray,
+                    local_ray_info,
+                    visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , m_triangle_tree_stats
+#endif
+                    );
+            }
 
-            if (embree_scene.occlude(local_ray))
+            // Terminate traversal if there was a hit.
+            if (visitor.hit())
             {
                 m_hit = true;
                 return false;
-            }
-        }
-        else
-
-#endif
-        {
-            // Retrieve the triangle tree of this assembly.
-            const TriangleTree* triangle_tree =
-                m_triangle_tree_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_triangle_trees);
-
-            if (triangle_tree)
-            {
-                // Check the intersection between the ray and the triangle tree.
-                TriangleTreeProbeIntersector intersector;
-                TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time.m_normalized, local_ray.m_flags);
-                if (triangle_tree->get_moving_triangle_count() > 0)
-                {
-                    intersector.intersect_motion(
-                        *triangle_tree,
-                        local_ray,
-                        local_ray_info,
-                        local_ray.m_time.m_normalized,
-                        visitor
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                        , m_triangle_tree_stats
-#endif
-                        );
-                }
-                else
-                {
-                    intersector.intersect_no_motion(
-                        *triangle_tree,
-                        local_ray,
-                        local_ray_info,
-                        visitor
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                        , m_triangle_tree_stats
-#endif
-                        );
-                }
-
-                // Terminate traversal if there was a hit.
-                if (visitor.hit())
-                {
-                    m_hit = true;
-                    return false;
-                }
             }
         }
 

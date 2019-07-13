@@ -48,9 +48,6 @@
 
 // Forward declarations.
 namespace renderer      { class Camera; }
-#ifdef APPLESEED_WITH_EMBREE
-namespace renderer      { class EmbreeDevice; }
-#endif
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class OnRenderBeginRecorder; }
@@ -132,12 +129,6 @@ class APPLESEED_DLLSYMBOL Scene
     void on_frame_end(
         const Project&              project,
         const BaseGroup*            parent) override;
-
-#ifdef APPLESEED_WITH_EMBREE
-
-    const EmbreeDevice& get_embree_device() const;
-
-#endif
 
     struct RenderData
     {

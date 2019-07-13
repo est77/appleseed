@@ -370,17 +370,6 @@ struct MasterRenderer::Impl
         // Print render device settings.
         m_render_device->print_settings();
 
-        // Report whether Embree is used or not.
-#ifdef APPLESEED_WITH_EMBREE
-        const bool use_embree = m_params.get_optional<bool>("use_embree", false);
-        m_project.set_use_embree(use_embree);
-#else
-        const bool use_embree = false;
-#endif
-        if (use_embree)
-             RENDERER_LOG_INFO("using Intel Embree ray tracing kernel.");
-        else RENDERER_LOG_INFO("using built-in ray tracing kernel.");
-
         // Updating the device scene causes ray tracing acceleration structures to be updated or rebuilt.
         if (!m_render_device->build_or_update_scene())
         {

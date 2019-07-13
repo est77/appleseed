@@ -273,9 +273,6 @@ bool Intersector::trace(
         assembly_tree,
         m_triangle_tree_cache,
         m_curve_tree_cache,
-#ifdef APPLESEED_WITH_EMBREE
-        m_embree_scene_cache,
-#endif
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , m_triangle_tree_traversal_stats
@@ -330,9 +327,6 @@ bool Intersector::trace_probe(
         assembly_tree,
         m_triangle_tree_cache,
         m_curve_tree_cache,
-#ifdef APPLESEED_WITH_EMBREE
-        m_embree_scene_cache,
-#endif
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , m_triangle_tree_traversal_stats

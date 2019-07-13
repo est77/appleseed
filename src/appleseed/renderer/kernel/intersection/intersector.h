@@ -31,9 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
-#ifdef APPLESEED_WITH_EMBREE
-#include "renderer/kernel/intersection/embreescene.h"
-#endif
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -151,9 +148,7 @@ class Intersector
     // Access caches.
     mutable TriangleTreeAccessCache                 m_triangle_tree_cache;
     mutable CurveTreeAccessCache                    m_curve_tree_cache;
-#ifdef APPLESEED_WITH_EMBREE
-    mutable EmbreeSceneAccessCache                  m_embree_scene_cache;
-#endif
+
     // Intersection statistics.
     mutable foundation::uint64                      m_shading_ray_count;
     mutable foundation::uint64                      m_probe_ray_count;
