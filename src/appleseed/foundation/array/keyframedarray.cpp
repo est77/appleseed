@@ -43,11 +43,20 @@ namespace foundation
 // KeyFramedArray class implementation.
 //
 
-KeyFramedArray::KeyFramedArray(const ArrayType type, const size_t size)
-  : m_key_count(1)
+KeyFramedArray::KeyFramedArray()
+  : m_keys(nullptr)
+  , m_key_count(0)
 {
-    m_keys = new Array[1];
+}
+
+KeyFramedArray::KeyFramedArray(const ArrayType type, const size_t size, const size_t num_keys)
+  : m_key_count(num_keys)
+{
+    m_keys = new Array[num_keys];
     m_keys[0] = Array(type, size);
+
+    for (size_t i = 1; i < num_keys; ++i)
+        m_keys[1] = m_keys[0];
 }
 
 KeyFramedArray::KeyFramedArray(Array&& first_key, const size_t num_keys)
@@ -75,6 +84,7 @@ KeyFramedArray::KeyFramedArray(KeyFramedArray&& rhs) APPLESEED_NOEXCEPT
   : m_keys(rhs.m_keys)
   , m_key_count(rhs.m_key_count)
 {
+    rhs.m_key_count = 0;
     rhs.m_keys = nullptr;
 }
 
@@ -97,6 +107,12 @@ ArrayType KeyFramedArray::type() const
 {
     assert(!is_moved());
     return m_keys[0].type();
+}
+
+void KeyFramedArray::resize(const size_t size, const size_t keys)
+{
+    KeyFramedArray tmp(Array(type(), size), keys);
+    swap(*this, tmp);
 }
 
 const Array* KeyFramedArray::begin() const
