@@ -30,7 +30,6 @@
 // appleseed.studio headers.
 #include "commandlinehandler.h"
 #include "mainwindow/mainwindow.h"
-#include "python/pythoninterpreter.h"
 #include "utility/miscellaneous.h"
 
 // appleseed.shared headers.
@@ -40,7 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/path.h"
-#include "foundation/platform/python.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/preprocessor.h"
 
@@ -115,69 +113,6 @@ namespace
             msgbox.exec();
 
             exit(EXIT_FAILURE);
-        }
-    }
-
-    void configure_python()
-    {
-        const char* python_home_var = getenv("PYTHONHOME");
-
-        if (python_home_var != nullptr && strlen(python_home_var) > 0)
-        {
-            // PYTHONHOME is set: the embedded Python interpreter will use the Python installation
-            // the variable points to.
-            LOG_INFO(
-                g_logger,
-                "PYTHONHOME environment variable set to %s: embedded Python interpreter will use "
-                "the Python installation expected to exist at this path.",
-                python_home_var);
-        }
-        else
-        {
-            // PYTHONHOME not set or empty: use the Python installation bundled with appleseed.studio.
-
-#if defined _WIN32 || __APPLE__
-            // On Windows and macOS, Python's standard libraries are located in python27/Lib/.
-            bf::path python_path = bf::path(Application::get_root_path()) / "python27";
-#else
-            // On Linux, Python's standard libraries are located in lib/python2.7/.
-            bf::path python_path = bf::path(Application::get_root_path());
-#endif
-
-            if (bf::is_directory(python_path))
-            {
-                const string python_path_str = safe_canonical(python_path).string();
-
-                // The C string below must be declared static because Python just keeps a pointer to it.
-                static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
-                assert(python_path_str.size() <= FOUNDATION_MAX_PATH_LENGTH);
-                strncpy(python_home, python_path_str.c_str(), sizeof(python_home) - 1);
-
-                LOG_INFO(
-                    g_logger,
-                    "PYTHONHOME environment variable not set or empty: embedded Python interpreter "
-                    "will use Python installation expected to exist in %s.",
-                    python_home);
-
-                Py_SetPythonHome(python_home);
-            }
-            else
-            {
-                const string python_path_str = python_path.make_preferred().string();
-
-                QMessageBox msgbox;
-                msgbox.setWindowTitle("Python 2.7 Installation Not Found");
-                msgbox.setIcon(QMessageBox::Critical);
-                msgbox.setText(
-                    QString(
-                        "No Python 2.7 installation could be found in %1 where appleseed.studio expects one "
-                        "to be, and the PYTHONHOME environment variable is not defined or is empty. "
-                        "appleseed.studio may not work satisfactorily.").arg(QString::fromStdString(python_path_str)));
-                msgbox.setStandardButtons(QMessageBox::Ok);
-                msgbox.setDefaultButton(QMessageBox::Ok);
-                set_minimum_width(msgbox, 600);
-                msgbox.exec();
-            }
         }
     }
 
@@ -363,9 +298,6 @@ int main(int argc, char* argv[])
     // Make sure appleseed is correctly installed.
     check_installation();
 
-    // Configure the embedded Python interpreter.
-    configure_python();
-
     // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, argv);
@@ -378,10 +310,6 @@ int main(int argc, char* argv[])
 
     // QApplication and QMainWindow set C locale to the user's locale, we need to fix this.
     std::setlocale(LC_ALL, "C");
-
-    // Initialize the python interpreter and load plugins.
-    PythonInterpreter::instance().set_main_window(&window);
-    PythonInterpreter::instance().load_plugins();
 
     // If a project file was specified on the command line, open it and optionally start rendering.
     if (!cl.m_filename.values().empty())

@@ -658,9 +658,6 @@ if (WITH_PYTHON2_BINDINGS OR WITH_PYTHON3_BINDINGS)
 endif ()
 
 if (WITH_STUDIO)
-    if (NOT WITH_PYTHON2_BINDINGS)
-        message (FATAL_ERROR "Option WITH_PYTHON2_BINDINGS should be \"ON\" to build appleseed.studio.")
-    endif ()
     add_subdirectory (src/appleseed.studio)
 endif ()
 

@@ -190,7 +190,6 @@ class MainWindow
     void build_status_bar();
     void build_toolbar();
     void build_log_panel();
-    void build_python_console_panel();
     void build_project_explorer();
     void build_connections();
 

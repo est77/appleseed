@@ -39,7 +39,6 @@
 #include "mainwindow/minimizebutton.h"
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
 #include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/renderwidget.h"
@@ -66,7 +65,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/path.h"
-#include "foundation/platform/python.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -139,7 +137,6 @@ MainWindow::MainWindow(QWidget* parent)
     build_status_bar();
     build_toolbar();
     build_log_panel();
-    build_python_console_panel();
     build_project_explorer();
     build_connections();
 
@@ -385,7 +382,6 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
-    m_ui->menu_view->addAction(m_ui->python_console->toggleViewAction());
     m_ui->menu_view->addSeparator();
 
     m_action_fullscreen = m_ui->menu_view->addAction("Fullscreen");
@@ -591,7 +587,6 @@ void MainWindow::build_status_bar()
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
-    m_minimize_buttons.push_back(new MinimizeButton(m_ui->python_console));
 
     for (size_t i = 0; i < m_minimize_buttons.size(); ++i)
     {
@@ -680,18 +675,6 @@ void MainWindow::build_log_panel()
         Compiler::get_compiler_version());
 
     System::print_information(global_logger());
-}
-
-void MainWindow::build_python_console_panel()
-{
-    char* python_home = Py_GetPythonHome();
-    if (python_home == nullptr)
-        RENDERER_LOG_INFO("Python home not set.");
-    else RENDERER_LOG_INFO("Python home set to %s.", python_home);
-
-    PythonConsoleWidget* python_console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
-    python_console_widget->setObjectName("textedit_python_console");
-    m_ui->python_console_contents->layout()->addWidget(python_console_widget);
 }
 
 void MainWindow::build_project_explorer()

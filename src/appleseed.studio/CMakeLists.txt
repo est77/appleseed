@@ -32,17 +32,6 @@
 # Packages.
 #--------------------------------------------------------------------------------------------------
 
-# Boost.
-if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
-    message (FATAL_ERROR "Python 2.x needed.")
-else ()
-    if (Boost_VERSION GREATER_EQUAL 106700)
-        find_package (Boost 1.61 REQUIRED COMPONENTS python27)
-    else ()
-        find_package (Boost 1.61 REQUIRED COMPONENTS python)
-    endif ()
-endif ()
-
 # OpenGL.
 find_package (OpenGL REQUIRED)
 
@@ -211,29 +200,6 @@ source_group ("mainwindow\\project" FILES
     ${mainwindow_project_sources}
 )
 
-set (mainwindow_pythonconsole_sources
-    mainwindow/pythonconsole/linenumberarea.cpp
-    mainwindow/pythonconsole/linenumberarea.h
-    mainwindow/pythonconsole/outputredirector.cpp
-    mainwindow/pythonconsole/outputredirector.h
-    mainwindow/pythonconsole/pythonconsolewidget.cpp
-    mainwindow/pythonconsole/pythonconsolewidget.h
-    mainwindow/pythonconsole/pythoneditor.cpp
-    mainwindow/pythonconsole/pythoneditor.h
-    mainwindow/pythonconsole/pythonhighlighter.cpp
-    mainwindow/pythonconsole/pythonhighlighter.h
-    mainwindow/pythonconsole/pythonoutput.cpp
-    mainwindow/pythonconsole/pythonoutput.h
-    mainwindow/pythonconsole/zoomableplaintextedit.cpp
-    mainwindow/pythonconsole/zoomableplaintextedit.h
-)
-list (APPEND appleseed.studio_sources
-    ${mainwindow_pythonconsole_sources}
-)
-source_group ("mainwindow\\pythonconsole" FILES
-    ${mainwindow_pythonconsole_sources}
-)
-
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
@@ -319,30 +285,6 @@ source_group ("meta\\tests" FILES
     ${meta_tests_sources}
 )
 
-set (python_sources
-    python/module.cpp
-    python/pythoninterpreter.cpp
-    python/pythoninterpreter.h
-)
-list (APPEND appleseed.studio_sources
-    ${python_sources}
-)
-source_group ("python" FILES
-    ${python_sources}
-)
-
-set (studio_py_sources
-    python/studio/__init__.py
-    python/studio/plugins.py
-    python/studio/ui.py
-)
-list (APPEND appleseed.studio_sources
-    ${studio_py_sources}
-)
-source_group ("python\\studio" FILES
-    ${studio_py_sources}
-)
-
 set (utility_sources
     utility/chartwidget.cpp
     utility/chartwidget.h
@@ -398,66 +340,6 @@ if (WIN32)
         ${windows_resources}
     )
 endif ()
-
-set (appleseedpython_sources
-    ../appleseed.python/__init__.py
-    ../appleseed.python/bindaov.cpp
-    ../appleseed.python/bindappleseed.cpp
-    ../appleseed.python/bindassembly.cpp
-    ../appleseed.python/bindbasis.cpp
-    ../appleseed.python/bindbbox.cpp
-    ../appleseed.python/bindbsdf.cpp
-    ../appleseed.python/bindbssrdf.cpp
-    ../appleseed.python/bindcamera.cpp
-    ../appleseed.python/bindcolor.cpp
-    ../appleseed.python/bindcurveobject.cpp
-    ../appleseed.python/binddisplay.cpp
-    ../appleseed.python/bindedf.cpp
-    ../appleseed.python/bindentity.cpp
-    ../appleseed.python/bindentitycontainers.h
-    ../appleseed.python/bindenvironment.cpp
-    ../appleseed.python/bindframe.cpp
-    ../appleseed.python/bindfresnel.cpp
-    ../appleseed.python/bindimage.cpp
-    ../appleseed.python/bindlight.cpp
-    ../appleseed.python/bindlogger.cpp
-    ../appleseed.python/bindmasterrenderer.cpp
-    ../appleseed.python/bindmaterial.cpp
-    ../appleseed.python/bindmatrix.cpp
-    ../appleseed.python/bindmeshobject.cpp
-    ../appleseed.python/bindmurmurhash.cpp
-    ../appleseed.python/bindobject.cpp
-    ../appleseed.python/bindpostprocessingstage.cpp
-    ../appleseed.python/bindproject.cpp
-    ../appleseed.python/bindquaternion.cpp
-    ../appleseed.python/bindrenderercontroller.cpp
-    ../appleseed.python/bindscene.cpp
-    ../appleseed.python/bindshadercompiler.cpp
-    ../appleseed.python/bindshadergroup.cpp
-    ../appleseed.python/bindshaderquery.cpp
-    ../appleseed.python/bindsurfaceshader.cpp
-    ../appleseed.python/bindtexture.cpp
-    ../appleseed.python/bindtilecallback.cpp
-    ../appleseed.python/bindtransform.cpp
-    ../appleseed.python/bindutility.cpp
-    ../appleseed.python/bindvector.cpp
-    ../appleseed.python/bindvolume.cpp
-    ../appleseed.python/dict2dict.cpp
-    ../appleseed.python/dict2dict.h
-    ../appleseed.python/gillocks.h
-    ../appleseed.python/gillocks.cpp
-    ../appleseed.python/logtarget.py
-    ../appleseed.python/metadata.h
-    ../appleseed.python/module.cpp
-    ../appleseed.python/unalignedmatrix44.h
-    ../appleseed.python/unalignedtransform.h
-)
-list (APPEND appleseed.studio_sources
-    ${appleseedpython_sources}
-)
-source_group ("appleseed.python" FILES
-    ${appleseedpython_sources}
-)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -553,7 +435,6 @@ include_directories (
     .
     ../appleseed.shared
     ${OPENCOLORIO_INCLUDE_DIRS}
-    ${PYTHON_INCLUDE_DIRS}
 )
 
 
@@ -582,25 +463,12 @@ target_link_libraries (appleseed.studio
     Qt5::OpenGL
     Qt5::Widgets
     ${OPENGL_LIBRARY}
-    ${PYTHON_LIBRARIES}
 )
 
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
-
-add_custom_target (
-    appleseed.studio.copy_py_files ALL
-    VERBATIM
-)
-
-set_target_properties (appleseed.studio.copy_py_files PROPERTIES FOLDER "Contents")
-set_target_progress_message (appleseed.studio.copy_py_files "Copying appleseed.studio Python files...")
-
-add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/__init__.py appleseed.studio)
-add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/ui.py appleseed.studio)
-add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/plugins.py appleseed.studio)
 
 add_copy_target_exe_to_sandbox_command (appleseed.studio)
 
@@ -628,6 +496,3 @@ install (DIRECTORY ../../sandbox/ocio
 install (DIRECTORY ../../sandbox/studio
     DESTINATION .
 )
-
-install (DIRECTORY ../../sandbox/lib/python/site-packages DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}")
-install (DIRECTORY python/studio DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
