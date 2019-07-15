@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsamplerbase.h"
-#include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 
@@ -91,17 +90,6 @@ class BackwardLightSampler
     float evaluate_pdf(
         const ShadingPoint&                 light_shading_point,
         const ShadingPoint&                 surface_shading_point) const;
-
-  private:
-    bool                                    m_use_light_tree;
-    NonPhysicalLightVector                  m_light_tree_lights;
-    std::unique_ptr<LightTree>              m_light_tree;
-
-    void sample_light_tree(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        const ShadingPoint&                 shading_point,
-        LightSample&                        light_sample) const;
 };
 
 
@@ -113,8 +101,7 @@ inline bool BackwardLightSampler::has_lights() const
 {
     return
         m_non_physical_lights_cdf.valid() ||
-        !m_emitting_shapes.empty() ||
-        !m_light_tree_lights.empty();
+        !m_emitting_shapes.empty();
 }
 
 inline bool BackwardLightSampler::has_hittable_lights() const
@@ -124,7 +111,7 @@ inline bool BackwardLightSampler::has_hittable_lights() const
 
 inline bool BackwardLightSampler::has_lightset() const
 {
-    return !m_emitting_shapes.empty() || !m_light_tree_lights.empty();
+    return !m_emitting_shapes.empty();
 }
 
 }   // namespace renderer

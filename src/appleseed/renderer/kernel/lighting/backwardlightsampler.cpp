@@ -61,7 +61,7 @@ Dictionary BackwardLightSampler::get_params_metadata()
         "algorithm",
         Dictionary()
             .insert("type", "enum")
-            .insert("values", "cdf|lighttree")
+            .insert("values", "cdf")
             .insert("default", "cdf")
             .insert("label", "Light Sampler")
             .insert("help", "Light sampling algoritm")
@@ -72,12 +72,7 @@ Dictionary BackwardLightSampler::get_params_metadata()
                         "cdf",
                         Dictionary()
                             .insert("label", "CDF")
-                            .insert("help", "Cumulative Distribution Function"))
-                    .insert(
-                        "lighttree",
-                        Dictionary()
-                            .insert("label", "Light Tree")
-                            .insert("help", "Lights organized in a BVH"))));
+                            .insert("help", "Cumulative Distribution Function"))));
 
     metadata.merge(LightSamplerBase::get_params_metadata());
 
@@ -87,115 +82,8 @@ Dictionary BackwardLightSampler::get_params_metadata()
 BackwardLightSampler::BackwardLightSampler(
     const Scene&                        scene,
     const ParamArray&                   params)
-  : LightSamplerBase(params)
+  : LightSamplerBase(scene, params)
 {
-    // Read which sampling algorithm should be used.
-    m_use_light_tree = params.get_optional<string>("algorithm", "cdf") == "lighttree";
-
-    RENDERER_LOG_INFO("collecting light emitters...");
-
-    // Collect all non-physical lights and separate them according to their
-    // compatibility with the LightTree.
-    collect_non_physical_lights(
-        scene.assembly_instances(),
-        TransformSequence(),
-        [&](const NonPhysicalLightInfo& light_info)
-        {
-            if (m_use_light_tree
-                && ((light_info.m_light->get_flags() & Light::LightTreeCompatible) != 0))
-            {
-                // Insert into light tree compatible lights.
-                m_light_tree_lights.push_back(light_info);
-            }
-            else
-            {
-                // Insert into non-physical lights to be evaluated using a CDF.
-                const size_t light_index = m_non_physical_lights.size();
-                m_non_physical_lights.push_back(light_info);
-
-                // Insert the light into the CDF.
-                // todo: compute importance.
-                float importance = 1.0f;
-                importance *= light_info.m_light->get_uncached_importance_multiplier();
-                m_non_physical_lights_cdf.insert(light_index, importance);
-            }
-        });
-    m_non_physical_light_count = m_non_physical_lights.size();
-
-    // Collect all light-emitting shapes.
-    collect_emitting_shapes(
-        scene.assembly_instances(),
-        TransformSequence(),
-        [&](
-            const Material* material,
-            const float     area,
-            const size_t    emitting_shape_index)
-        {
-            if (m_use_light_tree)
-            {
-                // Only accept this shape if its material has an EDF.
-                // This excludes shapes with light-emitting OSL materials
-                // since these are not handled by the light tree yet.
-                return material->get_uncached_edf() != nullptr;
-            }
-            else
-            {
-                // Retrieve the EDF and get the importance multiplier.
-                float importance_multiplier = 1.0f;
-                if (const EDF* edf = material->get_uncached_edf())
-                    importance_multiplier = edf->get_uncached_importance_multiplier();
-
-                // Compute the probability density of this shape.
-                const float shape_importance = m_params.m_importance_sampling ? area : 1.0f;
-                const float shape_prob = shape_importance * importance_multiplier;
-
-                // Insert the light-emitting shape into the CDF.
-                m_emitting_shapes_cdf.insert(emitting_shape_index, shape_prob);
-
-                // Accept this shape.
-                return true;
-            }
-        });
-
-    // Build the hash table of emitting shapes.
-    build_emitting_shape_hash_table();
-
-    // Prepare the non-physical lights CDF for sampling.
-    if (m_non_physical_lights_cdf.valid())
-        m_non_physical_lights_cdf.prepare();
-
-    if (m_use_light_tree)
-    {
-        // Initialize the LightTree only after the lights are collected.
-        m_light_tree.reset(new LightTree(m_light_tree_lights, m_emitting_shapes));
-
-        // Build the light tree.
-        const vector<size_t> tri_index_to_node_index = m_light_tree->build();
-        assert(tri_index_to_node_index.size() == m_emitting_shapes.size());
-
-        // Associate light tree nodes to emitting shapes.
-        for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-            m_emitting_shapes[i].m_light_tree_node_index = tri_index_to_node_index[i];
-    }
-    else
-    {
-        // Prepare the light-emitting shapes CDF for smapling.
-        if (m_emitting_shapes_cdf.valid())
-            m_emitting_shapes_cdf.prepare();
-
-        // Store the shape probability densities into the emitting shapes.
-        for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-            m_emitting_shapes[i].m_shape_prob = m_emitting_shapes_cdf[i].second;
-    }
-
-    RENDERER_LOG_INFO(
-        "found %s %s, %s %s, %s emitting %s.",
-        pretty_int(m_non_physical_light_count).c_str(),
-        plural(m_non_physical_light_count, "non-physical light").c_str(),
-        pretty_int(m_light_tree_lights.size() + m_emitting_shapes.size()).c_str(),
-        plural(m_light_tree_lights.size() + m_emitting_shapes.size(), "light-tree compatible light").c_str(),
-        pretty_int(m_emitting_shapes.size()).c_str(),
-        plural(m_emitting_shapes.size(), "shape").c_str());
 }
 
 void BackwardLightSampler::sample_lightset(
@@ -204,23 +92,11 @@ void BackwardLightSampler::sample_lightset(
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    if (m_use_light_tree)
-    {
-        // Light tree sampling.
-        sample_light_tree(
-            time,
-            s,
-            shading_point,
-            light_sample);
-    }
-    else
-    {
-        // CDF-based sampling.
-        sample_emitting_shapes(
-            time,
-            s,
-            light_sample);
-    }
+    // CDF-based sampling.
+    sample_emitting_shapes(
+        time,
+        s,
+        light_sample);
 }
 
 float BackwardLightSampler::evaluate_pdf(
@@ -241,63 +117,11 @@ float BackwardLightSampler::evaluate_pdf(
 
     const EmittingShape* shape = *shape_ptr;
 
-    const float shape_probability =
-        m_use_light_tree
-            ? m_light_tree->evaluate_node_pdf(
-                surface_shading_point,
-                shape->m_light_tree_node_index)
-            : shape->evaluate_pdf_uniform();
+    const float shape_probability =  shape->evaluate_pdf_uniform();
 
     assert(shape_probability >= 0.0f);
 
     return shape_probability;
-}
-
-void BackwardLightSampler::sample_light_tree(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    const ShadingPoint&                 shading_point,
-    LightSample&                        light_sample) const
-{
-    assert(has_lightset());
-
-    LightType light_type;
-    size_t light_index;
-    float light_prob;
-    m_light_tree->sample(
-        shading_point,
-        s[0],
-        light_type,
-        light_index,
-        light_prob);
-
-    if (light_type == NonPhysicalLightType)
-    {
-        // Fetch the light.
-        const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
-        light_sample.m_light = light_info.m_light;
-
-        // Evaluate and store the transform of the light.
-        light_sample.m_light_transform =
-              light_info.m_light->get_transform()
-            * light_info.m_transform_sequence.evaluate(time.m_absolute);
-
-        // Store the probability density of this light.
-        light_sample.m_probability = light_prob;
-    }
-    else
-    {
-        assert(light_type == EmittingShapeType);
-        sample_emitting_shape(
-            time,
-            Vector2f(s[1], s[2]),
-            light_index,
-            light_prob,
-            light_sample);
-    }
-
-    assert(light_sample.m_light || light_sample.m_shape);
-    assert(light_sample.m_probability > 0.0f);
 }
 
 }   // namespace renderer

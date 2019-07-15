@@ -79,7 +79,6 @@ class APPLESEED_DLLSYMBOL Light
     enum Flags
     {
         CastIndirectLight = 1UL << 0,       // does this light generate indirect lighting?
-        LightTreeCompatible = 1UL << 1      // can this light be used by the LightTree?
     };
 
     // Retrieve the flags.

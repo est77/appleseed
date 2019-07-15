@@ -56,10 +56,42 @@ namespace renderer
 // LightSamplerBase class implementation.
 //
 
-LightSamplerBase::LightSamplerBase(const ParamArray& params)
+LightSamplerBase::LightSamplerBase(const Scene& scene, const ParamArray& params)
   : m_params(params)
   , m_emitting_shape_hash_table(m_shape_key_hasher)
 {
+    RENDERER_LOG_INFO("collecting light emitters...");
+
+    // Collect all non-physical lights.
+    collect_non_physical_lights(
+        scene.assembly_instances(),
+        TransformSequence());
+    m_non_physical_light_count = m_non_physical_lights.size();
+
+    // Collect all light-emitting shapes.
+    collect_emitting_shapes(
+        scene.assembly_instances(),
+        TransformSequence());
+
+    // Build the hash table of emitting shapes.
+    build_emitting_shape_hash_table();
+
+    // Prepare the CDFs for sampling.
+    if (m_non_physical_lights_cdf.valid())
+        m_non_physical_lights_cdf.prepare();
+    if (m_emitting_shapes_cdf.valid())
+        m_emitting_shapes_cdf.prepare();
+
+    // Store the shape probability densities into the emitting shapes.
+    for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
+        m_emitting_shapes[i].set_shape_prob(m_emitting_shapes_cdf[i].second);
+
+   RENDERER_LOG_INFO(
+        "found %s %s, %s emitting %s.",
+        pretty_int(m_non_physical_light_count).c_str(),
+        plural(m_non_physical_light_count, "non-physical light").c_str(),
+        pretty_int(m_emitting_shapes.size()).c_str(),
+        plural(m_emitting_shapes.size(), "shape").c_str());
 }
 
 void LightSamplerBase::sample_non_physical_light(
@@ -119,8 +151,7 @@ void LightSamplerBase::build_emitting_shape_hash_table()
 
 void LightSamplerBase::collect_emitting_shapes(
     const AssemblyInstanceContainer&    assembly_instances,
-    const TransformSequence&            parent_transform_seq,
-    const ShapeHandlingFunction&        shape_handling)
+    const TransformSequence&            parent_transform_seq)
 {
     for (const AssemblyInstance& assembly_instance : assembly_instances)
     {
@@ -135,23 +166,38 @@ void LightSamplerBase::collect_emitting_shapes(
         // Recurse into child assembly instances.
         collect_emitting_shapes(
             assembly.assembly_instances(),
-            cumulated_transform_seq,
-            shape_handling);
+            cumulated_transform_seq);
 
         // Collect emitting shapes from this assembly instance.
         collect_emitting_shapes(
             assembly,
             assembly_instance,
-            cumulated_transform_seq,
-            shape_handling);
+            cumulated_transform_seq);
     }
+}
+
+void LightSamplerBase::handle_shape(
+    const Material* material,
+    const float     area,
+    const size_t    emitting_shape_index)
+{
+    // Retrieve the EDF and get the importance multiplier.
+    float importance_multiplier = 1.0f;
+    if (const EDF* edf = material->get_uncached_edf())
+        importance_multiplier = edf->get_uncached_importance_multiplier();
+
+    // Compute the probability density of this shape.
+    const float shape_importance = m_params.m_importance_sampling ? area : 1.0f;
+    const float shape_prob = shape_importance * importance_multiplier;
+
+    // Insert the light-emitting shape into the CDF.
+    m_emitting_shapes_cdf.insert(emitting_shape_index, shape_prob);
 }
 
 void LightSamplerBase::collect_emitting_shapes(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
-    const TransformSequence&            transform_sequence,
-    const ShapeHandlingFunction&        shape_handling)
+    const TransformSequence&            transform_sequence)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -290,41 +336,37 @@ void LightSamplerBase::collect_emitting_shapes(
                         continue;
 
                     // Invoke the shape handling function.
-                    const bool accept_shape =
-                        shape_handling(
-                            material,
-                            static_cast<float>(area),
-                            m_emitting_shapes.size());
+                    handle_shape(
+                        material,
+                        static_cast<float>(area),
+                        m_emitting_shapes.size());
 
-                    if (accept_shape)
-                    {
-                        // Create a light-emitting triangle.
-                        auto emitting_shape = EmittingShape::create_triangle_shape(
-                            &assembly_instance,
-                            object_instance_index,
-                            triangle_index,
-                            material,
-                            area,
-                            v0,
-                            v1,
-                            v2,
-                            side == 0 ? n0 : -n0,
-                            side == 0 ? n1 : -n1,
-                            side == 0 ? n2 : -n2,
-                            side == 0 ? geometric_normal : -geometric_normal);
-                        emitting_shape.m_shape_support_plane = triangle_support_plane;
-                        emitting_shape.m_area = static_cast<float>(area);
-                        emitting_shape.m_rcp_area = static_cast<float>(rcp_area);
+                    // Create a light-emitting triangle.
+                    auto emitting_shape = EmittingShape::create_triangle_shape(
+                        &assembly_instance,
+                        object_instance_index,
+                        triangle_index,
+                        material,
+                        area,
+                        v0,
+                        v1,
+                        v2,
+                        side == 0 ? n0 : -n0,
+                        side == 0 ? n1 : -n1,
+                        side == 0 ? n2 : -n2,
+                        side == 0 ? geometric_normal : -geometric_normal);
+                    emitting_shape.m_shape_support_plane = triangle_support_plane;
+                    emitting_shape.m_area = static_cast<float>(area);
+                    emitting_shape.m_rcp_area = static_cast<float>(rcp_area);
 
-                        // Estimate radiant flux emitted by this shape.
-                        emitting_shape.estimate_flux();
+                    // Estimate radiant flux emitted by this shape.
+                    emitting_shape.estimate_flux();
 
-                        // Store the light-emitting shape.
-                        m_emitting_shapes.push_back(emitting_shape);
+                    // Store the light-emitting shape.
+                    m_emitting_shapes.push_back(emitting_shape);
 
-                        // Accumulate the object area for OSL shaders.
-                        object_area += emitting_shape.m_area;
-                    }
+                    // Accumulate the object area for OSL shaders.
+                    object_area += emitting_shape.m_area;
                 }
             }
         }
@@ -376,34 +418,30 @@ void LightSamplerBase::collect_emitting_shapes(
                     continue;
 
                 // Invoke the shape handling function.
-                const bool accept_shape =
-                    shape_handling(
-                        material,
-                        static_cast<float>(area),
-                        m_emitting_shapes.size());
+                handle_shape(
+                    material,
+                    static_cast<float>(area),
+                    m_emitting_shapes.size());
 
-                if (accept_shape)
-                {
-                    // Create a light-emitting rectangle.
-                    auto emitting_shape = EmittingShape::create_rectangle_shape(
-                        &assembly_instance,
-                        object_instance_index,
-                        material,
-                        area,
-                        o,
-                        x,
-                        y,
-                        side == 0 ? n : -n);
+                // Create a light-emitting rectangle.
+                auto emitting_shape = EmittingShape::create_rectangle_shape(
+                    &assembly_instance,
+                    object_instance_index,
+                    material,
+                    area,
+                    o,
+                    x,
+                    y,
+                    side == 0 ? n : -n);
 
-                    // Estimate radiant flux emitted by this shape.
-                    emitting_shape.estimate_flux();
+                // Estimate radiant flux emitted by this shape.
+                emitting_shape.estimate_flux();
 
-                    // Store the light-emitting shape.
-                    m_emitting_shapes.push_back(emitting_shape);
+                // Store the light-emitting shape.
+                m_emitting_shapes.push_back(emitting_shape);
 
-                    // Accumulate the object area for OSL shaders.
-                    object_area += emitting_shape.m_area;
-                }
+                // Accumulate the object area for OSL shaders.
+                object_area += emitting_shape.m_area;
             }
         }
         else if (strcmp(object.get_model(), SphereObjectFactory().get_model()) == 0)
@@ -445,32 +483,28 @@ void LightSamplerBase::collect_emitting_shapes(
             const double area = FourPi<double>() * square(radius);
 
             // Invoke the shape handling function.
-            const bool accept_shape =
-                shape_handling(
-                    material,
-                    static_cast<float>(area),
-                    m_emitting_shapes.size());
+            handle_shape(
+                material,
+                static_cast<float>(area),
+                m_emitting_shapes.size());
 
-            if (accept_shape)
-            {
-                // Create a light-emitting rectangle.
-                auto emitting_shape = EmittingShape::create_sphere_shape(
-                    &assembly_instance,
-                    object_instance_index,
-                    material,
-                    area,
-                    center,
-                    radius);
+            // Create a light-emitting rectangle.
+            auto emitting_shape = EmittingShape::create_sphere_shape(
+                &assembly_instance,
+                object_instance_index,
+                material,
+                area,
+                center,
+                radius);
 
-                // Estimate radiant flux emitted by this shape.
-                emitting_shape.estimate_flux();
+            // Estimate radiant flux emitted by this shape.
+            emitting_shape.estimate_flux();
 
-                // Store the light-emitting shape.
-                m_emitting_shapes.push_back(emitting_shape);
+            // Store the light-emitting shape.
+            m_emitting_shapes.push_back(emitting_shape);
 
-                // Accumulate the object area for OSL shaders.
-                object_area += emitting_shape.m_area;
-            }
+            // Accumulate the object area for OSL shaders.
+            object_area += emitting_shape.m_area;
         }
         else if (strcmp(object.get_model(), DiskObjectFactory().get_model()) == 0)
         {
@@ -521,35 +555,31 @@ void LightSamplerBase::collect_emitting_shapes(
             const double area = Pi<double>() * square(r);
 
             // Invoke the shape handling function.
-            const bool accept_shape =
-                shape_handling(
-                    material,
-                    static_cast<float>(area),
-                    m_emitting_shapes.size());
+            handle_shape(
+                material,
+                static_cast<float>(area),
+                m_emitting_shapes.size());
 
-            if (accept_shape)
-            {
-                // Create a light-emitting shape.
-                auto emitting_shape = EmittingShape::create_disk_shape(
-                    &assembly_instance,
-                    object_instance_index,
-                    material,
-                    area,
-                    center,
-                    r,
-                    n,
-                    x,
-                    y);
+            // Create a light-emitting shape.
+            auto emitting_shape = EmittingShape::create_disk_shape(
+                &assembly_instance,
+                object_instance_index,
+                material,
+                area,
+                center,
+                r,
+                n,
+                x,
+                y);
 
-                // Estimate radiant flux emitted by this shape.
-                emitting_shape.estimate_flux();
+            // Estimate radiant flux emitted by this shape.
+            emitting_shape.estimate_flux();
 
-                // Store the light-emitting shape.
-                m_emitting_shapes.push_back(emitting_shape);
+            // Store the light-emitting shape.
+            m_emitting_shapes.push_back(emitting_shape);
 
-                // Accumulate the object area for OSL shaders.
-                object_area += emitting_shape.m_area;
-            }
+            // Accumulate the object area for OSL shaders.
+            object_area += emitting_shape.m_area;
         }
         else
         {
@@ -573,8 +603,7 @@ void LightSamplerBase::collect_emitting_shapes(
 
 void LightSamplerBase::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
-    const TransformSequence&            parent_transform_seq,
-    const LightHandlingFunction&        light_handling)
+    const TransformSequence&            parent_transform_seq)
 {
     for (const AssemblyInstance& assembly_instance : assembly_instances)
     {
@@ -589,28 +618,34 @@ void LightSamplerBase::collect_non_physical_lights(
         // Recurse into child assembly instances.
         collect_non_physical_lights(
             assembly.assembly_instances(),
-            cumulated_transform_seq,
-            light_handling);
+            cumulated_transform_seq);
 
         // Collect lights from this assembly.
         collect_non_physical_lights(
             assembly,
-            cumulated_transform_seq,
-            light_handling);
+            cumulated_transform_seq);
     }
 }
 
 void LightSamplerBase::collect_non_physical_lights(
     const Assembly&                     assembly,
-    const TransformSequence&            transform_sequence,
-    const LightHandlingFunction&        light_handling)
+    const TransformSequence&            transform_sequence)
 {
     for (const Light& light : assembly.lights())
     {
         NonPhysicalLightInfo light_info;
         light_info.m_transform_sequence = transform_sequence;
         light_info.m_light = &light;
-        light_handling(light_info);
+
+        // Insert into non-physical lights to be evaluated using a CDF.
+        const size_t light_index = m_non_physical_lights.size();
+        m_non_physical_lights.push_back(light_info);
+
+        // Insert the light into the CDF.
+        // todo: compute importance.
+        float importance = 1.0f;
+        importance *= light_info.m_light->get_uncached_importance_multiplier();
+        m_non_physical_lights_cdf.insert(light_index, importance);
     }
 }
 

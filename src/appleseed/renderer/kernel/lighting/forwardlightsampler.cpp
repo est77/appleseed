@@ -55,72 +55,8 @@ namespace renderer
 //
 
 ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& params)
-  : LightSamplerBase(params)
+  : LightSamplerBase(scene, params)
 {
-    RENDERER_LOG_INFO("collecting light emitters...");
-
-    // Collect all non-physical lights.
-    collect_non_physical_lights(
-        scene.assembly_instances(),
-        TransformSequence(),
-        [&](const NonPhysicalLightInfo& light_info)
-        {
-            // Insert into non-physical lights to be evaluated using a CDF.
-            const size_t light_index = m_non_physical_lights.size();
-            m_non_physical_lights.push_back(light_info);
-
-            // Insert the light into the CDF.
-            // todo: compute importance.
-            float importance = 1.0f;
-            importance *= light_info.m_light->get_uncached_importance_multiplier();
-            m_non_physical_lights_cdf.insert(light_index, importance);
-        });
-    m_non_physical_light_count = m_non_physical_lights.size();
-
-    // Collect all light-emitting shapes.
-    collect_emitting_shapes(
-        scene.assembly_instances(),
-        TransformSequence(),
-        [&](
-            const Material* material,
-            const float     area,
-            const size_t    emitting_shape_index)
-        {
-            // Retrieve the EDF and get the importance multiplier.
-            float importance_multiplier = 1.0f;
-            if (const EDF* edf = material->get_uncached_edf())
-                importance_multiplier = edf->get_uncached_importance_multiplier();
-
-            // Compute the probability density of this shape.
-            const float shape_importance = m_params.m_importance_sampling ? area : 1.0f;
-            const float shape_prob = shape_importance * importance_multiplier;
-
-            // Insert the light-emitting shape into the CDF.
-            m_emitting_shapes_cdf.insert(emitting_shape_index, shape_prob);
-
-            // Accept this shape.
-            return true;
-        });
-
-    // Build the hash table of emitting shapes.
-    build_emitting_shape_hash_table();
-
-    // Prepare the CDFs for sampling.
-    if (m_non_physical_lights_cdf.valid())
-        m_non_physical_lights_cdf.prepare();
-    if (m_emitting_shapes_cdf.valid())
-        m_emitting_shapes_cdf.prepare();
-
-    // Store the shape probability densities into the emitting shapes.
-    for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-        m_emitting_shapes[i].set_shape_prob(m_emitting_shapes_cdf[i].second);
-
-   RENDERER_LOG_INFO(
-        "found %s %s, %s emitting %s.",
-        pretty_int(m_non_physical_light_count).c_str(),
-        plural(m_non_physical_light_count, "non-physical light").c_str(),
-        pretty_int(m_emitting_shapes.size()).c_str(),
-        plural(m_emitting_shapes.size(), "shape").c_str());
 }
 
 void ForwardLightSampler::sample(

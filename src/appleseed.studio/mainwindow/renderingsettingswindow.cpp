@@ -1261,7 +1261,6 @@ namespace
             QComboBox* light_sampler = create_combobox("advanced.light_sampler.algorithm");
             light_sampler->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
             light_sampler->addItem("CDF", "cdf");
-            light_sampler->addItem("Light Tree", "lighttree");
             sublayout->addRow("Light Sampler:", light_sampler);
 
             sublayout->addRow(create_checkbox("advanced.light_sampler.enable_importance_sampling", "Enable Importance Sampling"));

@@ -218,7 +218,6 @@ class EmittingShape
 
     AssemblyInstanceAndType     m_assembly_instance_and_type;
     size_t                      m_object_instance_index;
-    size_t                      m_light_tree_node_index;
     size_t                      m_primitive_index;
     Geom                        m_geom;
     TriangleSupportPlaneType    m_shape_support_plane;          // support plane of the shape in assembly space
