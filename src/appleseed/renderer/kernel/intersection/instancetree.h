@@ -30,7 +30,6 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/curvetree.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/treerepository.h"
 #include "renderer/kernel/intersection/triangletree.h"
@@ -123,9 +122,6 @@ class InstanceTree
     TreeRepository<TriangleTree>    m_triangle_tree_repository;
     TriangleTreeContainer           m_triangle_trees;
 
-    TreeRepository<CurveTree>       m_curve_tree_repository;
-    CurveTreeContainer              m_curve_trees;
-
     void collect_assembly_instances(
         const AssemblyInstanceContainer&        assembly_instances,
         const TransformSequence&                parent_transform_seq,
@@ -140,11 +136,9 @@ class InstanceTree
 
     void create_child_trees(const Assembly& assembly);
     void create_triangle_tree(const Assembly& assembly);
-    void create_curve_tree(const Assembly& assembly);
 
     void delete_child_trees(const foundation::UniqueID assembly_id);
     void delete_triangle_tree(const foundation::UniqueID assembly_id);
-    void delete_curve_tree(const foundation::UniqueID assembly_id);
 
     void update_triangle_trees();
 };
@@ -163,11 +157,9 @@ class InstanceLeafVisitor
         ShadingPoint&                               shading_point,
         const InstanceTree&                         tree,
         TriangleTreeAccessCache&                    triangle_tree_cache,
-        CurveTreeAccessCache&                       curve_tree_cache,
         const ShadingPoint*                         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     triangle_tree_stats
-        , foundation::bvh::TraversalStatistics&     curve_tree_stats
 #endif
         );
 
@@ -186,11 +178,9 @@ class InstanceLeafVisitor
     ShadingPoint&                                   m_shading_point;
     const InstanceTree&                             m_tree;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
-    CurveTreeAccessCache&                           m_curve_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
-    foundation::bvh::TraversalStatistics&           m_curve_tree_stats;
 #endif
 };
 
@@ -208,11 +198,9 @@ class InstanceLeafProbeVisitor
     InstanceLeafProbeVisitor(
         const InstanceTree&                         tree,
         TriangleTreeAccessCache&                    triangle_tree_cache,
-        CurveTreeAccessCache&                       curve_tree_cache,
         const ShadingPoint*                         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     triangle_tree_stats
-        , foundation::bvh::TraversalStatistics&     curve_tree_stats
 #endif
         );
 
@@ -230,11 +218,9 @@ class InstanceLeafProbeVisitor
   private:
     const InstanceTree&                             m_tree;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
-    CurveTreeAccessCache&                           m_curve_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
-    foundation::bvh::TraversalStatistics&           m_curve_tree_stats;
 #endif
 };
 
@@ -264,21 +250,17 @@ inline InstanceLeafVisitor::InstanceLeafVisitor(
     ShadingPoint&                                   shading_point,
     const InstanceTree&                             tree,
     TriangleTreeAccessCache&                        triangle_tree_cache,
-    CurveTreeAccessCache&                           curve_tree_cache,
     const ShadingPoint*                             parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&         triangle_tree_stats
-    , foundation::bvh::TraversalStatistics&         curve_tree_stats
 #endif
     )
   : m_shading_point(shading_point)
   , m_tree(tree)
   , m_triangle_tree_cache(triangle_tree_cache)
-  , m_curve_tree_cache(curve_tree_cache)
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)
-  , m_curve_tree_stats(curve_tree_stats)
 #endif
 {
 }
@@ -291,20 +273,16 @@ inline InstanceLeafVisitor::InstanceLeafVisitor(
 inline InstanceLeafProbeVisitor::InstanceLeafProbeVisitor(
     const InstanceTree&                             tree,
     TriangleTreeAccessCache&                        triangle_tree_cache,
-    CurveTreeAccessCache&                           curve_tree_cache,
     const ShadingPoint*                             parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&         triangle_tree_stats
-    , foundation::bvh::TraversalStatistics&         curve_tree_stats
 #endif
     )
   : m_tree(tree)
   , m_triangle_tree_cache(triangle_tree_cache)
-  , m_curve_tree_cache(curve_tree_cache)
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)
-  , m_curve_tree_stats(curve_tree_stats)
 #endif
 {
 }

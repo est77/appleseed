@@ -272,7 +272,6 @@ bool Intersector::trace(
         shading_point,
         instance_tree,
         m_triangle_tree_cache,
-        m_curve_tree_cache,
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , m_triangle_tree_traversal_stats
@@ -326,7 +325,6 @@ bool Intersector::trace_probe(
     InstanceLeafProbeVisitor visitor(
         instance_tree,
         m_triangle_tree_cache,
-        m_curve_tree_cache,
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , m_triangle_tree_traversal_stats

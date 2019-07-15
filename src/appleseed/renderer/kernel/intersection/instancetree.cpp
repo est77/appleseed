@@ -36,7 +36,6 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/entity/entityvector.h"
-#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -45,7 +44,6 @@
 #include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/beziercurve.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/transform.h"
@@ -362,10 +360,6 @@ void InstanceTree::create_child_trees(const Assembly& assembly)
     // Create a triangle tree if there are mesh objects.
     if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
         create_triangle_tree(assembly);
-
-    // Create a curve tree if there are curve objects.
-    if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
-        create_curve_tree(assembly);
 }
 
 void InstanceTree::create_triangle_tree(const Assembly& assembly)
@@ -396,38 +390,9 @@ void InstanceTree::create_triangle_tree(const Assembly& assembly)
     m_triangle_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
-void InstanceTree::create_curve_tree(const Assembly& assembly)
-{
-    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory().get_model());
-    Lazy<CurveTree>* tree = m_curve_tree_repository.acquire(hash);
-
-    if (tree == nullptr)
-    {
-        // Compute the assembly space bounding box of the assembly.
-        const GAABB3 assembly_bbox =
-            compute_parent_bbox<GAABB3>(
-                assembly.object_instances().begin(),
-                assembly.object_instances().end());
-
-        unique_ptr<ILazyFactory<CurveTree>> curve_tree_factory(
-            new CurveTreeFactory(
-                CurveTree::Arguments(
-                    m_scene,
-                    assembly.get_uid(),
-                    assembly_bbox,
-                    assembly)));
-
-        tree = new Lazy<CurveTree>(move(curve_tree_factory));
-        m_curve_tree_repository.insert(hash, tree);
-    }
-
-    m_curve_trees.insert(make_pair(assembly.get_uid(), tree));
-}
-
 void InstanceTree::delete_child_trees(const UniqueID assembly_id)
 {
     delete_triangle_tree(assembly_id);
-    delete_curve_tree(assembly_id);
 }
 
 void InstanceTree::delete_triangle_tree(const UniqueID assembly_id)
@@ -437,16 +402,6 @@ void InstanceTree::delete_triangle_tree(const UniqueID assembly_id)
     {
         m_triangle_tree_repository.release(it->second);
         m_triangle_trees.erase(it);
-    }
-}
-
-void InstanceTree::delete_curve_tree(const UniqueID assembly_id)
-{
-    const CurveTreeContainer::iterator it = m_curve_trees.find(assembly_id);
-    if (it != m_curve_trees.end())
-    {
-        m_curve_tree_repository.release(it->second);
-        m_curve_trees.erase(it);
     }
 }
 
@@ -612,32 +567,6 @@ bool InstanceLeafVisitor::visit(
             visitor.read_hit_triangle_data();
         }
 
-        // Retrieve the curve tree of this assembly.
-        const CurveTree* curve_tree =
-            m_curve_tree_cache.access(
-                item.m_assembly_uid,
-                m_tree.m_curve_trees);
-
-        if (curve_tree)
-        {
-            // Check the intersection between the ray and the curve tree.
-            const GRay3 ray(local_shading_point.m_ray);
-            const GRayInfo3 ray_info(local_ray_info);
-            CurveMatrixType xfm_matrix;
-            make_curve_projection_transform(xfm_matrix, ray);
-            CurveLeafVisitor visitor(*curve_tree, xfm_matrix, local_shading_point);
-            CurveTreeIntersector intersector;
-            intersector.intersect_no_motion(
-                *curve_tree,
-                ray,
-                ray_info,
-                visitor
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                , m_curve_tree_stats
-#endif
-                );
-        }
-
         // Keep track of the closest hit.
         if (local_shading_point.hit_surface() && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
         {
@@ -752,38 +681,6 @@ bool InstanceLeafProbeVisitor::visit(
             }
         }
 
-        // Retrieve the curve tree of this assembly.
-        const CurveTree* curve_tree =
-            m_curve_tree_cache.access(
-                item.m_assembly_uid,
-                m_tree.m_curve_trees);
-
-        if (curve_tree)
-        {
-            // Check intersection between ray and curve tree.
-            const GRay3 ray(local_ray);
-            const GRayInfo3 ray_info(local_ray_info);
-            CurveMatrixType xfm_matrix;
-            make_curve_projection_transform(xfm_matrix, ray);
-            CurveLeafProbeVisitor visitor(*curve_tree, xfm_matrix);
-            CurveTreeProbeIntersector intersector;
-            intersector.intersect_no_motion(
-                *curve_tree,
-                ray,
-                ray_info,
-                visitor
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                , m_curve_tree_stats
-#endif
-                );
-
-            // Terminate traversal if there was a hit.
-            if (visitor.hit())
-            {
-                m_hit = true;
-                return false;
-            }
-        }
     }
 
     // Continue traversal.
