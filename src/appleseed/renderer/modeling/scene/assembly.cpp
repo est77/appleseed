@@ -60,9 +60,6 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_APIARRAY(IndexedObjectInstanceArray);
-
-
 //
 // Assembly class implementation.
 //
@@ -84,7 +81,6 @@ Assembly::Assembly(
     const ParamArray&   params)
   : Entity(g_class_uid, params)
   , BaseGroup(this)
-  , m_has_render_data(false)
 {
     set_name(name);
 }
@@ -131,32 +127,7 @@ bool Assembly::on_frame_begin(
     if (!BaseGroup::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    // Collect procedural object instances.
-    assert(!m_has_render_data);
-    for (size_t i = 0, e = object_instances().size(); i < e; ++i)
-    {
-        const ObjectInstance* object_instance = object_instances().get_by_index(i);
-        const Object& object = object_instance->get_object();
-        if (dynamic_cast<const ProceduralObject*>(&object) != nullptr)
-            m_render_data.m_procedural_object_instances.push_back(make_pair(object_instance, i));
-    }
-    m_has_render_data = true;
-
     return true;
-}
-
-void Assembly::on_frame_end(
-    const Project&          project,
-    const BaseGroup*        parent)
-{
-    // `m_has_render_data` may be false if `on_frame_begin()` failed.
-    if (m_has_render_data)
-    {
-        m_render_data.m_procedural_object_instances.clear();
-        m_has_render_data = false;
-    }
-
-    Entity::on_frame_end(project, parent);
 }
 
 void Assembly::do_bump_version_id()

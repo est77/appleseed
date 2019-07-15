@@ -38,7 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/api/apiarray.h"
+//#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -63,15 +63,6 @@ namespace renderer      { class Project; }
 
 namespace renderer
 {
-
-//
-// An array of object instances.
-//
-
-typedef std::pair<const ObjectInstance*, size_t> IndexedObjectInstance;
-
-APPLESEED_DECLARE_APIARRAY(IndexedObjectInstanceArray, IndexedObjectInstance);
-
 
 //
 // An assembly is either entirely self-contained, or it references colors,
@@ -106,36 +97,16 @@ class APPLESEED_DLLSYMBOL Assembly
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    void on_frame_end(
-        const Project&              project,
-        const BaseGroup*            parent) override;
-
-    struct RenderData
-    {
-        IndexedObjectInstanceArray  m_procedural_object_instances;
-    };
-
-    // Return whether render-time data are available for this entity.
-    bool has_render_data() const;
-
-    // Return render-time data of this entity.
-    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
-    const RenderData& get_render_data() const;
-
     // todo (est.): remove me asap.!!!
     void do_bump_version_id() override;
 
-  protected:
-    bool        m_has_render_data;
-    RenderData  m_render_data;
+  private:
+    friend class AssemblyFactory;
 
     // Constructor.
     Assembly(
         const char*                 name,
         const ParamArray&           params);
-
-  private:
-    friend class AssemblyFactory;
 };
 
 //
@@ -185,21 +156,5 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
         const char*         name,
         const ParamArray&   params = ParamArray()) const override;
 };
-
-
-//
-// Assembly class implementation.
-//
-
-inline bool Assembly::has_render_data() const
-{
-    return m_has_render_data;
-}
-
-inline const Assembly::RenderData& Assembly::get_render_data() const
-{
-    assert(m_has_render_data);
-    return m_render_data;
-}
 
 }   // namespace renderer
