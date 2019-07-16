@@ -483,7 +483,7 @@ namespace
                         true,                                       // multiply by |cos(incoming, normal)|
                         Vector3f(geometric_normal),
                         Basis3f(vertex.get_shading_basis()),
-                        Vector3f(vertex.m_outgoing.get_value()),    // outgoing (toward the light)
+                        Vector3f(vertex.m_outgoing),    // outgoing (toward the light)
                         -Vector3f(camera_outgoing),                 // incoming (toward the camera)
                         ScatteringMode::All,                        // todo: likely incorrect
                         bsdf_value);

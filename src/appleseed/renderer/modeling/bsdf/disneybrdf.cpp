@@ -177,14 +177,14 @@ namespace
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
-            sample.m_incoming = Dual3f(incoming);
+            sample.m_incoming = incoming;
 
             // Compute the component value and the probability density of the sampled direction.
             const float probability =
                 evaluate(
                     values,
                     sample.m_shading_basis,
-                    sample.m_outgoing.get_value(),
+                    sample.m_outgoing,
                     incoming,
                     sample.m_value.m_diffuse);
             assert(probability > 0.0f);
@@ -193,7 +193,6 @@ namespace
             {
                 sample.set_to_scattering(ScatteringMode::Diffuse, probability);
                 sample.m_aov_components.m_albedo = values->m_base_color;
-                sample.compute_reflected_differentials();
             }
         }
 
@@ -271,23 +270,20 @@ namespace
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_uniform(s);
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
-            sample.m_incoming = Dual3f(incoming);
+            sample.m_incoming = incoming;
 
             // Compute the component value and the probability density of the sampled direction.
             const float probability =
                 evaluate(
                     values,
                     sample.m_shading_basis,
-                    sample.m_outgoing.get_value(),
+                    sample.m_outgoing,
                     incoming,
                     sample.m_value.m_glossy);
             assert(probability > 0.0f);
 
             if (probability > 1.0e-6f)
-            {
                 sample.set_to_scattering(ScatteringMode::Glossy, probability);
-                sample.compute_reflected_differentials();
-            }
         }
 
         float evaluate(
@@ -481,8 +477,8 @@ namespace
             if (sample.get_mode() == ScatteringMode::None)
                 return;
 
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const Vector3f& incoming = sample.m_incoming.get_value();
+            const Vector3f& outgoing = sample.m_outgoing;
+            const Vector3f& incoming = sample.m_incoming;
 
             if (weights[DiffuseComponent] > 0.0f)
             {

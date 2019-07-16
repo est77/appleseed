@@ -105,7 +105,7 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
-            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             // Compute the probability density of the sampled direction.
             const float probability = wi.y * RcpPi<float>();
@@ -125,8 +125,6 @@ namespace
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
                 sample.m_min_roughness = 1.0f;
-
-                sample.compute_reflected_differentials();
             }
         }
 

@@ -149,7 +149,7 @@ namespace
                 incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
-                h = normalize(incoming + sample.m_outgoing.get_value());
+                h = normalize(incoming + sample.m_outgoing);
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
                 const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
@@ -196,7 +196,7 @@ namespace
                     Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
-                const Vector3f& outgoing = sample.m_outgoing.get_value();
+                const Vector3f& outgoing = sample.m_outgoing;
                 incoming = reflect(outgoing, h);
                 if (force_above_surface(incoming, sample.m_geometric_normal))
                     h = normalize(incoming + outgoing);
@@ -205,8 +205,8 @@ namespace
             // Compute dot products.
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
             const float cos_in = abs(dot(incoming, shading_normal));
-            const float cos_on = abs(dot(sample.m_outgoing.get_value(), shading_normal));
-            const float cos_oh = min(abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
+            const float cos_on = abs(dot(sample.m_outgoing, shading_normal));
+            const float cos_oh = min(abs(dot(sample.m_outgoing, h)), 1.0f);
             const float cos_hn = abs(dot(h, shading_normal));
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
@@ -248,11 +248,10 @@ namespace
             if (probability > 1.0e-6f)
             {
                 sample.set_to_scattering(mode, probability);
-                sample.m_incoming = Dual3f(incoming);
+                sample.m_incoming = incoming;
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
                 sample.m_min_roughness = 1.0f;
-                sample.compute_reflected_differentials();
             }
         }
 

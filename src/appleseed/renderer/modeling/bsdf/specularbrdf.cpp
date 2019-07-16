@@ -95,12 +95,12 @@ namespace
 
             // No reflection below the shading surface.
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
-            const float cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
+            const float cos_on = dot(sample.m_outgoing, shading_normal);
             if (cos_on < 0.0f)
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            
+
             const NoFresnelFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier);

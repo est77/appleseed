@@ -223,8 +223,8 @@ namespace
                                 false,
                                 sample.m_geometric_normal,
                                 c->get_closure_shading_basis(closure_index),
-                                sample.m_outgoing.get_value(),
-                                sample.m_incoming.get_value(),
+                                sample.m_outgoing,
+                                sample.m_incoming,
                                 modes,
                                 s);
 

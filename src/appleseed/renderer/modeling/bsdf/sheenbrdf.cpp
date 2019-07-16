@@ -112,9 +112,9 @@ namespace
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_uniform(s);
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
-            sample.m_incoming = Dual3f(incoming);
+            sample.m_incoming = incoming;
 
-            const Vector3f h = normalize(incoming + sample.m_outgoing.get_value());
+            const Vector3f h = normalize(incoming + sample.m_outgoing);
             const float cos_ih = dot(incoming, h);
             const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
@@ -123,8 +123,6 @@ namespace
             sample.m_value.m_glossy = values->m_reflectance;
             sample.m_value.m_glossy *= fh * values->m_reflectance_multiplier;
             sample.m_value.m_beauty = sample.m_value.m_glossy;
-
-            sample.compute_reflected_differentials();
         }
 
         float evaluate(

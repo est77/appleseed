@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
@@ -148,7 +147,7 @@ namespace
 
         void spawn_ray(
             SamplingContext&        sampling_context,
-            const Dual2d&           ndc,
+            const Vector2d&         ndc,
             ShadingRay&             ray) const override
         {
             //
@@ -168,19 +167,7 @@ namespace
 
             // Compute ray origin and direction.
             ray.m_org = transform.get_local_to_parent().extract_translation();
-            ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(ndc.get_value())));
-
-            // Compute ray derivatives.
-            if (ndc.has_derivatives())
-            {
-                const Vector2d px(ndc.get_value() + ndc.get_dx());
-                const Vector2d py(ndc.get_value() + ndc.get_dy());
-                ray.m_rx.m_org = ray.m_org;
-                ray.m_ry.m_org = ray.m_org;
-                ray.m_rx.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(px)));
-                ray.m_ry.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
-                ray.m_has_differentials = true;
-            }
+            ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(ndc)));
         }
 
         bool connect_vertex(

@@ -273,7 +273,7 @@ namespace
                           -sample.m_shading_basis.get_tangent_v())
                     : sample.m_shading_basis);
 
-            const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
+            const Vector3f wo = basis.transform_to_local(sample.m_outgoing);
 
             const float eta =
                 wo.y > 0.0f
@@ -311,13 +311,10 @@ namespace
 
             Vector3f wi;
             float probability;
-            bool is_refraction;
 
             // Choose between reflection and refraction.
             if (s[2] < r_probability)
             {
-                is_refraction = false;
-
                 // Compute the reflected direction.
                 wi = improve_normalization(reflect(wo, m));
 
@@ -341,7 +338,6 @@ namespace
             }
             else
             {
-                is_refraction = true;
                 wi = refracted_direction(
                     wo,
                     m,
@@ -382,12 +378,8 @@ namespace
             {
                 sample.set_to_scattering(ScatteringMode::Glossy, probability);
                 sample.m_value.m_beauty = sample.m_value.m_glossy;
-                sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
+                sample.m_incoming = basis.transform_to_parent(wi);
                 sample.m_min_roughness = values->m_roughness;
-
-                if (is_refraction)
-                    sample.compute_transmitted_differentials(1.0f / eta);
-                else sample.compute_reflected_differentials();
             }
         }
 

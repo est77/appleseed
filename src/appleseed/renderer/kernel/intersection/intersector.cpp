@@ -395,8 +395,6 @@ void Intersector::make_procedural_surface_shading_point(
 
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
-
-    assert(shading_ray.m_has_differentials == false);
     shading_point.m_ray = shading_ray;
 
     shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
@@ -428,10 +426,6 @@ void Intersector::make_procedural_surface_shading_point(
     shading_point.m_dpdu = dpdv;
     shading_point.m_members |= ShadingPoint::HasWorldSpaceDerivatives;
 
-    shading_point.m_dpdx = Vector3d(0.0);
-    shading_point.m_dpdy = Vector3d(0.0);
-    shading_point.m_duvdx = Vector2f(0.0);
-    shading_point.m_duvdy = Vector2f(0.0);
     shading_point.m_members = ShadingPoint::HasScreenSpaceDerivatives;
 }
 

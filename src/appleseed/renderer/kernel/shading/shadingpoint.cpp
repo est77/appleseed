@@ -84,15 +84,8 @@ void ShadingPoint::flip_side()
     //
 
     const double t = 2.0 * m_ray.m_tmax;
-
     m_ray.m_org = m_ray.point_at(t);
-    m_ray.m_rx.m_org = m_ray.m_rx.point_at(t);
-    m_ray.m_ry.m_org = m_ray.m_ry.point_at(t);
-
     m_ray.m_dir = -m_ray.m_dir;
-    m_ray.m_rx.m_dir = -m_ray.m_rx.m_dir;
-    m_ray.m_ry.m_dir = -m_ray.m_ry.m_dir;
-
     m_members = 0;
 
 #else
@@ -597,82 +590,6 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
     }
 }
 
-void ShadingPoint::compute_screen_space_partial_derivatives() const
-{
-    //
-    // Reference:
-    //
-    //   Physically Based Rendering, second edition, pp. 506-509
-    //
-
-    const ShadingRay& ray = get_ray();
-
-    if (!ray.m_has_differentials)
-    {
-        m_dpdx = Vector3d(0.0);
-        m_dpdy = Vector3d(0.0);
-        m_duvdx = Vector2f(0.0f);
-        m_duvdy = Vector2f(0.0f);
-        return;
-    }
-
-    const Vector3d& p = get_point();
-    const Vector3d& n = get_original_shading_normal();
-
-    double tx, ty;
-    if (!intersect(ray.m_rx, p, n, tx) ||
-        !intersect(ray.m_ry, p, n, ty))
-    {
-        m_dpdx = Vector3d(0.0);
-        m_dpdy = Vector3d(0.0);
-        m_duvdx = Vector2f(0.0f);
-        m_duvdy = Vector2f(0.0f);
-        return;
-    }
-
-    m_dpdx = ray.m_rx.point_at(tx) - p;
-    m_dpdy = ray.m_ry.point_at(ty) - p;
-
-    // Select the two axes along which the normal has the smallest components.
-    static const size_t Axes[3][2] = { {1, 2}, {0, 2}, {0, 1} };
-    const size_t max_index = max_abs_index(n);
-    const size_t axis0 = Axes[max_index][0];
-    const size_t axis1 = Axes[max_index][1];
-
-    const Vector3d& dpdu = get_dpdu(0);
-    const Vector3d& dpdv = get_dpdv(0);
-
-    const Vector2f plane_dpdu(
-        static_cast<float>(dpdu[axis0]),
-        static_cast<float>(dpdu[axis1]));
-    const Vector2f plane_dpdv(
-        static_cast<float>(dpdv[axis0]),
-        static_cast<float>(dpdv[axis1]));
-
-    const float d = det(plane_dpdu, plane_dpdv);
-
-    if (d == 0.0f)
-    {
-        m_duvdx = Vector2f(0.0f);
-        m_duvdy = Vector2f(0.0f);
-        return;
-    }
-
-    const Vector2f plane_dpdx(
-        static_cast<float>(m_dpdx[axis0]),
-        static_cast<float>(m_dpdx[axis1]));
-    const Vector2f plane_dpdy(
-        static_cast<float>(m_dpdy[axis0]),
-        static_cast<float>(m_dpdy[axis1]));
-
-    const float rcp_d = 1.0f / d;
-
-    m_duvdx[0] = det(plane_dpdx, plane_dpdv) * rcp_d;   // dudx
-    m_duvdx[1] = det(plane_dpdu, plane_dpdx) * rcp_d;   // dvdx
-    m_duvdy[0] = det(plane_dpdy, plane_dpdv) * rcp_d;   // dudy
-    m_duvdy[1] = det(plane_dpdu, plane_dpdy) * rcp_d;   // dvdy
-}
-
 void ShadingPoint::compute_normals() const
 {
     cache_source_geometry();
@@ -1022,22 +939,11 @@ void ShadingPoint::initialize_osl_shader_globals(
             get_object_instance().transform_swaps_handedness() ? 1 : 0;
 
         // Surface position and incident ray direction differentials.
-        if (ray.m_has_differentials)
-        {
-            m_shader_globals.dPdx = Vector3f(get_dpdx());
-            m_shader_globals.dPdy = Vector3f(get_dpdy());
-            m_shader_globals.dPdz = Vector3f(0.0);
-            m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir - ray.m_dir);
-            m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir - ray.m_dir);
-        }
-        else
-        {
-            m_shader_globals.dPdx = Vector3f(0.0f);
-            m_shader_globals.dPdy = Vector3f(0.0f);
-            m_shader_globals.dPdz = Vector3f(0.0f);
-            m_shader_globals.dIdx = Vector3f(0.0f);
-            m_shader_globals.dIdy = Vector3f(0.0f);
-        }
+        m_shader_globals.dPdx = Vector3f(0.0f);
+        m_shader_globals.dPdy = Vector3f(0.0f);
+        m_shader_globals.dPdz = Vector3f(0.0f);
+        m_shader_globals.dIdx = Vector3f(0.0f);
+        m_shader_globals.dIdy = Vector3f(0.0f);
 
         // Shading and geometric normals and backfacing flag.
         m_shader_globals.N = Vector3f(get_shading_normal());
@@ -1048,22 +954,11 @@ void ShadingPoint::initialize_osl_shader_globals(
         const Vector2f& uv = get_uv(0);
         m_shader_globals.u = uv[0];
         m_shader_globals.v = uv[1];
-        if (ray.m_has_differentials)
-        {
-            const Vector2f& duvdx = get_duvdx(0);
-            const Vector2f& duvdy = get_duvdy(0);
-            m_shader_globals.dudx = duvdx[0];
-            m_shader_globals.dudy = duvdy[0];
-            m_shader_globals.dvdx = duvdx[1];
-            m_shader_globals.dvdy = duvdy[1];
-        }
-        else
-        {
-            m_shader_globals.dudx = 0.0f;
-            m_shader_globals.dudy = 0.0f;
-            m_shader_globals.dvdx = 0.0f;
-            m_shader_globals.dvdy = 0.0f;
-        }
+
+        m_shader_globals.dudx = 0.0f;
+        m_shader_globals.dudy = 0.0f;
+        m_shader_globals.dvdx = 0.0f;
+        m_shader_globals.dvdy = 0.0f;
 
         // Surface tangents.
         m_shader_globals.dPdu = Vector3f(get_dpdu(0));
@@ -1221,16 +1116,12 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     always_poison(point.m_t2);
 
     always_poison(point.m_uv);
-    always_poison(point.m_duvdx);
-    always_poison(point.m_duvdy);
     always_poison(point.m_point);
     always_poison(point.m_biased_point);
     always_poison(point.m_dpdu);
     always_poison(point.m_dpdv);
     always_poison(point.m_dndu);
     always_poison(point.m_dndv);
-    always_poison(point.m_dpdx);
-    always_poison(point.m_dpdy);
     always_poison(point.m_geometric_normal);
     always_poison(point.m_original_shading_normal);
     always_poison(point.m_shading_basis);

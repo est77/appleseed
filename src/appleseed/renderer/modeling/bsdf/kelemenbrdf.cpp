@@ -239,7 +239,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Define aliases to match notations in the paper.
-            const Vector3f& V = sample.m_outgoing.get_value();
+            const Vector3f& V = sample.m_outgoing;
             const Vector3f& N = sample.m_shading_basis.get_normal();
             const float dot_VN = abs(dot(V, N));
 
@@ -349,11 +349,10 @@ namespace
             if (probability > 1.0e-6f)
             {
                 sample.set_to_scattering(mode, probability);
-                sample.m_incoming = Dual3f(incoming);
+                sample.m_incoming = Vector3f(incoming);
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
                 sample.m_min_roughness = values->m_roughness;
-                sample.compute_reflected_differentials();
             }
         }
 

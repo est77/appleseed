@@ -35,7 +35,6 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/uid.h"
 
@@ -122,7 +121,7 @@ class APPLESEED_DLLSYMBOL Camera
     // The generated ray is expressed in world space.
     virtual void spawn_ray(
         SamplingContext&                sampling_context,
-        const foundation::Dual2d&       ndc,
+        const foundation::Vector2d&     ndc,
         ShadingRay&                     ray) const = 0;
 
     // Connect a vertex to the camera and return the direction vector from the

@@ -454,7 +454,7 @@ namespace
                 float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
-                    -Vector3f(vertex.m_outgoing.get_value()),
+                    -Vector3f(vertex.m_outgoing),
                     env_radiance,
                     env_prob);
 
@@ -560,7 +560,7 @@ namespace
                 float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
-                    -Vector3f(vertex.m_outgoing.get_value()),
+                    -Vector3f(vertex.m_outgoing),
                     env_radiance,
                     env_prob);
 
@@ -749,7 +749,7 @@ namespace
 
             void add_direct_lighting_contribution_bsdf(
                 const ShadingPoint&         shading_point,
-                const Dual3d&               outgoing,
+                const Vector3d&             outgoing,
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
@@ -800,7 +800,7 @@ namespace
 
             void add_image_based_lighting_contribution_bsdf(
                 const ShadingPoint&         shading_point,
-                const Dual3d&               outgoing,
+                const Vector3d&             outgoing,
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,

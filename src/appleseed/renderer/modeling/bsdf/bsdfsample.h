@@ -38,7 +38,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -56,10 +55,10 @@ class BSDFSample
     const ShadingPoint*             m_shading_point;
     foundation::Vector3f            m_geometric_normal;     // world space geometric normal at the point where sampling is done, unit-length
     foundation::Basis3f             m_shading_basis;        // world space shading basis at the point where sampling is done
-    foundation::Dual3f              m_outgoing;             // world space outgoing direction, unit-length
+    foundation::Vector3f            m_outgoing;             // world space outgoing direction, unit-length
 
     // Outputs.
-    foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
+    foundation::Vector3f            m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
     DirectShadingComponents         m_value;                // BSDF value, defined only if m_mode != None
     AOVComponents                   m_aov_components;
     float                           m_min_roughness;        // minimum BSDF roughness down the line if Roughness Clamping is enabled
@@ -67,7 +66,7 @@ class BSDFSample
     // Constructor.
     BSDFSample(
         const ShadingPoint*         shading_point,
-        const foundation::Dual3f&   outgoing);
+        const foundation::Vector3f& outgoing);
 
     void set_to_absorption();
     void set_to_scattering(const ScatteringMode::Mode mode, const float probability);
@@ -75,20 +74,9 @@ class BSDFSample
     ScatteringMode::Mode get_mode() const;
     float get_probability() const;
 
-    void compute_reflected_differentials();
-    void compute_transmitted_differentials(const float eta);
-
   private:
     ScatteringMode::Mode            m_mode;                 // scattering mode
     float                           m_probability;          // PDF value
-
-    void compute_normal_derivatives(
-        foundation::Vector3f&       dndx,
-        foundation::Vector3f&       dndy,
-        float&                      ddndx,
-        float&                      ddndy) const;
-
-    void apply_pdf_differentials_heuristic();
 };
 
 
@@ -98,7 +86,7 @@ class BSDFSample
 
 inline BSDFSample::BSDFSample(
     const ShadingPoint*             shading_point,
-    const foundation::Dual3f&       outgoing)
+    const foundation::Vector3f&     outgoing)
   : m_shading_point(shading_point)
   , m_geometric_normal(shading_point->get_geometric_normal())
   , m_shading_basis(shading_point->get_shading_basis())

@@ -153,7 +153,7 @@ namespace
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             // Compute the microfacet normal by sampling the MDF.
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
+            const Vector3f& outgoing = sample.m_outgoing;
             const Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
             sampling_context.split_in_place(3, 1);
             const Vector3f s = sampling_context.next2<Vector3f>();
@@ -184,9 +184,8 @@ namespace
                     sample.m_value.m_glossy = values->m_specular_reflectance;
                     sample.m_value.m_glossy *= F;
                     sample.m_value.m_beauty = sample.m_value.m_glossy;
-                    sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                    sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
                     sample.m_min_roughness = values->m_roughness;
-                    sample.compute_reflected_differentials();
                 }
                 else
                 {
@@ -196,7 +195,7 @@ namespace
                     if (probability > 1.0e-6f)
                     {
                         sample.set_to_scattering(ScatteringMode::Glossy, probability);
-                        sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                        sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
                         sample.m_min_roughness = values->m_roughness;
 
                         evaluate_specular(
@@ -208,8 +207,6 @@ namespace
                             F,
                             sample.m_value.m_glossy);
                         sample.m_value.m_beauty = sample.m_value.m_glossy;
-
-                        sample.compute_reflected_differentials();
                     }
                 }
             }
@@ -223,7 +220,7 @@ namespace
                 if (probability > 1.0e-6f)
                 {
                     sample.set_to_scattering(ScatteringMode::Diffuse, probability);
-                    sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                    sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
                     sample.m_min_roughness = values->m_roughness;
 
                     const float Fi = fresnel_reflectance(wi, m, values->m_precomputed.m_eta);
@@ -236,8 +233,6 @@ namespace
                         sample.m_value.m_diffuse);
                     sample.m_value.m_beauty = sample.m_value.m_diffuse;
                     sample.m_aov_components.m_albedo = values->m_diffuse_reflectance;
-
-                    sample.compute_reflected_differentials();
                 }
             }
         }

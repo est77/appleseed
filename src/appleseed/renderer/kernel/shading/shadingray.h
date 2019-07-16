@@ -98,14 +98,11 @@ class ShadingRay
     };
 
     // Public members, in an order that optimizes packing.
-    RayType                         m_rx;
-    RayType                         m_ry;
     Time                            m_time;
     Medium                          m_media[MaxMediumCount];        // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
     foundation::uint8               m_medium_count;
-    bool                            m_has_differentials;
     float                           m_min_roughness;
 
     // Constructors.
@@ -160,7 +157,6 @@ class ShadingRay
 
 inline ShadingRay::ShadingRay()
   : m_medium_count(0)
-  , m_has_differentials(false)
   , m_min_roughness(0.0f)
 {
 }
@@ -176,7 +172,6 @@ inline ShadingRay::ShadingRay(
   , m_flags(flags)
   , m_depth(depth)
   , m_medium_count(0)
-  , m_has_differentials(false)
   , m_min_roughness(0.0f)
 {
 }
@@ -194,7 +189,6 @@ inline ShadingRay::ShadingRay(
   , m_flags(flags)
   , m_depth(depth)
   , m_medium_count(0)
-  , m_has_differentials(false)
   , m_min_roughness(0.0f)
 {
 }
@@ -259,8 +253,6 @@ namespace foundation
       public:
         static void do_poison(renderer::ShadingRay& ray)
         {
-            always_poison(ray.m_rx);
-            always_poison(ray.m_ry);
             always_poison(ray.m_time.m_absolute);
             always_poison(ray.m_time.m_normalized);
 
@@ -274,8 +266,8 @@ namespace foundation
             always_poison(ray.m_flags);
             always_poison(ray.m_depth);
 
-            // Don't poison m_medium_count or m_has_differentials since
-            // they are properly initialized by the default constructor.
+            // Don't poison m_medium_count since it is properly initialized
+            // by the default constructor.
         }
     };
 }   // namespace foundation

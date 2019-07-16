@@ -103,15 +103,11 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
     result.m_bary = Vector2f(0.0);
     result.m_uv = Vector2f(0.0);
-    result.m_duvdx = Vector2f(0.0);
-    result.m_duvdy = Vector2f(0.0);
     result.m_point = Vector3d(0.0);
     result.m_dpdu = Vector3d(0.0);
     result.m_dpdv = Vector3d(0.0);
     result.m_dndu = Vector3d(0.0);
     result.m_dndv = Vector3d(0.0);
-    result.m_dpdx = Vector3d(0.0);
-    result.m_dpdy = Vector3d(0.0);
     result.m_geometric_normal = Vector3d(0.0);
     result.m_original_shading_normal = Vector3d(0.0);
     result.m_side = ObjectInstance::FrontSide;
@@ -133,14 +129,10 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     SamplingContext::RNGType rng;
     SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
-    const CanvasProperties& frame_props = impl->m_project.get_frame()->image().properties();
-    const Vector2d ndc_dx(1.0 / (4.0 * frame_props.m_canvas_width), 0.0);
-    const Vector2d ndc_dy(0.0, -1.0 / (4.0 * frame_props.m_canvas_height));
-
     ShadingRay ray;
     result.m_camera->spawn_ray(
         sampling_context,
-        Dual2d(ndc, ndc_dx, ndc_dy),
+        ndc,
         ray);
 
     ShadingPoint shading_point;
@@ -156,15 +148,11 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
     result.m_bary = shading_point.get_bary();
     result.m_uv = shading_point.get_uv(0);
-    result.m_duvdx = shading_point.get_duvdx(0);
-    result.m_duvdy = shading_point.get_duvdy(0);
     result.m_point = shading_point.get_point();
     result.m_dpdu = shading_point.get_dpdu(0);
     result.m_dpdv = shading_point.get_dpdv(0);
     result.m_dndu = shading_point.get_dndu(0);
     result.m_dndv = shading_point.get_dndv(0);
-    result.m_dpdx = shading_point.get_dpdx();
-    result.m_dpdy = shading_point.get_dpdy();
     result.m_geometric_normal = shading_point.get_geometric_normal();
     result.m_original_shading_normal = shading_point.get_original_shading_normal();
     result.m_side = shading_point.get_side();

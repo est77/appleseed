@@ -44,7 +44,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/cdf.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/scalar.h"
@@ -399,7 +398,7 @@ bool SeparableBSSRDF::do_sample(
     bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
     bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
     bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
-    bsdf_sample.m_outgoing = Dual3f(outgoing_dir);      // chosen arbitrarily (no outgoing direction at the incoming point)
+    bsdf_sample.m_outgoing = outgoing_dir;      // chosen arbitrarily (no outgoing direction at the incoming point)
     bssrdf_sample.m_brdf->sample(
         sampling_context,
         bssrdf_sample.m_brdf_data,
@@ -414,7 +413,7 @@ bool SeparableBSSRDF::do_sample(
         outgoing_point,
         outgoing_dir,
         bssrdf_sample.m_incoming_point,
-        bsdf_sample.m_incoming.get_value(),
+        bsdf_sample.m_incoming,
         bssrdf_sample.m_modes,
         bssrdf_sample.m_value);
 

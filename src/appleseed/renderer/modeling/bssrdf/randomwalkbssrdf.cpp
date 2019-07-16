@@ -396,7 +396,7 @@ namespace
             bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
             bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
             bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
-            bsdf_sample.m_outgoing = Dual3f(bsdf_sample.m_geometric_normal);      // chosen arbitrarily (no outgoing direction at the incoming point)
+            bsdf_sample.m_outgoing = bsdf_sample.m_geometric_normal;      // chosen arbitrarily (no outgoing direction at the incoming point)
             bssrdf_sample.m_brdf->sample(
                 sampling_context,
                 bssrdf_sample.m_brdf_data,
@@ -409,7 +409,7 @@ namespace
 
             const float cos_in = min(abs(dot(
                 bsdf_sample.m_geometric_normal,
-                bsdf_sample.m_incoming.get_value())), 1.0f);
+                bsdf_sample.m_incoming)), 1.0f);
             float fi;
             if (values->m_fresnel_weight == 0.0f)
                 fi = 1.0f;
@@ -643,12 +643,12 @@ namespace
                 bsdf_sample.m_shading_point = shading_point_ptr;
                 bsdf_sample.m_geometric_normal = Vector3f(shading_point_ptr->get_geometric_normal());
                 bsdf_sample.m_shading_basis = Basis3f(shading_point_ptr->get_shading_basis());
-                bsdf_sample.m_outgoing = Dual3f(-direction);
+                bsdf_sample.m_outgoing = -direction;
                 bsdf_sample.set_to_absorption();
                 m_glass_bsdf->sample(sampling_context, glass_inputs, false, true, ScatteringMode::All, bsdf_sample);
                 const bool crossing_interface =
-                    dot(bsdf_sample.m_outgoing.get_value(), bsdf_sample.m_geometric_normal) *
-                    dot(bsdf_sample.m_incoming.get_value(), bsdf_sample.m_geometric_normal) < 0.0;
+                    dot(bsdf_sample.m_outgoing, bsdf_sample.m_geometric_normal) *
+                    dot(bsdf_sample.m_incoming, bsdf_sample.m_geometric_normal) < 0.0;
                 if (bsdf_sample.get_mode() == ScatteringMode::None)
                     return false;
 
@@ -678,7 +678,7 @@ namespace
 
                 // Trace the initial ray through the object completely.
                 shading_points[next_point_idx].clear();
-                direction = bsdf_sample.m_incoming.get_value();
+                direction = bsdf_sample.m_incoming;
                 ShadingRay ray(
                     shading_point_ptr->get_point(),
                     Vector3d(direction),

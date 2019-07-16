@@ -165,6 +165,8 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
     const CompositeNPRClosure&  c,
     const size_t                closure_index)
 {
+    return Color4f(0.0f);
+    /*
     const Intersector& intersector = shading_context.get_intersector();
 
     const Vector3d& p = shading_point.get_point();
@@ -274,6 +276,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
 
         return Color4f(values->m_color, alpha * values->m_opacity);
     }
+    */
 }
 
 bool NPRSurfaceShaderHelper::is_same_object(

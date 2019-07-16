@@ -551,7 +551,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
         integrator.take_single_material_sample(
             sampling_context,
             mis_heuristic,
-            Dual3d(m_volume_ray.m_dir),
+            m_volume_ray.m_dir,
             radiance);
     }
     else if (light_sample == nullptr || light_sample->m_shape != nullptr)
@@ -568,7 +568,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             sampling_context,
             light_sample,
             mis_heuristic,
-            Dual3d(m_volume_ray.m_dir),
+            m_volume_ray.m_dir,
             radiance,
             nullptr);
     }
@@ -577,7 +577,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
         integrator.add_non_physical_light_sample_contribution(
             sampling_context,
             *light_sample,
-            Dual3d(m_volume_ray.m_dir),
+            m_volume_ray.m_dir,
             radiance,
             nullptr);
     }

@@ -112,7 +112,7 @@ namespace
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
-            sample.m_incoming = Dual3f(incoming);
+            sample.m_incoming = Vector3f(incoming);
 
             // Compute the probability density of the sampled direction.
             const float probability = wi.y * RcpPi<float>();
@@ -134,7 +134,7 @@ namespace
                     if (cos_in < 0.0f)
                         return;
 
-                    const Vector3f& outgoing = sample.m_outgoing.get_value();
+                    const Vector3f& outgoing = sample.m_outgoing;
                     const float cos_on = abs(dot(outgoing, n));
                     oren_nayar_qualitative(
                         cos_on,
@@ -159,8 +159,6 @@ namespace
 
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_min_roughness = 1.0f;
-
-                sample.compute_reflected_differentials();
             }
         }
 

@@ -78,15 +78,8 @@ Basis3d BumpMappingModifier::modify(
     const Vector3d& dpdv = shading_point.get_dpdv(UVSet);
     const Vector3d& n = basis.get_normal();
 
-#ifdef USE_SCREEN_SPACE_UV_DERIVATIVES
-    const Vector2f& duvdx = shading_point.get_duvdx(UVSet);
-    const Vector2f& duvdy = shading_point.get_duvdy(UVSet);
-    const float delta_u = 0.5f * (abs(duvdx[0]) + abs(duvdy[0]));
-    const float delta_v = 0.5f * (abs(duvdx[1]) + abs(duvdy[1]));
-#else
     const float delta_u = m_delta_u;
     const float delta_v = m_delta_v;
-#endif
 
     // Evaluate the height function at (u, v), (u + delta_u, v) and (u, v + delta_v).
     const double h =  evaluate_height(texture_cache, uv[0],           uv[1]);

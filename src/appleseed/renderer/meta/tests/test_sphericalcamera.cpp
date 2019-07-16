@@ -78,7 +78,7 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
         SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
         ShadingRay ray;
-        camera->spawn_ray(sampling_context, Dual2d(Vector2d(1.0, 1.0)), ray);
+        camera->spawn_ray(sampling_context, Vector2d(1.0, 1.0), ray);
 
         const Vector3d hit_point = ray.m_org + 3.0 * normalize(ray.m_dir);
 

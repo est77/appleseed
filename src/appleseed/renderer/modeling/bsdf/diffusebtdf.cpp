@@ -133,7 +133,7 @@ namespace
                 // Flip the incoming direction to the other side of the surface.
                 wi.y = -wi.y;
 
-                sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the BRDF value.
                 sample.m_value.m_diffuse = values->m_transmittance;

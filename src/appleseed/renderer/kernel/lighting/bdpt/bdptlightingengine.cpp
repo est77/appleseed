@@ -693,7 +693,7 @@ namespace
                 bdpt_vertex.m_beta = vertex.m_throughput * m_initial_beta;
                 bdpt_vertex.m_bsdf = vertex.m_bsdf;
                 bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
-                bdpt_vertex.m_dir_to_prev_vertex = normalize(vertex.m_outgoing.get_value());
+                bdpt_vertex.m_dir_to_prev_vertex = normalize(vertex.m_outgoing);
                 bdpt_vertex.m_fwd_pdf = vertex.m_prev_prob;
                 bdpt_vertex.m_geometric_normal = vertex.get_geometric_normal();
                 bdpt_vertex.m_position = vertex.get_point();

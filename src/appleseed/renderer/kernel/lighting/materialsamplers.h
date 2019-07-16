@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 // Forward declarations.
@@ -80,8 +79,8 @@ class IMaterialSampler
 
     virtual bool sample(
         SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,
-        foundation::Dual3f&             incoming,
+        const foundation::Vector3d&     outgoing,
+        foundation::Vector3f&           incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const = 0;
 
@@ -125,8 +124,8 @@ class BSDFSampler
 
     bool sample(
         SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,
-        foundation::Dual3f&             incoming,
+        const foundation::Vector3d&     outgoing,
+        foundation::Vector3f&           incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const override;
 
@@ -179,8 +178,8 @@ class VolumeSampler
 
     bool sample(
         SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,
-        foundation::Dual3f&             incoming,
+        const foundation::Vector3d&     outgoing,
+        foundation::Vector3f&           incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const override;
 

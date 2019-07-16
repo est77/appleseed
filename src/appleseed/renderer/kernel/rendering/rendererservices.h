@@ -321,7 +321,6 @@ class RendererServices
     DECLARE_ATTR_GETTER(ray_depth);
     DECLARE_ATTR_GETTER(ray_length);
     DECLARE_ATTR_GETTER(ray_ior);
-    DECLARE_ATTR_GETTER(ray_has_differentials);
 
     // NPR attributes.
     DECLARE_ATTR_GETTER(surface_shader_diffuse);

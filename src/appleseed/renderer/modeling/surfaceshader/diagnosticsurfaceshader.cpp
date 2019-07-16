@@ -108,8 +108,7 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "objects",                    Objects },
     { "object_instances",           ObjectInstances },
     { "primitives",                 Primitives },
-    { "materials",                  Materials },
-    { "ray_spread",                 RaySpread }
+    { "materials",                  Materials }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
@@ -319,12 +318,8 @@ void DiagnosticSurfaceShader::evaluate(
                 if (material_data.m_bsdf != nullptr)
                 {
                     const ShadingRay& ray = shading_point.get_ray();
-                    const Dual3d outgoing(
-                        -ray.m_dir,
-                        ray.m_dir - ray.m_rx.m_dir,
-                        ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(&shading_point, Dual3f(outgoing));
+                    BSDFSample sample(&shading_point, Vector3f(-ray.m_dir));
                     material_data.m_bsdf->sample(
                         sampling_context,
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
@@ -604,58 +599,6 @@ void DiagnosticSurfaceShader::evaluate(
             if (material != nullptr)
                 set_shading_result(shading_result, integer_to_color3<float>(material->get_uid()));
             else shading_result.set_main_to_opaque_pink();
-        }
-        break;
-
-      case RaySpread:
-        {
-            const ShadingRay& ray = shading_point.get_ray();
-            if (!ray.m_has_differentials)
-                break;
-
-            const Material* material = shading_point.get_material();
-            if (material != nullptr)
-            {
-                const Material::RenderData& material_data = material->get_render_data();
-
-                // Execute the OSL shader if there is one.
-                if (material_data.m_shader_group)
-                {
-                    shading_context.execute_osl_shading(
-                        *material_data.m_shader_group,
-                        shading_point);
-                }
-
-                if (material_data.m_bsdf)
-                {
-                    const Dual3d outgoing(
-                        -ray.m_dir,
-                        ray.m_dir - ray.m_rx.m_dir,
-                        ray.m_dir - ray.m_ry.m_dir);
-
-                    BSDFSample sample(&shading_point, Dual3f(outgoing));
-                    material_data.m_bsdf->sample(
-                        sampling_context,
-                        material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
-                        false,
-                        false,
-                        ScatteringMode::All,
-                        sample);
-
-                    if (!sample.m_incoming.has_derivatives())
-                        break;
-
-                    // The 3.0 factor is chosen so that ray spread from Lambertian BRDFs is approximately 1.
-                    const double spread =
-                        max(
-                            norm(sample.m_incoming.get_dx()),
-                            norm(sample.m_incoming.get_dy())) * 3.0;
-                    set_shading_result(
-                        shading_result,
-                        Color3f(static_cast<float>(spread)));
-
-                }
-            }
         }
         break;
 

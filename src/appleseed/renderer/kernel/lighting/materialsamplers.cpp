@@ -137,12 +137,12 @@ void BSDFSampler::trace_between(
 
 bool BSDFSampler::sample(
     SamplingContext&            sampling_context,
-    const Dual3d&               outgoing,
-    Dual3f&                     incoming,
+    const Vector3d&             outgoing,
+    Vector3f&                   incoming,
     DirectShadingComponents&    value,
     float&                      pdf) const
 {
-    BSDFSample sample(&m_shading_point, Dual3f(outgoing));
+    BSDFSample sample(&m_shading_point, Vector3f(outgoing));
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
@@ -273,8 +273,8 @@ void VolumeSampler::trace_between(
 
 bool VolumeSampler::sample(
     SamplingContext&            sampling_context,
-    const Dual3d&               outgoing,
-    Dual3f&                     incoming,
+    const Vector3d&             outgoing,
+    Vector3f&                   incoming,
     DirectShadingComponents&    value,
     float&                      pdf) const
 {
@@ -288,7 +288,7 @@ bool VolumeSampler::sample(
             m_distance,
             incoming_direction);
 
-    incoming = Dual3f(incoming_direction);
+    incoming = incoming_direction;
 
     m_volume.scattering_coefficient(
         m_volume_data, m_volume_ray, m_distance, value.m_volume);

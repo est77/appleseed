@@ -122,7 +122,7 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
     BSDFSample&                         sample) const
 {
     assert(foundation::is_normalized(sample.m_geometric_normal));
-    assert(foundation::is_normalized(sample.m_outgoing.get_value()));
+    assert(foundation::is_normalized(sample.m_outgoing));
 
 #ifndef NDEBUG
     // Save the sampling context at the beginning of the iteration.
@@ -142,7 +142,7 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
 
     if (sample.get_mode() != ScatteringMode::None)
     {
-        assert(foundation::is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
+        assert(foundation::is_normalized(sample.m_incoming, 1.0e-5f));
 
         // Disabled until BSDF are evaluated in local space, because the numerous
         // conversions between local space and world space kill precision.
@@ -154,10 +154,10 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
         //                 adjoint,
         //                 sample.m_geometric_normal,
         //                 sample.m_shading_basis,
-        //                 sample.m_outgoing.get_value(),
-        //                 sample.m_incoming.get_value(),
+        //                 sample.m_outgoing,
+        //                 sample.m_incoming,
         //                 modes);
-        // 
+        //
         //         assert(
         //             (sample.m_probability == BSDFImpl::DiracDelta && ref_probability == 0.0f) ||
         //             (sample.m_probability > 0.0f && feq(sample.m_probability, ref_probability, 1.0e-2f)) ||
@@ -168,14 +168,14 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
         {
             if (adjoint)
             {
-                const float cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal()));
-                const float cos_ig = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_geometric_normal));
-                const float cos_og = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_geometric_normal));
+                const float cos_on = std::abs(foundation::dot(sample.m_outgoing, sample.m_shading_basis.get_normal()));
+                const float cos_ig = std::abs(foundation::dot(sample.m_incoming, sample.m_geometric_normal));
+                const float cos_og = std::abs(foundation::dot(sample.m_outgoing, sample.m_geometric_normal));
                 sample.m_value *= cos_on * cos_ig / cos_og;
             }
             else
             {
-                const float cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_shading_basis.get_normal()));
+                const float cos_in = std::abs(foundation::dot(sample.m_incoming, sample.m_shading_basis.get_normal()));
                 sample.m_value *= cos_in;
             }
         }

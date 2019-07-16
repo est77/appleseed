@@ -35,7 +35,6 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -50,7 +49,7 @@ class SpecularBRDFHelper
         BSDFSample&         sample)
     {
         const foundation::Vector3f& n = sample.m_shading_basis.get_normal();
-        const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
+        const foundation::Vector3f& outgoing = sample.m_outgoing;
 
         // Compute the incoming direction.
         foundation::Vector3f incoming = foundation::reflect(outgoing, n);
@@ -66,8 +65,7 @@ class SpecularBRDFHelper
         f(outgoing, n, n, sample.m_value.m_glossy);
         sample.m_value.m_glossy /= cos_in;
 
-        sample.m_incoming = foundation::Dual3f(incoming);
-        sample.compute_reflected_differentials();
+        sample.m_incoming = incoming;
     }
 };
 

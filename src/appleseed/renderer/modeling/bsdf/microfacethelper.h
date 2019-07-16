@@ -97,7 +97,7 @@ class MicrofacetBRDFHelper
         FresnelFun                      f,
         BSDFSample&                     sample)
     {
-        const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
+        const foundation::Vector3f& outgoing = sample.m_outgoing;
         foundation::Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
 
         if (wo.y == 0.0f)
@@ -163,12 +163,7 @@ class MicrofacetBRDFHelper
 
             f(wo, m, n, sample.m_value.m_glossy);
             sample.m_value.m_glossy *= D * G / std::abs(4.0f * cos_on * cos_in);
-
-            const foundation::Vector3f incoming =
-                sample.m_shading_basis.transform_to_parent(wi);
-            sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
-
-            sample.compute_reflected_differentials();
+            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
         }
     }
 

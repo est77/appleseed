@@ -184,12 +184,6 @@ shader as_attributes
         string as_maya_attribute_short_name = "prd",
         string label = "Ray Depth"
     ]],
-    output int out_path_has_ray_differentials = 0
-    [[
-        string as_maya_attribute_name = "pathHasRayDifferentials",
-        string as_maya_attribute_short_name = "phd",
-        string label = "Ray Differentials"
-    ]],
     output float out_path_ray_length = 0.0
     [[
         string as_maya_attribute_name = "pathRayLength",
@@ -233,7 +227,6 @@ shader as_attributes
     getattribute("global:frame", out_global_frame);
 
     getattribute("path:ray_depth", out_path_ray_depth);
-    getattribute("path:ray_has_differentials", out_path_has_ray_differentials);
     getattribute("path:ray_length", out_path_ray_length);
     getattribute("path:ray_ior", out_path_ray_ior);
 }

@@ -119,7 +119,6 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_attr_ray_depth;
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_attr_ray_length;
     m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
-    m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_attr_ray_has_differentials;
 
     m_global_attr_getters[OIIO::ustring("surface_shader:diffuse")] = &RendererServices::get_attr_surface_shader_diffuse;
     m_global_attr_getters[OIIO::ustring("surface_shader:glossy")] = &RendererServices::get_attr_surface_shader_glossy;
@@ -896,23 +895,6 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
         reinterpret_cast<float*>(val)[0] = shading_point->get_ray().get_current_ior();
-
-        if (derivs)
-            clear_derivatives(type, val);
-
-        return true;
-    }
-
-    return false;
-}
-
-IMPLEMENT_ATTR_GETTER(ray_has_differentials)
-{
-    if (type == OIIO::TypeDesc::TypeInt)
-    {
-        const ShadingPoint* shading_point =
-            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-        reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_has_differentials);
 
         if (derivs)
             clear_derivatives(type, val);

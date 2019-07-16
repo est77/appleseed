@@ -120,7 +120,7 @@ namespace
             BSDFSample&                 sample) const override
         {
             assert(is_normalized(sample.m_geometric_normal));
-            assert(is_normalized(sample.m_outgoing.get_value()));
+            assert(is_normalized(sample.m_outgoing));
 
             if (!ScatteringMode::has_specular(modes))
                 return;
@@ -128,21 +128,19 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
-            const float cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
+            const float cos_theta_i = dot(sample.m_outgoing, shading_normal);
             const float sin_theta_i2 = 1.0f - square(cos_theta_i);
             const float sin_theta_t2 = sin_theta_i2 * square(values->m_precomputed.m_eta);
             const float cos_theta_t2 = 1.0f - sin_theta_t2;
 
             Vector3f incoming;
-            bool refract_differentials = true;
 
             if (cos_theta_t2 < 0.0f)
             {
                 // Total internal reflection: compute the reflected direction and radiance.
-                incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
+                incoming = reflect(sample.m_outgoing, shading_normal);
                 sample.m_value.m_glossy = values->m_transmittance;
                 sample.m_value.m_glossy *= values->m_transmittance_multiplier;
-                refract_differentials = false;
             }
             else
             {
@@ -162,10 +160,9 @@ namespace
                 if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
-                    incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
+                    incoming = reflect(sample.m_outgoing, shading_normal);
                     sample.m_value.m_glossy = values->m_reflectance;
                     sample.m_value.m_glossy *= values->m_reflectance_multiplier;
-                    refract_differentials = false;
                 }
                 else
                 {
@@ -173,8 +170,8 @@ namespace
                     const float eta = values->m_precomputed.m_eta;
                     incoming =
                         cos_theta_i > 0.0f
-                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value()
-                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value();
+                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.m_outgoing
+                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing;
 
                     // Compute the refracted radiance.
                     sample.m_value.m_glossy = values->m_transmittance;
@@ -197,13 +194,8 @@ namespace
 
             // Set the incoming direction.
             incoming = improve_normalization(incoming);
-            sample.m_incoming = Dual3f(incoming);
-            assert(is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
-
-            // Compute the ray differentials.
-            if (refract_differentials)
-                sample.compute_transmitted_differentials(values->m_precomputed.m_eta);
-            else sample.compute_reflected_differentials();
+            sample.m_incoming = incoming;
+            assert(is_normalized(sample.m_incoming, 1.0e-5f));
         }
 
         float evaluate(

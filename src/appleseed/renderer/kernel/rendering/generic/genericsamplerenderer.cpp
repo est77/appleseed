@@ -132,10 +132,6 @@ namespace
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
         {
-            // 1/4 of a pixel, like in RenderMan RIS.
-            const CanvasProperties& c = frame.image().properties();
-            m_image_point_dx = Vector2d(1.0 / (4.0 * c.m_canvas_width), 0.0);
-            m_image_point_dy = Vector2d(0.0, -1.0 / (4.0 * c.m_canvas_height));
         }
 
         ~GenericSampleRenderer() override
@@ -180,7 +176,7 @@ namespace
             ShadingRay primary_ray;
             m_scene.get_active_camera()->spawn_ray(
                 sampling_context,
-                Dual2d(image_point, m_image_point_dx, m_image_point_dy),
+                image_point,
                 primary_ray);
 
             ShadingPoint shading_points[2];
@@ -260,12 +256,6 @@ namespace
 
                 // Move the ray origin to the intersection point.
                 primary_ray.m_org = shading_point_ptr->get_point();
-                if (primary_ray.m_has_differentials)
-                {
-                    const double t = shading_point_ptr->get_distance();
-                    primary_ray.m_rx.m_org = primary_ray.m_rx.point_at(t);
-                    primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(t);
-                }
             }
 
             // Inform the AOV accumulators that we are done rendering a sample.
@@ -333,9 +323,6 @@ namespace
         const Intersector           m_intersector;
         Tracer                      m_tracer;
         const ShadingContext        m_shading_context;
-
-        Vector2d                    m_image_point_dx;
-        Vector2d                    m_image_point_dy;
     };
 }
 

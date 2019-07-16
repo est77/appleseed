@@ -245,15 +245,11 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
 
     sstr << "  barycentric coordinates       " << filter_neg_zero(result.m_bary) << endl;
     sstr << "  uv coordinates                " << filter_neg_zero(result.m_uv) << endl;
-    sstr << "  duvdx                         " << filter_neg_zero(result.m_duvdx) << endl;
-    sstr << "  duvdy                         " << filter_neg_zero(result.m_duvdy) << endl;
     sstr << "  point                         " << filter_neg_zero(result.m_point) << endl;
     sstr << "  dpdu                          " << filter_neg_zero(result.m_dpdu) << endl;
     sstr << "  dpdv                          " << filter_neg_zero(result.m_dpdv) << endl;
     sstr << "  dndu                          " << filter_neg_zero(result.m_dndu) << endl;
     sstr << "  dndv                          " << filter_neg_zero(result.m_dndv) << endl;
-    sstr << "  dpdx                          " << filter_neg_zero(result.m_dpdx) << endl;
-    sstr << "  dpdy                          " << filter_neg_zero(result.m_dpdy) << endl;
     sstr << "  geometric normal              " << filter_neg_zero(result.m_geometric_normal) << endl;
     sstr << "  shading normal                " << filter_neg_zero(result.m_original_shading_normal) << endl;
     sstr << "  side                          " << get_side_name(result.m_side) << endl;

@@ -51,7 +51,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rr.h"
 #include "foundation/math/sampling/mappings.h"
@@ -76,7 +75,7 @@ namespace renderer
 //   struct PathVisitor
 //   {
 //       void on_first_diffuse_bounce(const PathVertex& vertex);
-//   
+//
 //       bool accept_scattering(
 //           const ScatteringMode::Mode  prev_mode,
 //           const ScatteringMode::Mode  next_mode) const;
@@ -297,13 +296,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         //   ray.dir + d(ray.dir)/dx = ray.dx.dir
         //   outgoing = -ray.dir
         //   d(outgoing)/dx = d(-ray.dir)/dx = ray.dir - ray.dx.dir
-        vertex.m_outgoing =
-            ray.m_has_differentials
-                ? foundation::Dual3d(
-                    -ray.m_dir,
-                    ray.m_dir - ray.m_rx.m_dir,
-                    ray.m_dir - ray.m_ry.m_dir)
-                : foundation::Dual3d(-ray.m_dir);
+        vertex.m_outgoing = -ray.m_dir;
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit_surface())
@@ -340,16 +333,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 ray.m_time,
                 ray.m_flags,
                 ray.m_depth);
-
-            // Advance the differentials if the ray has them.
-            if (ray.m_has_differentials)
-            {
-                next_ray.m_rx = ray.m_rx;
-                next_ray.m_ry = ray.m_ry;
-                next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
-                next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
-                next_ray.m_has_differentials = true;
-            }
 
             // Initialize the ray's medium list.
             if (entering)
@@ -405,16 +388,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                     ray.m_time,
                     ray.m_flags,
                     ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
-
-                // Advance the differentials if the ray has them.
-                if (ray.m_has_differentials)
-                {
-                    next_ray.m_rx = ray.m_rx;
-                    next_ray.m_ry = ray.m_ry;
-                    next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
-                    next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
-                    next_ray.m_has_differentials = true;
-                }
 
                 // Inherit the medium list from the parent ray.
                 next_ray.copy_media_from(ray);
@@ -475,7 +448,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // scattering, we purposely compute it at the outgoing vertex even though it may be used at
         // the incoming vertex if we need to change the probability of reaching this vertex by BSDF
         // sampling from projected solid angle measure to area measure.
-        vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
+        vertex.m_cos_on = foundation::dot(vertex.m_outgoing, vertex.get_shading_normal());
         m_path_visitor.on_hit(vertex);
 
         // Use Russian Roulette to cut the path without introducing bias.
@@ -503,7 +476,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         BSDFSample bsdf_sample(
             vertex.m_shading_point,
-            foundation::Dual3f(vertex.m_outgoing));
+            foundation::Vector3f(vertex.m_outgoing));
 
         // Subsurface scattering.
         BSSRDFSample bssrdf_sample;
@@ -516,7 +489,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                     sampling_context,
                     vertex.m_bssrdf_data,
                     *vertex.m_shading_point,
-                    foundation::Vector3f(vertex.m_outgoing.get_value()),
+                    foundation::Vector3f(vertex.m_outgoing),
                     bssrdf_sample,
                     bsdf_sample))
                 break;
@@ -557,7 +530,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // Build the medium list of the scattered ray.
         const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
         const bool crossing_interface = vertex.m_bssrdf == nullptr &&
-            foundation::dot(vertex.m_outgoing.get_value(), geometric_normal) *
+            foundation::dot(vertex.m_outgoing, geometric_normal) *
             foundation::dot(next_ray.m_dir, geometric_normal) < 0.0;
         if (crossing_interface)
         {
@@ -756,23 +729,12 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Construct the scattered ray.
     const ShadingRay& ray = vertex.get_ray();
-    const foundation::Vector3d incoming(sample.m_incoming.get_value());
+    const foundation::Vector3d incoming(sample.m_incoming);
     next_ray.m_org = vertex.m_shading_point->get_biased_point(incoming);
     next_ray.m_dir = foundation::improve_normalization<2>(incoming);
     next_ray.m_time = ray.m_time;
     next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode()),
     next_ray.m_depth = ray.m_depth + 1;
-
-    // Compute scattered ray differentials.
-    if (sample.m_incoming.has_derivatives())
-    {
-        next_ray.m_rx.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
-        next_ray.m_ry.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
-        next_ray.m_rx.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dx());
-        next_ray.m_ry.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dy());
-        next_ray.m_has_differentials = true;
-    }
-
     return true;
 }
 
@@ -920,7 +882,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             volume_ray,
             distance_sample,
             transmission);
-        
+
         // Compute MIS weight.
         // MIS terms are:
         //  - scattering albedo,

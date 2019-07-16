@@ -285,7 +285,7 @@ namespace
                 float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
-                    -Vector3f(vertex.m_outgoing.get_value()),
+                    -Vector3f(vertex.m_outgoing),
                     env_radiance,
                     env_prob);
 
@@ -503,7 +503,7 @@ namespace
                             true,                                       // multiply by |cos(incoming, normal)|
                             Vector3f(vertex.get_geometric_normal()),
                             Basis3f(vertex.get_shading_basis()),
-                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            Vector3f(vertex.m_outgoing),    // toward the camera
                             normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);
@@ -575,7 +575,7 @@ namespace
                             true,                                       // multiply by |cos(incoming, normal)|
                             Vector3f(vertex.get_geometric_normal()),
                             Basis3f(vertex.get_shading_basis()),
-                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            Vector3f(vertex.m_outgoing),    // toward the camera
                             normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);

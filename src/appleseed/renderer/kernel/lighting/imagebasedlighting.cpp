@@ -58,7 +58,7 @@ void compute_ibl_combined_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
-    const Dual3d&               outgoing,
+    const Vector3d&             outgoing,
     const IMaterialSampler&     material_sampler,
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
@@ -66,7 +66,7 @@ void compute_ibl_combined_sampling(
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream)
 {
-    assert(is_normalized(outgoing.get_value()));
+    assert(is_normalized(outgoing));
 
     // Compute IBL by sampling the BSDF.
     compute_ibl_material_sampling(
@@ -99,13 +99,13 @@ void compute_ibl_material_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
-    const Dual3d&               outgoing,
+    const Vector3d&             outgoing,
     const IMaterialSampler&     material_sampler,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
     DirectShadingComponents&    radiance)
 {
-    assert(is_normalized(outgoing.get_value()));
+    assert(is_normalized(outgoing));
 
     radiance.set(0.0f);
 
@@ -116,12 +116,12 @@ void compute_ibl_material_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
-        Dual3f incoming;
+        Vector3f incoming;
         DirectShadingComponents material_value;
         float material_prob;
         if (!material_sampler.sample(
                 sampling_context,
-                Dual3d(outgoing),
+                outgoing,
                 incoming,
                 material_value,
                 material_prob))
@@ -129,7 +129,7 @@ void compute_ibl_material_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
+        material_sampler.trace_simple(shading_context, incoming, transmission);
         if (is_zero(transmission))
             continue;
 
@@ -138,7 +138,7 @@ void compute_ibl_material_sampling(
         float env_prob;
         environment_edf.evaluate(
             shading_context,
-            incoming.get_value(),
+            incoming,
             env_value,
             env_prob);
 
@@ -167,7 +167,7 @@ void compute_ibl_environment_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
-    const Dual3d&               outgoing,
+    const Vector3d&             outgoing,
     const IMaterialSampler&     material_sampler,
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
@@ -175,7 +175,7 @@ void compute_ibl_environment_sampling(
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream)
 {
-    assert(is_normalized(outgoing.get_value()));
+    assert(is_normalized(outgoing));
 
     radiance.set(0.0f);
 
@@ -212,7 +212,7 @@ void compute_ibl_environment_sampling(
         DirectShadingComponents material_value;
         const float material_prob =
             material_sampler.evaluate(
-                Vector3f(outgoing.get_value()),
+                Vector3f(outgoing),
                 incoming,
                 env_sampling_modes,
                 material_value);

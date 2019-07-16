@@ -39,7 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
@@ -75,7 +74,7 @@ class PathVertex
     // Current vertex properties.
     const ShadingPoint*         m_shading_point;
     const ShadingPoint*         m_parent_shading_point;
-    foundation::Dual3d          m_outgoing;
+    foundation::Vector3d        m_outgoing;
     double                      m_cos_on;       // cos(outgoing direction, shading normal)
     const EDF*                  m_edf;
     const BSDF*                 m_bsdf;

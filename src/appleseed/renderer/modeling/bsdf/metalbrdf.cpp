@@ -191,7 +191,7 @@ namespace
                 {
                     apply_energy_compensation_factor(
                         values,
-                        sample.m_outgoing.get_value(),
+                        sample.m_outgoing,
                         sample.m_shading_basis.get_normal(),
                         sample.m_value.m_glossy);
 

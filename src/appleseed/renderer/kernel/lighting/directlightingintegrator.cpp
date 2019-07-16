@@ -99,7 +99,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     SamplingContext&                sampling_context,
     const MISHeuristic              mis_heuristic,
-    const Dual3d&                   outgoing,
+    const Vector3d&                 outgoing,
     DirectShadingComponents&        radiance) const
 {
     radiance.set(0.0f);
@@ -124,7 +124,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_variance(
     SamplingContext&                sampling_context,
     const MISHeuristic              mis_heuristic,
-    const Dual3d&                   outgoing,
+    const Vector3d&                 outgoing,
     DirectShadingComponents&        radiance,
     LightPathStream*                light_path_stream) const
 {
@@ -205,7 +205,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
 
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_variance(
     SamplingContext&                sampling_context,
-    const Dual3d&                   outgoing,
+    const Vector3d&                 outgoing,
     DirectShadingComponents&        radiance,
     LightPathStream*                light_path_stream) const
 {
@@ -229,13 +229,13 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
 void DirectLightingIntegrator::take_single_material_sample(
     SamplingContext&                sampling_context,
     const MISHeuristic              mis_heuristic,
-    const Dual3d&                   outgoing,
+    const Vector3d&                 outgoing,
     DirectShadingComponents&        radiance) const
 {
     assert(m_light_sampler.has_hittable_lights());
 
     // Sample material.
-    Dual3f incoming;
+    Vector3f incoming;
     DirectShadingComponents sample_value;
     float sample_probability;
     if (!m_material_sampler.sample(
@@ -251,7 +251,7 @@ void DirectLightingIntegrator::take_single_material_sample(
     const ShadingPoint& light_shading_point =
         m_material_sampler.trace_full(
             m_shading_context,
-            incoming.get_value(),
+            incoming,
             weight);
 
     // todo: wouldn't it be more efficient to look the environment up at this point?
@@ -274,7 +274,7 @@ void DirectLightingIntegrator::take_single_material_sample(
         return;
 
     // Cull the samples on the back side of the lights' shading surface.
-    const float cos_on = dot(-incoming.get_value(), Vector3f(light_shading_point.get_shading_normal()));
+    const float cos_on = dot(-incoming, Vector3f(light_shading_point.get_shading_normal()));
     if (cos_on <= 0.0f)
         return;
 
@@ -292,7 +292,7 @@ void DirectLightingIntegrator::take_single_material_sample(
         edf->evaluate_inputs(m_shading_context, light_shading_point),
         Vector3f(light_shading_point.get_geometric_normal()),
         Basis3f(light_shading_point.get_shading_basis()),
-        -incoming.get_value(),
+        -incoming,
         edf_value,
         edf_prob);
     if (edf_prob == 0.0f)
@@ -339,7 +339,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
     SamplingContext&                sampling_context,
     const LightSample&              sample,
     const MISHeuristic              mis_heuristic,
-    const Dual3d&                   outgoing,
+    const Vector3d&                 outgoing,
     DirectShadingComponents&        radiance,
     LightPathStream*                light_path_stream) const
 {
@@ -415,7 +415,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
     DirectShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(
-            Vector3f(outgoing.get_value()),
+            Vector3f(outgoing),
             Vector3f(incoming),
             m_light_sampling_modes,
             material_value);
@@ -474,7 +474,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     SamplingContext&                sampling_context,
     const LightSample&              sample,
-    const Dual3d&                   outgoing,
+    const Vector3d&                 outgoing,
     DirectShadingComponents&        radiance,
     LightPathStream*                light_path_stream) const
 {
@@ -520,7 +520,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     DirectShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(
-            Vector3f(outgoing.get_value()),
+            Vector3f(outgoing),
             Vector3f(incoming),
             m_light_sampling_modes,
             material_value);

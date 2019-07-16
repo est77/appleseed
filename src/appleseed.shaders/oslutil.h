@@ -35,7 +35,7 @@
 //
 float wireframe(string edge_type, float line_width, int raster)
 {
-   // ray differentials are so big in diffuse context that this function would always return "wire"
+   // ray outgoing are so big in diffuse context that this function would always return "wire"
    if (raytype("path:diffuse")) return 0.0;
 
    int np = 0;

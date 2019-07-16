@@ -36,7 +36,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/vector.h"
 
@@ -86,7 +85,7 @@ class DirectLightingIntegrator
     // Compute outgoing radiance due to direct lighting via combined BSDF and light sampling.
     void compute_outgoing_radiance_combined_sampling_low_variance(
         SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
         DirectShadingComponents&        radiance,
         LightPathStream*                light_path_stream) const;
 
@@ -94,14 +93,14 @@ class DirectLightingIntegrator
     void compute_outgoing_radiance_material_sampling(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
         DirectShadingComponents&        radiance) const;
 
     // Compute outgoing radiance due to direct lighting via light sampling only.
     void compute_outgoing_radiance_light_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
         DirectShadingComponents&        radiance,
         LightPathStream*                light_path_stream) const;
 
@@ -121,21 +120,21 @@ class DirectLightingIntegrator
     void take_single_material_sample(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,
+        const foundation::Vector3d&     outgoing,
         DirectShadingComponents&        radiance) const;
 
     void add_emitting_shape_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
         const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,
+        const foundation::Vector3d&     outgoing,
         DirectShadingComponents&        radiance,
         LightPathStream*                light_path_stream) const;
 
     void add_non_physical_light_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
-        const foundation::Dual3d&       outgoing,
+        const foundation::Vector3d&     outgoing,
         DirectShadingComponents&        radiance,
         LightPathStream*                light_path_stream) const;
 };

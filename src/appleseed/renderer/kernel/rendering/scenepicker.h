@@ -69,15 +69,11 @@ class APPLESEED_DLLSYMBOL ScenePicker
 
         foundation::Vector2f            m_bary;
         foundation::Vector2f            m_uv;
-        foundation::Vector2f            m_duvdx;
-        foundation::Vector2f            m_duvdy;
         foundation::Vector3d            m_point;                        // world space
         foundation::Vector3d            m_dpdu;                         // world space
         foundation::Vector3d            m_dpdv;                         // world space
         foundation::Vector3d            m_dndu;                         // world space
         foundation::Vector3d            m_dndv;                         // world space
-        foundation::Vector3d            m_dpdx;                         // world space
-        foundation::Vector3d            m_dpdy;                         // world space
         foundation::Vector3d            m_geometric_normal;             // world space
         foundation::Vector3d            m_original_shading_normal;      // world space
         ObjectInstance::Side            m_side;
