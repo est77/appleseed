@@ -71,9 +71,12 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/transformsequencestack.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -2235,6 +2238,103 @@ void ProjectFileUpdater::update(
     }
 
 #undef CASE_UPDATE_FROM_REVISION
+}
+
+namespace
+{
+
+class SceneFlattener
+{
+  public:
+    explicit SceneFlattener(Project& project)
+      : m_project(project)
+    {
+    }
+
+    void flatten_scene()
+    {
+        if (Scene* scene = m_project.get_scene())
+        {
+            for (const AssemblyInstance& i : scene->assembly_instances())
+               visit_assembly_instance(i);
+
+            scene->assembly_instances().clear();
+            scene->assemblies().clear();
+        }
+    }
+
+  private:
+    Project& m_project;
+    TransformSequenceStack m_xform_stack;
+
+    void visit_assembly_instance(const AssemblyInstance& assembly_instance)
+    {
+        // todo: (est.) handle visibility flags...
+        m_xform_stack.push(assembly_instance.transform_sequence());
+
+        const Assembly& assembly = assembly_instance.get_assembly();
+
+        transfer_entities(assembly.bsdfs(), m_project.get_scene()->bsdfs());
+        transfer_entities(assembly.bssrdfs(), m_project.get_scene()->bssrdfs());
+        transfer_entities(assembly.colors(), m_project.get_scene()->colors());
+        transfer_entities(assembly.edfs(), m_project.get_scene()->edfs());
+        transfer_entities(assembly.lights(), m_project.get_scene()->lights());
+        transfer_entities(assembly.materials(), m_project.get_scene()->materials());
+        transfer_entities(assembly.objects(), m_project.get_scene()->objects());
+        transfer_entities(assembly.shader_groups(), m_project.get_scene()->shader_groups());
+        transfer_entities(assembly.surface_shaders(), m_project.get_scene()->surface_shaders());
+        transfer_entities(assembly.textures(), m_project.get_scene()->textures());
+        transfer_entities(assembly.texture_instances(), m_project.get_scene()->texture_instances());
+        transfer_entities(assembly.volumes(), m_project.get_scene()->volumes());
+
+        transfer_object_instances(assembly.object_instances());
+
+        for (const AssemblyInstance& i : assembly.assembly_instances())
+            visit_assembly_instance(i);
+
+        m_xform_stack.pop();
+    }
+
+    void transfer_object_instances(ObjectInstanceContainer& object_instances)
+    {
+        ObjectInstanceContainer& scene_instances =
+            m_project.get_scene()->object_instances();
+
+        while (!object_instances.empty())
+        {
+            auto instance(object_instances.remove(object_instances.get_by_index(0)));
+            if (scene_instances.get_by_name(instance->get_name()) == nullptr)
+            {
+                m_xform_stack.push(instance->transform_sequence());
+                // todo: (est.) handle visibility flags...
+
+                instance->transform_sequence() = m_xform_stack.pop();
+                scene_instances.insert(instance);
+            }
+            else
+                RENDERER_LOG_WARNING("Duplicated object instance %s", instance->get_name());
+        }
+    }
+
+    template <typename EntityVector>
+    void transfer_entities(EntityVector& src, EntityVector& dst)
+    {
+        while (!src.empty())
+        {
+            auto entity(src.remove(src.get_by_index(0)));
+            if (dst.get_by_name(entity->get_name()) == nullptr)
+                dst.insert(entity);
+            else
+                RENDERER_LOG_WARNING("Duplicated entity %s", entity->get_name());
+        }
+    }
+};
+
+}
+
+void flatten_project_scene(Project& project)
+{
+    SceneFlattener(project).flatten_scene();
 }
 
 }   // namespace renderer

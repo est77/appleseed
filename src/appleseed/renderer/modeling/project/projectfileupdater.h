@@ -64,4 +64,6 @@ class APPLESEED_DLLSYMBOL ProjectFileUpdater
 
 };
 
+APPLESEED_DLLSYMBOL void flatten_project_scene(Project& project);
+
 }   // namespace renderer
