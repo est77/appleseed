@@ -295,7 +295,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "T Flip",
         string page = "Projection.X Axis"
-    ]], 
+    ]],
     string in_x_tex_eotf = "sRGB"
     [[
         string as_maya_attribute_name = "xTextureEOTF",
@@ -713,7 +713,7 @@ shader as_triplanar
         string as_maya_attribute_short_name = "man",
         string label = "Manifold",
         string page = "Projection.Randomization",
-        string help = "Connects to an idManifold integer hash output, or lacking one, builds an hash based on the assembly instance name."
+        string help = "Connects to an idManifold integer hash output, or lacking one, builds an hash based on the object instance name."
     ]],
 
     output color out_color = color(0)
@@ -789,7 +789,7 @@ shader as_triplanar
         else
         {
             string manifold = "";
-            getattribute("object:assembly_instance_name", manifold);
+            getattribute("object:object_instance_name", manifold);
 
             variation = (vector) cellnoise((vector) hash(manifold));
         }
@@ -925,7 +925,7 @@ shader as_triplanar
             {
                 normal tmp = clamp(y_axis * 2.0 - 1.0, -1.0, 1.0);
                 tmp[0] *= normal_sign[1];
-                
+
                 normal Y = rnm_blend(
                     normal(Nn[0], Nn[2], abs_normal[1]),
                     tmp);

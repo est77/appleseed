@@ -54,16 +54,6 @@ void compute_id_manifold(
     }
     else if (manifold_type == 2)
     {
-        getattribute("object:assembly_name", manifold_str);
-        hash_id = hash(manifold_str);
-    }
-    else if (manifold_type == 3)
-    {
-        getattribute("object:assembly_instance_name", manifold_str);
-        hash_id = hash(manifold_str);
-    }
-    else if (manifold_type == 4)
-    {
         getattribute("object:face_id", hash_id);
     }
     else if (expression != "")
@@ -72,17 +62,9 @@ void compute_id_manifold(
         {
             getattribute("object:object_name", manifold_str);
         }
-        else if (domain == 1)
-        {
-            getattribute("object:object_instance_name", manifold_str);
-        }
-        else if (domain == 2)
-        {
-            getattribute("object:assembly_name", manifold_str);
-        }
         else
         {
-            getattribute("object:assembly_instance_name", manifold_str);
+            getattribute("object:object_instance_name", manifold_str);
         }
 
         if (manifold_type == 5)
@@ -117,7 +99,7 @@ void rotate2d(
     output float ry)
 {
     float angle_rad = radians(angle_in_degrees);
-    float c, s;        
+    float c, s;
     sincos(angle_rad, s, c);
     rx = x * c - s * y;
     ry = x * s + c * y;

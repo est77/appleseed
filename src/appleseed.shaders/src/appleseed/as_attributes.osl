@@ -66,24 +66,6 @@ shader as_attributes
         string as_maya_attribute_short_name = "onn",
         string label = "Object Name"
     ]],
-    output int out_assembly_instance_id = 0
-    [[
-        string as_maya_attribute_name = "assemblyInstanceId",
-        string as_maya_attribute_short_name = "aid",
-        string label = "Assembly Instance ID"
-    ]],
-    output string out_assembly_name = ""
-    [[
-        string as_maya_attribute_name = "assemblyName",
-        string as_maya_attribute_short_name = "asn",
-        string label = "Assembly Name"
-    ]],
-    output string out_assembly_instance_name = ""
-    [[
-        string as_maya_attribute_name = "assemblyInstanceName",
-        string as_maya_attribute_short_name = "ain",
-        string label = "Assembly Instance Name"
-    ]],
     // A float[2], but we can't connect array elements yet.
     output int out_camera_resolution[2] = {0, 0}
     [[
@@ -226,10 +208,6 @@ shader as_attributes
     getattribute("object:object_instance_index", out_object_instance_index);
     getattribute("object:object_instance_name", out_object_instance_name);
     getattribute("object:object_name", out_object_name);
-
-    getattribute("object:assembly_instance_id", out_assembly_instance_id);
-    getattribute("object:assembly_name", out_assembly_name);
-    getattribute("object:assembly_instance_name", out_assembly_instance_name);
 
     getattribute("camera:resolution", out_camera_resolution);
     out_camera_resolution_x = out_camera_resolution[0];
