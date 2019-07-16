@@ -61,6 +61,7 @@ CPURenderDevice::CPURenderDevice(
     const ParamArray&       params)
   : RenderDeviceBase(project, params)
   , m_texture_store(*project.get_scene(), params.child("texture_store"))
+  , m_mem_used(0)
 {
     m_error_handler = new OIIOErrorHandler();
 #ifndef NDEBUG
@@ -104,6 +105,41 @@ CPURenderDevice::CPURenderDevice(
 
     // Register appleseed's closures into OSL's shading system.
     register_closures(*m_shading_system);
+
+    // Create the Embree device.
+    // Possible config options:
+    // threads=[int]: Specifies a number of build threads to use. A value of 0 enables all detected hardware threads. By default all hardware threads are used.
+    // set_affinity=[0/1]: When enabled, build threads are affinitized to hardware threads. This option is disabled by default on standard CPUs, and enabled by default on Xeon Phi Processors.
+    // start_threads=[0/1]: When enabled, the build threads are started upfront. This can be useful for benchmarking to exclude thread creation time. This option is disabled by default.
+    // isa=[sse2,sse4.2,avx,avx2,avx512knl,avx512skx]: Use specified ISA. By default the ISA is selected automatically.
+    // max_isa=[sse2,sse4.2,avx,avx2,avx512knl,avx512skx]: Configures the automated ISA selection to use maximally the specified ISA.
+    // hugepages=[0/1]: Enables or disables usage of huge pages. Under Linux huge pages are used by default but under Windows and macOS they are disabled by default.
+    // enable_selockmemoryprivilege=[0/1]: When set to 1, this enables the SeLockMemoryPrivilege privilege with is required to use huge pages on Windows. This option has an effect only under Windows and is ignored on other platforms. See Section [Huge Page Support] for more details.
+    // ignore_config_files=[0/1]: When set to 1, configuration files are ignored. Default is 0.
+    // verbose=[0,1,2,3]: Sets the verbosity of the output. When set to 0, no output is printed by Embree, when set to a higher level more output is printed. By default Embree does not print anything on the console.
+    // frequency_level=[simd128,simd256,simd512]
+
+    stringstream config;
+    config << "ignore_config_files=1";
+#ifndef NDEBUG
+    config << ",verbose=4";
+#endif
+
+    m_context.m_device = rtcNewDevice(config.str().c_str());
+
+    rtcSetDeviceErrorFunction(
+        m_context.m_device, &error_callback, this);
+    rtcSetDeviceMemoryMonitorFunction(
+        m_context.m_device, &memory_tracking_callback, this);
+
+    // Init BVH settings.
+    m_is_progressive = params.get<std::string>("frame_renderer") == "progressive";
+    m_build_quality = m_is_progressive ? RTC_BUILD_QUALITY_LOW : RTC_BUILD_QUALITY_HIGH;
+    m_leaf_build_quality = m_is_progressive ? RTC_BUILD_QUALITY_REFIT : RTC_BUILD_QUALITY_HIGH;
+
+    m_scene_flags = RTC_SCENE_FLAG_COMPACT;
+    if (m_is_progressive)
+        m_scene_flags = m_scene_flags | RTC_SCENE_FLAG_DYNAMIC;
 }
 
 CPURenderDevice::~CPURenderDevice()
@@ -123,6 +159,10 @@ CPURenderDevice::~CPURenderDevice()
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", m_texture_store.get_statistics().to_string().c_str());
+
+    RENDERER_LOG_DEBUG("destroying embree scene and device...");
+    rtcReleaseScene(m_context.m_scene);
+    rtcReleaseDevice(m_context.m_device);
 }
 
 bool CPURenderDevice::initialize(
@@ -206,6 +246,15 @@ bool CPURenderDevice::initialize(
 
 bool CPURenderDevice::build_or_update_scene()
 {
+    if (!m_context.m_scene)
+    {
+        CPURenderContext& ctx = m_context;
+        ctx.m_scene = rtcNewScene(ctx.m_device);
+        rtcSetSceneFlags(ctx.m_scene, m_scene_flags);
+        rtcSetSceneBuildQuality(ctx.m_scene, m_build_quality);
+        rtcSetSceneProgressMonitorFunction(ctx.m_scene, &progress_monitor_callback, this);
+    }
+
     // Updating the trace context causes ray tracing acceleration structures to be updated or rebuilt.
     get_project().update_trace_context();
     return true;
@@ -286,6 +335,29 @@ Dictionary CPURenderDevice::get_metadata()
 {
     Dictionary metadata;
     return metadata;
+}
+
+void CPURenderDevice::error_callback(
+    void*                   user_ptr,
+    RTCError                code,
+    const char*             str)
+{
+    RENDERER_LOG_ERROR("embree device error, code: %d, message: %s", code, str);
+}
+
+bool CPURenderDevice::memory_tracking_callback(
+    void*                   user_ptr,
+    ssize_t                 bytes,
+    bool                    post)
+{
+    auto* self = reinterpret_cast<CPURenderDevice*>(user_ptr);
+    self->m_mem_used += bytes;
+    return true;
+}
+
+bool CPURenderDevice::progress_monitor_callback(void* user_ptr, double n)
+{
+    return true;
 }
 
 }

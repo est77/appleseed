@@ -32,4 +32,10 @@
 namespace renderer
 {
 
+CPURenderContext::CPURenderContext()
+  : m_scene(nullptr)
+  , m_device(nullptr)
+{
+}
+
 }

@@ -38,6 +38,7 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
+#include <atomic>
 #include <memory>
 
 // Forward declarations.
@@ -101,6 +102,17 @@ class CPURenderDevice
     foundation::auto_release_ptr<ShaderCompiler>    m_osl_compiler;
     TextureStore                                    m_texture_store;
     std::unique_ptr<RendererComponents>             m_components;
+
+    bool                                            m_is_progressive;
+    RTCBuildQuality                                 m_build_quality;
+    RTCBuildQuality                                 m_leaf_build_quality;
+    RTCSceneFlags                                   m_scene_flags;
+    std::atomic<ssize_t>                            m_mem_used;
+
+    // Embree callbacks.
+    static void error_callback(void* user_ptr, RTCError code, const char* str);
+    static bool memory_tracking_callback(void* user_ptr, ssize_t bytes, bool post);
+    static bool progress_monitor_callback(void* user_ptr, double n);
 };
 
 }       // namespace renderer

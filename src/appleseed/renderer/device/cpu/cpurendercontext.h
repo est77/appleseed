@@ -31,12 +31,20 @@
 // appleseed.renderer headers.
 #include "renderer/device/irendercontext.h"
 
+// Embree headers.
+#include <embree3/rtcore.h>
+
 namespace renderer
 {
 
 class CPURenderContext
   : public IRenderContext
 {
+  public:
+    CPURenderContext();
+
+    RTCScene  m_scene;
+    RTCDevice m_device;
 };
 
 }       // namespace renderer
