@@ -1229,16 +1229,6 @@ source_group ("renderer\\kernel\\lighting" FILES
     ${renderer_kernel_lighting_sources}
 )
 
-set (renderer_kernel_npr_sources
-    renderer/kernel/npr/nprclosures.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_npr_sources}
-)
-source_group ("renderer\\kernel\\npr" FILES
-    ${renderer_kernel_npr_sources}
-)
-
 set (renderer_kernel_rasterization_sources
     renderer/kernel/rasterization/objectrasterizer.h
     renderer/kernel/rasterization/rasterizationcamera.h
@@ -1532,8 +1522,6 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/invalidsamplesaov.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
-    renderer/modeling/aov/npraovs.cpp
-    renderer/modeling/aov/npraovs.h
     renderer/modeling/aov/pixelerroraov.cpp
     renderer/modeling/aov/pixelerroraov.h
     renderer/modeling/aov/pixelsamplecountaov.cpp
@@ -2072,8 +2060,6 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
-    renderer/modeling/surfaceshader/nprsurfaceshaderhelper.cpp
-    renderer/modeling/surfaceshader/nprsurfaceshaderhelper.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.cpp

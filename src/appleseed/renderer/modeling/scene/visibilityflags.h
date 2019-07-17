@@ -61,7 +61,6 @@ class APPLESEED_DLLSYMBOL VisibilityFlags
         GlossyRay       = 1UL << 6,
         SpecularRay     = 1UL << 7,
         SubsurfaceRay   = 1UL << 8,
-        NPRRay          = 1UL << 9,
         AllRays         = ~0
     };
 

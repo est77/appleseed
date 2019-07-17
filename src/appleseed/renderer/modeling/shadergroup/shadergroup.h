@@ -125,9 +125,6 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
-    // Return true if the shader group contains at least one NPR closure.
-    bool has_npr() const;
-
     // Return true if the shader group contains at least one matte or holdout closure.
     bool has_matte() const;
 
@@ -158,15 +155,13 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         HasTransparency = 1u << 2,
         HasSubsurface   = 1u << 3,
         HasDebug        = 1u << 4,
-        HasNPR          = 1u << 5,
-        HasMatte        = 1u << 6,
+        HasMatte        = 1u << 5,
         HasAllClosures  =
             HasBSDFs        |
             HasEmission     |
             HasTransparency |
             HasSubsurface   |
             HasDebug        |
-            HasNPR          |
             HasMatte,
 
         // Globals.
@@ -246,11 +241,6 @@ inline bool ShaderGroup::has_subsurface() const
 inline bool ShaderGroup::has_debug() const
 {
     return (m_flags & HasDebug) != 0;
-}
-
-inline bool ShaderGroup::has_npr() const
-{
-    return (m_flags & HasNPR) != 0;
 }
 
 inline bool ShaderGroup::has_matte() const

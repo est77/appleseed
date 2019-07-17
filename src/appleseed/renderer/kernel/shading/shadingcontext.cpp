@@ -147,15 +147,6 @@ void ShadingContext::execute_osl_background(
         Spectrum::Reflectance);
 }
 
-void ShadingContext::execute_osl_npr(
-    const ShaderGroup&      shader_group,
-    const ShadingPoint&     shading_point) const
-{
-    m_shadergroup_exec.execute_npr(
-        shader_group,
-        shading_point);
-}
-
 void ShadingContext::execute_osl_transparency_and_matte(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point) const

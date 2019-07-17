@@ -126,10 +126,6 @@ class ShadingContext
         const foundation::Vector3f& outgoing,
         Spectrum&                   value) const;
 
-    void execute_osl_npr(
-        const ShaderGroup&          shader_group,
-        const ShadingPoint&         shading_point) const;
-
     void execute_osl_transparency_and_matte(
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point) const;

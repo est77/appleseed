@@ -39,7 +39,6 @@
 #include "renderer/modeling/aov/glossyaov.h"
 #include "renderer/modeling/aov/invalidsamplesaov.h"
 #include "renderer/modeling/aov/normalaov.h"
-#include "renderer/modeling/aov/npraovs.h"
 #include "renderer/modeling/aov/pixelerroraov.h"
 #include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/aov/pixeltimeaov.h"
@@ -83,8 +82,6 @@ AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new IndirectGlossyAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new InvalidSamplesAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new NormalAOVFactory()));
-    impl->register_factory(auto_release_ptr<FactoryType>(new NPRContourAOVFactory()));
-    impl->register_factory(auto_release_ptr<FactoryType>(new NPRShadingAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PixelErrorAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PixelSampleCountAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PixelTimeAOVFactory()));

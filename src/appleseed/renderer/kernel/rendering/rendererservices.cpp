@@ -120,10 +120,6 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_attr_ray_length;
     m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
 
-    m_global_attr_getters[OIIO::ustring("surface_shader:diffuse")] = &RendererServices::get_attr_surface_shader_diffuse;
-    m_global_attr_getters[OIIO::ustring("surface_shader:glossy")] = &RendererServices::get_attr_surface_shader_glossy;
-    m_global_attr_getters[OIIO::ustring("surface_shader:emission")] = &RendererServices::get_attr_surface_shader_emission;
-
     m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_attr_appleseed_version_major;
     m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
     m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
@@ -895,60 +891,6 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
         reinterpret_cast<float*>(val)[0] = shading_point->get_ray().get_current_ior();
-
-        if (derivs)
-            clear_derivatives(type, val);
-
-        return true;
-    }
-
-    return false;
-}
-
-IMPLEMENT_ATTR_GETTER(surface_shader_diffuse)
-{
-    if (type == OIIO::TypeDesc::TypeColor)
-    {
-        const ShadingPoint* shading_point = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_diffuse[0];
-        reinterpret_cast<float*>(val)[1] = shading_point->m_surface_shader_diffuse[1];
-        reinterpret_cast<float*>(val)[2] = shading_point->m_surface_shader_diffuse[2];
-
-        if (derivs)
-            clear_derivatives(type, val);
-
-        return true;
-    }
-
-    return false;
-}
-
-IMPLEMENT_ATTR_GETTER(surface_shader_glossy)
-{
-    if (type == OIIO::TypeDesc::TypeColor)
-    {
-        const ShadingPoint* shading_point = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_glossy[0];
-        reinterpret_cast<float*>(val)[1] = shading_point->m_surface_shader_glossy[1];
-        reinterpret_cast<float*>(val)[2] = shading_point->m_surface_shader_glossy[2];
-
-        if (derivs)
-            clear_derivatives(type, val);
-
-        return true;
-    }
-
-    return false;
-}
-
-IMPLEMENT_ATTR_GETTER(surface_shader_emission)
-{
-    if (type == OIIO::TypeDesc::TypeColor)
-    {
-        const ShadingPoint* shading_point = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_emission[0];
-        reinterpret_cast<float*>(val)[1] = shading_point->m_surface_shader_emission[1];
-        reinterpret_cast<float*>(val)[2] = shading_point->m_surface_shader_emission[2];
 
         if (derivs)
             clear_derivatives(type, val);

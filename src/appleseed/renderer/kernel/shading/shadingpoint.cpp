@@ -1186,10 +1186,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     always_poison(point.m_shader_globals.raytype);
     always_poison(point.m_shader_globals.flipHandedness);
     always_poison(point.m_shader_globals.backfacing);
-
-    always_poison(point.m_surface_shader_diffuse);
-    always_poison(point.m_surface_shader_glossy);
-    always_poison(point.m_surface_shader_emission);
 }
 
 }   // namespace foundation

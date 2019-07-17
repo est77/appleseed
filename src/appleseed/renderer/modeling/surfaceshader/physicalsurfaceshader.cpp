@@ -40,7 +40,6 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#include "renderer/modeling/surfaceshader/nprsurfaceshaderhelper.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
@@ -141,23 +140,6 @@ namespace
                 }
 
                 shading_components /= static_cast<float>(m_lighting_samples);
-            }
-
-            // Run NPR surface shader if any.
-            if (const Material* material = shading_point.get_material())
-            {
-                if (const ShaderGroup* sg = material->get_render_data().m_shader_group)
-                {
-                    if (sg->has_npr())
-                    {
-                        NPRSurfaceShaderHelper::evaluate(
-                            sampling_context,
-                            shading_context,
-                            shading_point,
-                            shading_components,
-                            aov_components);
-                    }
-                }
             }
 
             shading_result.m_main.rgb() =

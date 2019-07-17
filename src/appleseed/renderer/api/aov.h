@@ -44,7 +44,6 @@
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/aov/invalidsamplesaov.h"
 #include "renderer/modeling/aov/normalaov.h"
-#include "renderer/modeling/aov/npraovs.h"
 #include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/aov/pixeltimeaov.h"
 #include "renderer/modeling/aov/pixelvariationaov.h"

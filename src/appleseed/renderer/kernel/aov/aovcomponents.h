@@ -31,9 +31,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 
-// appleseed.foundation headers.
-#include "foundation/image/color.h"
-
 namespace renderer
 {
 
@@ -41,8 +38,6 @@ class AOVComponents
 {
   public:
     Spectrum            m_albedo;
-    foundation::Color3f m_npr_shading;
-    foundation::Color4f m_npr_contour;
 
     // Constructor. Clears all components to 0.
     AOVComponents();
