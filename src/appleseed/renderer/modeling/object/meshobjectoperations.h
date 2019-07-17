@@ -33,6 +33,7 @@
 
 // Forward declarations.
 namespace foundation { class MurmurHash; }
+namespace foundation { class Mesh; }
 namespace renderer   { class MeshObject; }
 
 namespace renderer
@@ -49,5 +50,7 @@ APPLESEED_DLLSYMBOL void compute_smooth_vertex_tangents(MeshObject& object);
 
 // Compute a hash for a mesh object.
 APPLESEED_DLLSYMBOL void compute_signature(foundation::MurmurHash& hash, const MeshObject& object);
+
+foundation::Mesh mesh2mesh(const MeshObject& object);
 
 }   // namespace renderer

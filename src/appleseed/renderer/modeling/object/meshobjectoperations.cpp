@@ -36,6 +36,8 @@
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/array/arrayref.h"
+#include "foundation/geometry/mesh.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/murmurhash.h"
 
@@ -266,6 +268,133 @@ void compute_signature(MurmurHash& hash, const MeshObject& object)
         for (size_t i = 0, e = object.get_vertex_tangent_count(); i < e; ++i)
             hash.append(object.get_vertex_tangent_pose(i, j));
     }
+}
+
+Mesh mesh2mesh(const MeshObject& object)
+{
+    Mesh mesh;
+
+    const size_t num_faces = object.get_triangle_count();
+    const size_t num_vertices = object.get_vertex_count();
+    const size_t num_uvs = object.get_tex_coords_count();
+    const size_t num_normals = object.get_vertex_normal_count();
+    const size_t num_tangents = object.get_vertex_tangent_count();
+
+    const size_t num_keys = object.get_motion_segment_count();
+
+    // Vertices per face.
+    ArrayRef<uint32> nverts(mesh.get_verts_per_face().write());
+    nverts.fill(num_faces, 3);
+
+    // Vertex indices.
+    ArrayRef<uint32> vindx(mesh.get_vertex_indices().write());
+    vindx.reserve(num_faces * 3);
+
+    for (size_t i = 0; i < num_faces; ++i)
+    {
+        const Triangle& tri = object.get_triangle(i);
+        vindx.push_back(tri.m_v0);
+        vindx.push_back(tri.m_v1);
+        vindx.push_back(tri.m_v2);
+    }
+
+    // Vertices.
+    mesh.get_vertices().write().resize(num_vertices, num_keys);
+    {
+        ArrayRef<Vector3f> P(mesh.get_vertices().write().get_key(0));
+        for (size_t i = 0; i < num_vertices; ++i)
+            P[i] = object.get_vertex(i);
+    }
+
+    for (size_t j = 1; j < num_keys; ++j)
+    {
+        ArrayRef<Vector3f> P(mesh.get_vertices().write().get_key(j));
+        for (size_t i = 0; i < num_vertices; ++i)
+            P[i] = object.get_vertex_pose(i, j);
+    }
+
+    if (num_uvs != 0)
+    {
+        // UV indices.
+        ArrayRef<uint32> uvindx(mesh.get_uv_indices().write());
+        uvindx.reserve(num_faces * 3);
+
+        for (size_t i = 0; i < num_faces; ++i)
+        {
+            const Triangle& tri = object.get_triangle(i);
+            vindx.push_back(tri.m_a0);
+            vindx.push_back(tri.m_a1);
+            vindx.push_back(tri.m_a2);
+        }
+
+        // UVs.
+        ArrayRef<Vector2f> uvs(mesh.get_uvs().write());
+        uvs.reserve(num_uvs);
+
+        for (size_t i = 0; i < num_uvs; ++i)
+            uvs.push_back(object.get_tex_coords(i));
+    }
+
+    if (num_normals != 0)
+    {
+        // Normal indices.
+        ArrayRef<uint32> nindx(mesh.get_normal_indices().write());
+        nindx.reserve(num_faces * 3);
+
+        for (size_t i = 0; i < num_faces; ++i)
+        {
+            const Triangle& tri = object.get_triangle(i);
+            vindx.push_back(tri.m_n0);
+            vindx.push_back(tri.m_n1);
+            vindx.push_back(tri.m_n2);
+        }
+
+        // Normals.
+        mesh.get_normals().write().resize(num_normals, num_keys);
+        {
+            ArrayRef<Vector3f> N(mesh.get_normals().write().get_key(0));
+            for (size_t i = 0; i < num_normals; ++i)
+                N[i] = object.get_vertex_normal(i);
+        }
+
+        for (size_t j = 1; j < num_keys; ++j)
+        {
+            ArrayRef<Vector3f> N(mesh.get_normals().write().get_key(j));
+            for (size_t i = 1; i < num_normals; ++i)
+                N[i] = object.get_vertex_normal_pose(i, j);
+        }
+    }
+
+    // Tangents.
+    if (num_tangents != 0)
+    {
+        // Tangent indices.
+        mesh.get_tangent_indices().write() = mesh.get_normal_indices().read();
+
+        // Tangents.
+        mesh.get_tangents().write().resize(num_tangents, num_keys);
+        {
+            ArrayRef<Vector3f> T(mesh.get_tangents().write().get_key(0));
+            for (size_t i = 0; i < num_tangents; ++i)
+                T[i] = object.get_vertex_tangent(i);
+        }
+
+        for (size_t j = 1; j < num_keys; ++j)
+        {
+            ArrayRef<Vector3f> T(mesh.get_tangents().write().get_key(j));
+            for (size_t i = 1; i < num_tangents; ++i)
+                T[i] = object.get_vertex_tangent_pose(i, j);
+        }
+    }
+
+    // Material indices.
+    ArrayRef<uint32> matindx(mesh.get_material_indices().write());
+    matindx.reserve(num_faces * 3);
+
+    for (size_t i = 0; i < num_faces; ++i)
+        matindx.push_back(object.get_triangle(i).m_pa);
+
+    return mesh;
 }
 
 }   // namespace renderer
