@@ -34,12 +34,10 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
-#include "renderer/kernel/denoising/denoiser.h"
 #include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
-#include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/bbox.h"
@@ -72,10 +70,6 @@
 // Boost headers.
 #include "boost/filesystem.hpp"
 
-// BCD headers.
-#include "bcd/DeepImage.h"
-#include "bcd/ImageIO.h"
-
 // Standard headers.
 #include <algorithm>
 #include <exception>
@@ -84,7 +78,6 @@
 #include <tuple>
 #include <vector>
 
-using namespace bcd;
 using namespace foundation;
 using namespace std;
 namespace bf = boost::filesystem;
@@ -118,7 +111,6 @@ struct Frame::Impl
     AABB2u                          m_crop_window;
     bool                            m_enable_dithering;
     uint32                          m_noise_seed;
-    DenoisingMode                   m_denoising_mode;
     bool                            m_checkpoint_create;
     string                          m_checkpoint_create_path;
     bool                            m_checkpoint_resume;
@@ -127,7 +119,6 @@ struct Frame::Impl
 
     // Child entities.
     AOVContainer                    m_aovs;
-    DenoiserAOV*                    m_denoiser_aov;
     AOVContainer                    m_internal_aovs;
     PostProcessingStageContainer    m_post_processing_stages;
 
@@ -235,24 +226,6 @@ Frame::Frame(
 
         impl->m_aovs.insert(aov);
     }
-
-    // Create internal AOVs.
-    if (impl->m_denoising_mode != DenoisingMode::Off)
-    {
-        auto_release_ptr<DenoiserAOV> aov = DenoiserAOVFactory::create();
-        aov->set_parent(this);
-
-        aov->create_image(
-            impl->m_frame_width,
-            impl->m_frame_height,
-            impl->m_tile_width,
-            impl->m_tile_height,
-            aov_images());
-
-        impl->m_denoiser_aov = aov.get();
-        impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
-    }
-    else impl->m_denoiser_aov = nullptr;
 }
 
 Frame::~Frame()
@@ -279,7 +252,6 @@ void Frame::print_settings()
         "  crop window                   (%s, %s)-(%s, %s)\n"
         "  dithering                     %s\n"
         "  noise seed                    %s\n"
-        "  denoising mode                %s\n"
         "  create checkpoint             %s\n"
         "  resume checkpoint             %s\n"
         "  reference image path          %s",
@@ -298,8 +270,6 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
         impl->m_enable_dithering ? "on" : "off",
         pretty_uint(impl->m_noise_seed).c_str(),
-        impl->m_denoising_mode == DenoisingMode::Off ? "off" :
-        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
         impl->m_checkpoint_create ? impl->m_checkpoint_create_path.c_str() : "off",
         impl->m_checkpoint_resume ? impl->m_checkpoint_resume_path.c_str() : "off",
         impl->m_ref_image_path.empty() ? "n/a" : impl->m_ref_image_path.c_str());
@@ -451,84 +421,6 @@ ParamArray& Frame::render_info()
     return impl->m_render_info;
 }
 
-Frame::DenoisingMode Frame::get_denoising_mode() const
-{
-    return impl->m_denoising_mode;
-}
-
-void Frame::denoise(
-    const size_t            thread_count,
-    IAbortSwitch*           abort_switch) const
-{
-    DenoiserOptions options;
-
-    const bool skip_denoised = m_params.get_optional<bool>("skip_denoised", true);
-    options.m_marked_pixels_skipping_probability = skip_denoised ? 1.0f : 0.0f;
-
-    options.m_use_random_pixel_order = m_params.get_optional<bool>("random_pixel_order", true);
-
-    options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", true);
-
-    options.m_prefilter_threshold_stddev_factor =
-        m_params.get_optional<float>(
-            "spike_threshold",
-            options.m_prefilter_threshold_stddev_factor);
-
-    options.m_prefilter_threshold_stddev_factor =
-        m_params.get_optional<float>(
-            "spike_threshold",
-            options.m_prefilter_threshold_stddev_factor);
-
-    options.m_histogram_patch_distance_threshold =
-        m_params.get_optional<float>(
-            "patch_distance_threshold",
-            options.m_histogram_patch_distance_threshold);
-
-    options.m_num_scales =
-        m_params.get_optional<size_t>(
-            "denoise_scales",
-            options.m_num_scales);
-
-    options.m_num_cores = thread_count;
-
-    options.m_mark_invalid_pixels =
-        m_params.get_optional<bool>("mark_invalid_pixels", false);
-
-    assert(impl->m_denoiser_aov);
-
-    impl->m_denoiser_aov->fill_empty_samples();
-
-    Deepimf num_samples_image;
-    impl->m_denoiser_aov->extract_num_samples_image(num_samples_image);
-
-    Deepimf covariances_image;
-    impl->m_denoiser_aov->compute_covariances_image(covariances_image);
-
-    RENDERER_LOG_INFO("denoising frame \"%s\"...", get_path().c_str());
-    denoise_beauty_image(
-        image(),
-        num_samples_image,
-        impl->m_denoiser_aov->histograms_image(),
-        covariances_image,
-        options,
-        abort_switch);
-
-    for (const AOV& aov : impl->m_aovs)
-    {
-        if (aov.has_color_data())
-        {
-            RENDERER_LOG_INFO("denoising aov \"%s\"...", aov.get_path().c_str());
-            denoise_aov_image(
-                aov.get_image(),
-                num_samples_image,
-                impl->m_denoiser_aov->histograms_image(),
-                covariances_image,
-                options,
-                abort_switch);
-        }
-    }
-}
-
 namespace
 {
     size_t get_checkpoint_total_channel_count(const size_t aov_count)
@@ -625,27 +517,6 @@ namespace
         }
     };
 
-    void get_denoiser_checkpoint_paths(
-        const string&                   checkpoint_path,
-        string&                         hist_path,
-        string&                         cov_path,
-        string&                         sum_path)
-    {
-        const bf::path boost_file_path(checkpoint_path);
-        const bf::path directory = boost_file_path.parent_path();
-        const string base_file_name = boost_file_path.stem().string() + ".denoiser";
-        const string extension = boost_file_path.extension().string();
-
-        const string hist_file_name = base_file_name + ".hist" + extension;
-        hist_path = (directory / hist_file_name).string();
-
-        const string cov_file_name = base_file_name + ".cov" + extension;
-        cov_path = (directory / cov_file_name).string();
-
-        const string sum_file_name = base_file_name + ".sum" + extension;
-        sum_path = (directory / sum_file_name).string();
-    }
-
     bool is_checkpoint_compatible(
         const string&                   checkpoint_path,
         const Frame&                    frame,
@@ -707,78 +578,7 @@ namespace
             return false;
         }
 
-        // Check if denoising is enabled and pass exists.
-        if (frame.get_denoising_mode() != Frame::DenoisingMode::Off)
-        {
-            string hist_file_path, cov_file_path, sum_file_path;
-            get_denoiser_checkpoint_paths(
-                checkpoint_path,
-                hist_file_path,
-                cov_file_path,
-                sum_file_path);
-
-            if (!bf::exists(bf::path(hist_file_path.c_str())) ||
-                !bf::exists(bf::path(cov_file_path.c_str())) ||
-                !bf::exists(bf::path(sum_file_path.c_str())))
-            {
-                RENDERER_LOG_ERROR("cannot load denoiser's checkpoint from disk because one or several files are missing.");
-                return false;
-            }
-        }
-
         return true;
-    }
-
-    bool load_denoiser_checkpoint(
-        const string&                   checkpoint_path,
-        DenoiserAOV*                    denoiser_aov)
-    {
-        // todo: reload denoiser checkpoint from the same file.
-        Deepimf& histograms_image = denoiser_aov->histograms_image();
-        Deepimf& covariance_image = denoiser_aov->covariance_image();
-        Deepimf& sum_image = denoiser_aov->sum_image();
-
-        string hist_file_path, cov_file_path, sum_file_path;
-        get_denoiser_checkpoint_paths(checkpoint_path, hist_file_path, cov_file_path, sum_file_path);
-
-        // Load histograms.
-        bool result = ImageIO::loadMultiChannelsEXR(histograms_image, hist_file_path.c_str());
-
-        // Load covariance accumulator.
-        result = result && ImageIO::loadMultiChannelsEXR(covariance_image, cov_file_path.c_str());
-
-        // Load sum accumulator.
-        result = result && ImageIO::loadMultiChannelsEXR(sum_image, sum_file_path.c_str());
-
-        if (!result)
-            RENDERER_LOG_ERROR("could not load denoiser checkpoint.");
-
-        return result;
-    }
-
-    void save_denoiser_checkpoint(
-        const string&                   checkpoint_path,
-        const DenoiserAOV*              denoiser_aov)
-    {
-        // todo: save denoiser checkpoint in the same file.
-        const Deepimf& histograms_image = denoiser_aov->histograms_image();
-        const Deepimf& covariance_image = denoiser_aov->covariance_image();
-        const Deepimf& sum_image = denoiser_aov->sum_image();
-
-        string hist_file_path, cov_file_path, sum_file_path;
-        get_denoiser_checkpoint_paths(checkpoint_path, hist_file_path, cov_file_path, sum_file_path);
-
-        // Add histograms layer.
-        bool result = ImageIO::writeMultiChannelsEXR(histograms_image, hist_file_path.c_str());
-
-        // Add covariances layer.
-        result = result && ImageIO::writeMultiChannelsEXR(covariance_image, cov_file_path.c_str());
-
-        // Add sum layer.
-        result = result && ImageIO::writeMultiChannelsEXR(sum_image, sum_file_path.c_str());
-
-        if (!result)
-            RENDERER_LOG_ERROR("could not save denoiser checkpoint.");
     }
 }
 
@@ -886,20 +686,6 @@ bool Frame::load_checkpoint(
                     }
                 }
             }
-
-            // Load internal AOVs (from external files).
-            for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-            {
-                AOV* aov = internal_aovs().get_by_index(i);
-                DenoiserAOV* denoiser_aov = dynamic_cast<DenoiserAOV*>(aov);
-
-                // Load denoiser checkpoint.
-                if (denoiser_aov != nullptr)
-                {
-                    if (!load_denoiser_checkpoint(impl->m_checkpoint_resume_path, denoiser_aov))
-                        return false;
-                }
-            }
         }
         catch (const ExceptionIOError& ex)
         {
@@ -984,15 +770,6 @@ void Frame::save_checkpoint(
 
     // Write the file.
     writer.write();
-
-    // Add internal AOVs layers (in external files).
-    for (const AOV& aov : internal_aovs())
-    {
-        // Save denoiser checkpoint.
-        const DenoiserAOV* denoiser_aov = dynamic_cast<const DenoiserAOV*>(&aov);
-        if (denoiser_aov != nullptr)
-            save_denoiser_checkpoint(impl->m_checkpoint_create_path, denoiser_aov);
-    }
 
     RENDERER_LOG_INFO(
         "wrote pass %s to checkpoint file %s.",
@@ -1128,17 +905,6 @@ bool Frame::write_main_image(const char* file_path) const
         image_attributes.insert("dither", 42);  // the value of the dither attribute is a hash seed
     if (!write_image(*this, file_path, half_image, image_attributes))
         return false;
-
-    // Write BCD histograms and covariance AOVs if enabled.
-    if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
-    {
-        bf::path aov_file_path(file_path);
-        aov_file_path.replace_extension(".exr");
-
-        ImageAttributes aov_image_attributes = ImageAttributes::create_default_attributes();
-        if (!impl->m_denoiser_aov->write_images(aov_file_path.string().c_str(), aov_image_attributes))
-            return false;
-    }
 
     return true;
 }
@@ -1397,27 +1163,6 @@ void Frame::extract_parameters()
     // Retrieve noise seed.
     impl->m_noise_seed = m_params.get_optional<uint32>("noise_seed", 0);
 
-    // Retrieve denoiser parameters.
-    {
-        const string denoise_mode = m_params.get_optional<string>("denoiser", "off");
-
-        if (denoise_mode == "off")
-            impl->m_denoising_mode = DenoisingMode::Off;
-        else if (denoise_mode == "on")
-            impl->m_denoising_mode = DenoisingMode::Denoise;
-        else if (denoise_mode == "write_outputs")
-            impl->m_denoising_mode = DenoisingMode::WriteOutputs;
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                denoise_mode.c_str(),
-                "denoiser",
-                "off");
-            impl->m_denoising_mode = DenoisingMode::Off;
-        }
-    }
-
     // Retrieve checkpoint parameters.
     {
         // Create option.
@@ -1586,121 +1331,6 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "true"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "denoiser")
-            .insert("label", "Denoiser")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Off", "off")
-                    .insert("On", "on")
-                    .insert("Write Outputs", "write_outputs"))
-            .insert("use", "required")
-            .insert("default", "off")
-            .insert("on_change", "rebuild_form"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "skip_denoised")
-            .insert("label", "Skip Denoised Pixels")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("denoiser", "on")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "random_pixel_order")
-            .insert("label", "Random Pixel Order")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("denoiser", "on")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "prefilter_spikes")
-            .insert("label", "Prefilter Spikes")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("denoiser", "on")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "spike_threshold")
-            .insert("label", "Spike Threshold")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "0.1")
-                    .insert("type", "hard"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "4.0")
-                    .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "2.0")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("denoiser", "on")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "patch_distance_threshold")
-            .insert("label", "Patch Distance")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "0.5")
-                    .insert("type", "hard"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "3.0")
-                    .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "1.0")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("denoiser", "on")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "denoise_scales")
-            .insert("label", "Denoise Scales")
-            .insert("type", "integer")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "1")
-                    .insert("type", "hard"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "10")
-                    .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "3")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("denoiser", "on")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "mark_invalid_pixels")
-            .insert("label", "Mark Invalid Pixels")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("denoiser", "on")));
 
     return metadata;
 }

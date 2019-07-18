@@ -1266,12 +1266,10 @@ void MainWindow::apply_false_colors_settings()
     {
         // Make a temporary copy of the frame.
         // Render info, AOVs and other data are not copied.
-        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
         auto_release_ptr<Frame> working_frame =
             FrameFactory::create(
                 (string(frame->get_name()) + "_copy").c_str(),
-                frame->get_parameters()
-                    .remove_path("denoiser"));
+                frame->get_parameters());
         working_frame->image().copy_from(frame->image());
 
         // Create post-processing stage.

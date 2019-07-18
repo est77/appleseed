@@ -1089,17 +1089,6 @@ source_group ("renderer\\kernel\\aov" FILES
     ${renderer_kernel_aov_sources}
 )
 
-set (renderer_kernel_denoising_sources
-    renderer/kernel/denoising/denoiser.cpp
-    renderer/kernel/denoising/denoiser.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_denoising_sources}
-)
-source_group ("renderer\\kernel\\denoising" FILES
-    ${renderer_kernel_denoising_sources}
-)
-
 set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/instancetree.cpp
     renderer/kernel/intersection/instancetree.h
@@ -1444,7 +1433,6 @@ source_group ("renderer\\kernel\\volume" FILES
 
 set (renderer_meta_benchmarks_sources
     renderer/meta/benchmarks/benchmark_dynamicspectrum.cpp
-    renderer/meta/benchmarks/benchmark_frame.cpp
     renderer/meta/benchmarks/benchmark_localsampleaccumulationbuffer.cpp
     renderer/meta/benchmarks/benchmark_transformsequence.cpp
 )
@@ -1507,8 +1495,6 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/aovtraits.h
     renderer/modeling/aov/cryptomatteaov.cpp
     renderer/modeling/aov/cryptomatteaov.h
-    renderer/modeling/aov/denoiseraov.cpp
-    renderer/modeling/aov/denoiseraov.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
     renderer/modeling/aov/diffuseaov.cpp
@@ -2291,7 +2277,6 @@ if (WITH_GPU)
 endif ()
 
 target_link_libraries (appleseed
-    bcd
     ${Boost_LIBRARIES}
     murmurhash3
     ${CMAKE_DL_LIBS}

@@ -61,7 +61,6 @@ namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace foundation    { class Tile; }
 namespace renderer      { class BaseGroup; }
-namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
 namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class OnFrameBeginRecorder; }
@@ -168,21 +167,6 @@ class APPLESEED_DLLSYMBOL Frame
     // from the rendering process such as render time. They are used in particular
     // by the Render Stamp post-processing stage.
     ParamArray& render_info();
-
-    enum class DenoisingMode
-    {
-        Off,
-        WriteOutputs,
-        Denoise
-    };
-
-    // Retrieve the selected denoising mode.
-    DenoisingMode get_denoising_mode() const;
-
-    // Run the denoiser on the frame.
-    void denoise(
-        const size_t                                thread_count,
-        foundation::IAbortSwitch*                   abort_switch) const;
 
     // Load a checkpoint file from disk if checkpoint resuming is enabled.
     // Returns true if successful, false otherwise.

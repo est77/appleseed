@@ -406,26 +406,6 @@ namespace
 
                 // Post-process AOVs.
                 m_frame.post_process_aov_images();
-
-                //
-                // Denoising pass.
-                //
-
-                if (m_frame.get_denoising_mode() == Frame::DenoisingMode::Denoise)
-                {
-                    if (m_pass_count > 1)
-                        RENDERER_LOG_INFO("--- beginning denoising pass ---");
-
-                    // Call on_tile_begin() on all tiles of the frame.
-                    on_tile_begin_whole_frame();
-
-                    // Denoise the frame.
-                    m_frame.denoise(m_thread_count, &m_abort_switch);
-
-                    // Call on_tile_end() on all tiles of the frame.
-                    on_tile_end_whole_frame();
-                }
-
                 m_is_rendering = false;
             }
 

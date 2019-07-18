@@ -327,7 +327,6 @@ endif ()
 
 # Common include paths.
 include_directories (
-    src/thirdparty/bcd
     src/thirdparty/glad/include
     src/thirdparty/murmurhash3
     src/appleseed
@@ -619,7 +618,6 @@ endmacro ()
 # Products.
 #--------------------------------------------------------------------------------------------------
 
-add_subdirectory (src/thirdparty/bcd)
 add_subdirectory (src/thirdparty/glad)
 add_subdirectory (src/thirdparty/murmurhash3)
 
@@ -664,7 +662,6 @@ endif ()
 if (WITH_TOOLS)
     add_subdirectory (src/tools/animatecamera)
     add_subdirectory (src/tools/convertmeshfile)
-    add_subdirectory (src/tools/denoiser)
     add_subdirectory (src/tools/dumpmetadata)
     add_subdirectory (src/tools/makefluffy)
     add_subdirectory (src/tools/projecttool)
