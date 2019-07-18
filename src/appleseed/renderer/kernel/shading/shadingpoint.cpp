@@ -761,79 +761,6 @@ void ShadingPoint::compute_world_space_triangle_vertices() const
     m_v2_w = m_assembly_instance_transform.point_to_parent(m_v2_w);
 }
 
-void ShadingPoint::compute_world_space_point_velocity() const
-{
-    Vector3d p0 = get_point();
-    Vector3d p1 = p0;
-
-    if (m_primitive_type == PrimitiveTriangle)
-    {
-        // Retrieve the tessellation of the mesh.
-        const MeshObject& mesh = static_cast<const MeshObject&>(*m_object);
-        const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
-
-        // Retrieve the triangle.
-        const Triangle& triangle = tess.m_primitives[m_primitive_index];
-        assert(triangle.m_v0 != Triangle::None);
-        assert(triangle.m_v1 != Triangle::None);
-        assert(triangle.m_v2 != Triangle::None);
-
-        const size_t motion_segment_count = tess.get_motion_segment_count();
-        if (motion_segment_count > 0)
-        {
-            // Fetch triangle vertices from the first pose.
-            const GVector3& first_v0 = tess.m_vertices[triangle.m_v0];
-            const GVector3& first_v1 = tess.m_vertices[triangle.m_v1];
-            const GVector3& first_v2 = tess.m_vertices[triangle.m_v2];
-
-            // Fetch triangle vertices from the last pose.
-            const GVector3 last_v0 = tess.get_vertex_pose(triangle.m_v0, motion_segment_count - 1);
-            const GVector3 last_v1 = tess.get_vertex_pose(triangle.m_v1, motion_segment_count - 1);
-            const GVector3 last_v2 = tess.get_vertex_pose(triangle.m_v2, motion_segment_count - 1);
-
-            // Compute barycentric coordinates.
-            const float v = m_bary[0];
-            const float w = m_bary[1];
-            const float u = 1.0f - v - w;
-
-            // Compute positions at shutter open and close times.
-            p0 = Vector3d(first_v0 * u + first_v1 * v + first_v2 * w);
-            p1 = Vector3d( last_v0 * u +  last_v1 * v +  last_v2 * w);
-        }
-    }
-
-    // Transform positions to assembly space.
-    const Transformd& obj_instance_transform = m_object_instance->get_transform();
-    p0 = obj_instance_transform.point_to_parent(p0);
-    p1 = obj_instance_transform.point_to_parent(p1);
-
-    // Transform positions to world space.
-    if (m_assembly_instance_transform_seq->size() > 1)
-    {
-        const Camera* camera = m_scene->get_active_camera();
-        Transformd scratch;
-
-        const Transformd& assembly_instance_transform0 =
-            m_assembly_instance_transform_seq->evaluate(
-                camera->get_shutter_open_begin_time(),
-                scratch);
-        p0 = assembly_instance_transform0.point_to_parent(p0);
-
-        const Transformd& assembly_instance_transform1 =
-            m_assembly_instance_transform_seq->evaluate(
-                camera->get_shutter_close_end_time(),
-                scratch);
-        p1 = assembly_instance_transform1.point_to_parent(p1);
-    }
-    else
-    {
-        p0 = m_assembly_instance_transform.point_to_parent(p0);
-        p1 = m_assembly_instance_transform.point_to_parent(p1);
-    }
-
-    m_point_velocity = p1 - p0;
-}
-
 void ShadingPoint::compute_alpha() const
 {
     m_alpha.set(1.0f);
@@ -967,12 +894,6 @@ void ShadingPoint::initialize_osl_shader_globals(
         // Time and its derivative.
         m_shader_globals.time = ray.m_time.m_absolute;
         m_shader_globals.dtime = m_scene->get_active_camera()->get_shutter_time_interval();
-
-        // Velocity vector.
-        m_shader_globals.dPdtime =
-            sg.uses_dPdtime()
-                ? Vector3f(get_world_space_point_velocity())
-                : Vector3f(0.0f);
 
         // Point being illuminated and its differentials.
         m_shader_globals.Ps = Vector3f(0.0f);
@@ -1129,7 +1050,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     always_poison(point.m_v0_w);
     always_poison(point.m_v1_w);
     always_poison(point.m_v2_w);
-    always_poison(point.m_point_velocity);
     always_poison(point.m_material);
     always_poison(point.m_opposite_material);
     always_poison(point.m_alpha);
@@ -1170,7 +1090,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     always_poison(point.m_shader_globals.dPdv);
     always_poison(point.m_shader_globals.time);
     always_poison(point.m_shader_globals.dtime);
-    always_poison(point.m_shader_globals.dPdtime);
     always_poison(point.m_shader_globals.Ps);
     always_poison(point.m_shader_globals.dPsdx);
     always_poison(point.m_shader_globals.dPsdy);

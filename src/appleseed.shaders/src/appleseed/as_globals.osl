@@ -199,13 +199,6 @@ shader as_globals
         string as_maya_attribute_short_name = "dti",
         string label = "Time Amount",
         string help = "The amount of time covered by this shading sample."
-    ]],
-    output vector out_world_dPdtime = dPdtime
-    [[
-        string as_maya_attribute_name = "worldDPdtime",
-        string as_maya_attribute_short_name = "dpt",
-        string label = "dP/dtime",
-        string help = "Derivative of P along time, or how P changes per unit time."
     ]]
 )
 {

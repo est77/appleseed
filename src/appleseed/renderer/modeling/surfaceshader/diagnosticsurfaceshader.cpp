@@ -38,7 +38,6 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
-#include "renderer/modeling/aov/screenspacevelocityaov.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/camera/camera.h"
@@ -98,8 +97,6 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "shading_normal",             ShadingNormal },
     { "original_shading_normal",    OriginalShadingNormal },
     { "world_space_position",       WorldSpacePosition },
-    { "world_space_velocity",       WorldSpaceVelocity },
-    { "screen_space_velocity",      ScreenSpaceVelocity },
     { "sides",                      Sides },
     { "depth",                      Depth },
     { "world_space_wireframe" ,     WorldSpaceWireframe },
@@ -402,30 +399,6 @@ void DiagnosticSurfaceShader::evaluate(
                 shading_result,
                 Color3f(Color3d(p.x, p.y, p.z)));
         }
-        break;
-
-      case WorldSpaceVelocity:
-        {
-            Vector3d v = shading_point.get_world_space_point_velocity();
-            const double vn = norm(v);
-            if (vn > 0.0)
-            {
-                v /= vn;
-                set_shading_result(
-                    shading_result,
-                    Color3f(
-                        static_cast<float>((v[0] + 1.0) * 0.5),
-                        static_cast<float>((v[1] + 1.0) * 0.5),
-                        static_cast<float>(vn)));
-            }
-            else set_shading_result(shading_result, Color3f(0.0f));
-        }
-        break;
-
-      case ScreenSpaceVelocity:
-        set_shading_result(
-            shading_result,
-            compute_screen_space_velocity_color(shading_point, 0.0));
         break;
 
       case Sides:

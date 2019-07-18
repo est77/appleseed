@@ -194,9 +194,6 @@ class ShadingPoint
     // Return the i'th world space vertex of the hit triangle.
     const foundation::Vector3d& get_vertex(const size_t i) const;
 
-    // Return the world space point velocity.
-    const foundation::Vector3d& get_world_space_point_velocity() const;
-
     // Return the material of the side (front or back) that was hit, at the intersection point, or 0 if there is none.
     const Material* get_material() const;
 
@@ -341,7 +338,6 @@ class ShadingPoint
     mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
     mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
-    mutable foundation::Vector3d        m_point_velocity;               // world space point velocity
     mutable const Material*             m_material;                     // material at intersection point
     mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
@@ -377,7 +373,6 @@ class ShadingPoint
     void compute_original_shading_normal() const;
     void compute_shading_basis() const;
     void compute_world_space_triangle_vertices() const;
-    void compute_world_space_point_velocity() const;
 
     void compute_alpha() const;
     void compute_per_vertex_color() const;
@@ -713,19 +708,6 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
     }
 
     return (&m_v0_w)[i];
-}
-
-inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity() const
-{
-    assert(hit_surface());
-
-    if (!(m_members & HasWorldSpacePointVelocity))
-    {
-        compute_world_space_point_velocity();
-        m_members |= HasWorldSpacePointVelocity;
-    }
-
-    return m_point_velocity;
 }
 
 inline const Material* ShadingPoint::get_material() const

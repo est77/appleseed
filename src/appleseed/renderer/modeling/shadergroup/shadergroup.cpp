@@ -72,8 +72,6 @@ namespace
     const OIIO::ustring g_matte_str("as_matte");
     const OIIO::ustring g_debug_str("debug");
 
-    const OIIO::ustring g_dPdtime_str("dPdtime");
-
     bool is_subsurface_closure(const OIIO::ustring& closure_name)
     {
         return
@@ -248,9 +246,6 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         report_has_closure(g_debug_str.c_str(), HasDebug);
         report_has_closure(g_matte_str.c_str(), HasMatte);
 
-        get_shadergroup_globals_info(shading_system);
-        report_uses_global("dPdtime", UsesdPdTime);
-
         return true;
     }
     catch (const exception& e)
@@ -405,75 +400,6 @@ void ShaderGroup::report_has_closure(const char* closure_name, const Flags flag)
             "shader group \"%s\" does not have %s closures.",
             get_path().c_str(),
             closure_name);
-    }
-}
-
-void ShaderGroup::get_shadergroup_globals_info(OSLShadingSystem& shading_system)
-{
-    // Assume the shader group uses all globals.
-    m_flags |= UsesAllGlobals;
-
-    int num_globals = 0;
-    if (!shading_system.getattribute(
-            impl->m_shader_group_ref.get(),
-            "num_globals_needed",
-            num_globals))
-    {
-        RENDERER_LOG_WARNING(
-            "getattribute: num_globals_needed call failed for shader group \"%s\"; "
-            "assuming shader group uses all globals.",
-            get_path().c_str());
-        return;
-    }
-
-    if (num_globals != 0)
-    {
-        OIIO::ustring* globals = nullptr;
-        if (!shading_system.getattribute(
-                impl->m_shader_group_ref.get(),
-                "globals_needed",
-                OIIO::TypeDesc::PTR,
-                &globals))
-        {
-            RENDERER_LOG_WARNING(
-                "getattribute: globals_needed call failed for shader group \"%s\"; "
-                "assuming shader group uses all globals.",
-                get_path().c_str());
-            return;
-        }
-
-        // Clear all globals flags.
-        m_flags &= ~UsesAllGlobals;
-
-        // Set the globals flags.
-        for (int i = 0; i < num_globals; ++i)
-        {
-            if (globals[i] == g_dPdtime_str)
-                m_flags |= UsesdPdTime;
-        }
-    }
-    else
-    {
-        // The shader group uses no globals.
-        m_flags &= ~UsesAllGlobals;
-    }
-}
-
-void ShaderGroup::report_uses_global(const char* global_name, const Flags flag) const
-{
-    if (m_flags & flag)
-    {
-        RENDERER_LOG_DEBUG(
-            "shader group \"%s\" uses the %s global.",
-            get_path().c_str(),
-            global_name);
-    }
-    else
-    {
-        RENDERER_LOG_DEBUG(
-            "shader group \"%s\" does not use the %s global.",
-            get_path().c_str(),
-            global_name);
     }
 }
 

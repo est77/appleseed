@@ -128,9 +128,6 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one matte or holdout closure.
     bool has_matte() const;
 
-    // Return true if the shader group uses the dPdtime global.
-    bool uses_dPdtime() const;
-
     // Return the surface area of an object.
     // Can only be called if the shader group has emission closures.
     float get_surface_area(
@@ -162,11 +159,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
             HasTransparency |
             HasSubsurface   |
             HasDebug        |
-            HasMatte,
-
-        // Globals.
-        UsesdPdTime     = 1u << 7,
-        UsesAllGlobals  = UsesdPdTime
+            HasMatte
     };
     foundation::uint32 m_flags;
 
@@ -180,9 +173,6 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     void get_shadergroup_closures_info(OSLShadingSystem& shading_system);
     void report_has_closure(const char* closure_name, const Flags flag) const;
-
-    void get_shadergroup_globals_info(OSLShadingSystem& shading_system);
-    void report_uses_global(const char* global_name, const Flags flag) const;
 
     void set_surface_area(
         const AssemblyInstance* assembly_instance,
@@ -246,11 +236,6 @@ inline bool ShaderGroup::has_debug() const
 inline bool ShaderGroup::has_matte() const
 {
     return (m_flags & HasMatte) != 0;
-}
-
-inline bool ShaderGroup::uses_dPdtime() const
-{
-    return (m_flags & UsesdPdTime) != 0;
 }
 
 }   // namespace renderer

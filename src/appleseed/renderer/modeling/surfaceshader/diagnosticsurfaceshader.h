@@ -79,8 +79,6 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         ShadingNormal,              // shade according to the (possibly modified) shading normal
         OriginalShadingNormal,      // shade according to the original shading normal
         WorldSpacePosition,         // shade according to the world space position
-        WorldSpaceVelocity,         // shade according to the world space point velocity
-        ScreenSpaceVelocity,        // shade according to the screen space point velocity
         Sides,                      // shade according to the surface side
         Depth,                      // shade according to distance from camera
         WorldSpaceWireframe,        // world-space wireframe
