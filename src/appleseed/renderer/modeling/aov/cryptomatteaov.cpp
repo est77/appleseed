@@ -38,6 +38,7 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"

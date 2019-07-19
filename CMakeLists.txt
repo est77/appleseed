@@ -663,7 +663,6 @@ if (WITH_TOOLS)
     add_subdirectory (src/tools/animatecamera)
     add_subdirectory (src/tools/convertmeshfile)
     add_subdirectory (src/tools/dumpmetadata)
-    add_subdirectory (src/tools/makefluffy)
     add_subdirectory (src/tools/projecttool)
 endif ()
 

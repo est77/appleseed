@@ -53,6 +53,7 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lighttarget.h"
+#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"

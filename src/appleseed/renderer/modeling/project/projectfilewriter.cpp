@@ -44,8 +44,6 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/curveobjectwriter.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
@@ -592,8 +590,6 @@ namespace
             {
                 if (strcmp(object.get_model(), MeshObjectFactory().get_model()) == 0)
                     write_mesh_object(static_cast<MeshObject&>(object), groups);
-                else if (strcmp(object.get_model(), CurveObjectFactory().get_model()) == 0)
-                    write_curve_object(static_cast<CurveObject&>(object));
                 else write(object);
             }
         }
@@ -679,31 +675,6 @@ namespace
 
             // Update the object name mapping.
             m_object_name_mapping[object_name] = object_name + "." + object_name;
-        }
-
-        // Write a curve object.
-        void write_curve_object(CurveObject& object)
-        {
-            ParamArray& params = object.get_parameters();
-
-            if (!params.strings().exist("filepath"))
-            {
-                const string object_name = object.get_name();
-                const string filename = object_name + ".binarycurve";
-
-                if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
-                {
-                    // Write the curve file to disk.
-                    const string filepath = (m_project_new_root_dir / filename).string();
-                    CurveObjectWriter::write(object, filepath.c_str());
-                }
-
-                // Add a file path parameter to the object.
-                params.insert("filepath", filename);
-            }
-
-            // Write the <object> element.
-            write_entity("object", object);
         }
 
         // Write an <object> element.

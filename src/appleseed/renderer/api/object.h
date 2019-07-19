@@ -30,9 +30,6 @@
 #pragma once
 
 // API headers.
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/curveobjectreader.h"
-#include "renderer/modeling/object/curveobjectwriter.h"
 #include "renderer/modeling/object/diskobject.h"
 #include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/meshobject.h"

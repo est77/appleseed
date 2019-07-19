@@ -96,38 +96,6 @@ const size_t TriangleTreeStackSize = 64;
 
 
 //
-// Curve tree settings.
-//
-
-// Curve formats used for storage and intersection.
-typedef foundation::BezierCurve1<GScalar> Curve1Type;
-typedef foundation::BezierCurve3<GScalar> Curve3Type;
-
-// Curve intersectors.
-typedef foundation::BezierCurveIntersector<Curve1Type> Curve1IntersectorType;
-typedef foundation::BezierCurveIntersector<Curve3Type> Curve3IntersectorType;
-
-// Matrix used in curve intersections
-typedef foundation::Matrix<GScalar, 4, 4> CurveMatrixType;
-
-// Maximum number of curves per leaf.
-const size_t CurveTreeDefaultMaxLeafSize = 1;
-
-// Relative cost of traversing an interior node.
-const GScalar CurveTreeDefaultInteriorNodeTraversalCost(1.0);
-
-// Relative cost of intersecting a curve.
-const GScalar CurveTreeDefaultCurveIntersectionCost(1.0);
-
-// Size of the curve tree access cache.
-const size_t CurveTreeAccessCacheLines = 128;
-const size_t CurveTreeAccessCacheWays = 2;
-
-// Size of the stack (in number of nodes) used during traversal.
-const size_t CurveTreeStackSize = 64;
-
-
-//
 // Miscellaneous settings.
 //
 

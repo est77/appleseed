@@ -129,31 +129,6 @@ if (WITH_GPU)
     )
 endif ()
 
-set (foundation_curve_sources
-    foundation/curve/binarycurvefilereader.cpp
-    foundation/curve/binarycurvefilereader.h
-    foundation/curve/binarycurvefilewriter.cpp
-    foundation/curve/binarycurvefilewriter.h
-    foundation/curve/curvebasis.cpp
-    foundation/curve/curvebasis.h
-    foundation/curve/genericcurvefilereader.cpp
-    foundation/curve/genericcurvefilereader.h
-    foundation/curve/genericcurvefilewriter.cpp
-    foundation/curve/genericcurvefilewriter.h
-    foundation/curve/icurvebuilder.h
-    foundation/curve/icurvefilereader.h
-    foundation/curve/icurvefilewriter.h
-    foundation/curve/icurvewalker.h
-    foundation/curve/mitshairfilereader.cpp
-    foundation/curve/mitshairfilereader.h
-)
-list (APPEND appleseed_sources
-    ${foundation_curve_sources}
-)
-source_group ("foundation\\curve" FILES
-    ${foundation_curve_sources}
-)
-
 set (foundation_geometry_sources
     foundation/geometry/mesh.cpp
     foundation/geometry/mesh.h
@@ -1879,12 +1854,6 @@ source_group ("renderer\\modeling\\material" FILES
 )
 
 set (renderer_modeling_object_sources
-    renderer/modeling/object/curveobject.cpp
-    renderer/modeling/object/curveobject.h
-    renderer/modeling/object/curveobjectreader.cpp
-    renderer/modeling/object/curveobjectreader.h
-    renderer/modeling/object/curveobjectwriter.cpp
-    renderer/modeling/object/curveobjectwriter.h
     renderer/modeling/object/diskobject.cpp
     renderer/modeling/object/diskobject.h
     renderer/modeling/object/iobjectfactory.cpp

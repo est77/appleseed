@@ -425,8 +425,6 @@ void Intersector::make_procedural_surface_shading_point(
     shading_point.m_dpdu = dpdu;
     shading_point.m_dpdu = dpdv;
     shading_point.m_members |= ShadingPoint::HasWorldSpaceDerivatives;
-
-    shading_point.m_members = ShadingPoint::HasScreenSpaceDerivatives;
 }
 
 void Intersector::make_volume_shading_point(

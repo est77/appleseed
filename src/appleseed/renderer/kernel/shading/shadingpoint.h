@@ -35,7 +35,6 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -44,9 +43,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/beziercurve.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -88,11 +85,7 @@ class ShadingPoint
         PrimitiveTriangle           = 1UL << 1,
         PrimitiveProceduralSurface  = 1UL << 2,
 
-        PrimitiveCurve              = 1UL << 3,
-        PrimitiveCurve1             = PrimitiveCurve | 0,
-        PrimitiveCurve3             = PrimitiveCurve | 1,
-
-        PrimitiveVolume             = 1UL << 4
+        PrimitiveVolume             = 1UL << 3
     };
 
     // Constructor, calls clear().
@@ -137,7 +130,6 @@ class ShadingPoint
     // Return the type of the hit primitive.
     PrimitiveType get_primitive_type() const;
     bool is_triangle_primitive() const;
-    bool is_curve_primitive() const;
 
     // Return the distance from the ray origin to the intersection point.
     double get_distance() const;
@@ -227,9 +219,6 @@ class ShadingPoint
     // Return the opacity at the intersection point.
     const Alpha& get_alpha() const;
 
-    // Return the interpolated per-vertex color at the intersection point.
-    const foundation::Color3f& get_per_vertex_color() const;
-
     // Access the data structure that exposes this shading point to OSL.
     // ShadingSystem::execute() takes a mutable OSL::ShaderGlobals reference.
     OSL::ShaderGlobals& get_osl_shader_globals() const;
@@ -263,8 +252,6 @@ class ShadingPoint
   private:
     friend class InstanceLeafProbeVisitor;
     friend class InstanceLeafVisitor;
-    friend class CurveLeafVisitor;
-    friend class EmbreeScene;
     friend class Intersector;
     friend class OSLShaderGroupExec;
     friend class RendererServices;
@@ -307,11 +294,8 @@ class ShadingPoint
         HasShadingBasis                 = 1UL << 10,
         HasWorldSpaceTriangleVertices   = 1UL << 11,
         HasMaterials                    = 1UL << 12,
-        HasWorldSpacePointVelocity      = 1UL << 13,
-        HasAlpha                        = 1UL << 14,
-        HasPerVertexColor               = 1UL << 15,
-        HasScreenSpaceDerivatives       = 1UL << 16,
-        HasOSLShaderGlobals             = 1UL << 17
+        HasAlpha                        = 1UL << 13,
+        HasOSLShaderGlobals             = 1UL << 14
     };
     mutable foundation::uint32          m_members;
 
@@ -341,7 +325,6 @@ class ShadingPoint
     mutable const Material*             m_material;                     // material at intersection point
     mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
-    mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
@@ -359,7 +342,6 @@ class ShadingPoint
     // Fetch the source geometry.
     void fetch_source_geometry() const;
     void fetch_triangle_source_geometry() const;
-    void fetch_curve_source_geometry() const;
 
     // Refine and offset the intersection point.
     void refine_and_offset() const;
@@ -367,7 +349,6 @@ class ShadingPoint
     void compute_world_space_partial_derivatives() const;
     void compute_normals() const;
     void compute_triangle_normals() const;
-    void compute_curve_normals() const;
     void compute_geometric_normal() const;
     void compute_shading_normal() const;
     void compute_original_shading_normal() const;
@@ -375,7 +356,6 @@ class ShadingPoint
     void compute_world_space_triangle_vertices() const;
 
     void compute_alpha() const;
-    void compute_per_vertex_color() const;
 
     void fetch_materials() const;
 
@@ -485,11 +465,6 @@ inline bool ShadingPoint::is_triangle_primitive() const
     return (m_primitive_type & PrimitiveTriangle) != 0;
 }
 
-inline bool ShadingPoint::is_curve_primitive() const
-{
-    return (m_primitive_type & PrimitiveCurve) != 0;
-}
-
 inline double ShadingPoint::get_distance() const
 {
     assert(is_valid());
@@ -523,11 +498,6 @@ inline const foundation::Vector2f& ShadingPoint::get_uv(const size_t uvset) cons
 
           case PrimitiveProceduralSurface:
             // Nothing to do.
-            break;
-
-          case PrimitiveCurve1:
-          case PrimitiveCurve3:
-            m_uv = m_bary;
             break;
 
           assert_otherwise;
@@ -656,7 +626,6 @@ inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) co
     assert(hit_surface());
     m_shading_basis = basis;
     m_members |= HasShadingBasis;
-    m_members &= ~HasScreenSpaceDerivatives;
 }
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
@@ -813,16 +782,6 @@ inline const Alpha& ShadingPoint::get_alpha() const
     }
 
     return m_alpha;
-}
-
-inline const foundation::Color3f& ShadingPoint::get_per_vertex_color() const
-{
-    if (!(m_members & HasPerVertexColor))
-    {
-        compute_per_vertex_color();
-        m_members |= HasPerVertexColor;
-    }
-    return m_color;
 }
 
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const

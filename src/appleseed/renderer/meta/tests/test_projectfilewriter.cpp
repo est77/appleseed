@@ -29,7 +29,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersectionsettings.h"
-#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/project.h"
@@ -117,18 +116,6 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         const char* get_mesh_object_filename(const char* object_name)
         {
             return get_assembly()->objects().get_by_name(object_name)->get_parameters().get("filename");
-        }
-
-        void create_curve_object(const char* object_name)
-        {
-            auto_release_ptr<CurveObject> curve_object(
-                CurveObjectFactory().create(object_name, ParamArray()));
-
-            static const GVector3 ControlPoints[] = { GVector3(0.0, 0.0, 0.0), GVector3(0.0, 1.0, 0.0) };
-            curve_object->push_basis(CurveBasis::Linear);
-            curve_object->push_curve1(Curve1Type(ControlPoints, GScalar(0.1), GScalar(1.0), Color3f(0.2f, 0.0f, 0.7f)));
-
-            get_assembly()->objects().insert(auto_release_ptr<Object>(curve_object));
         }
 
         void create_geometry_file(const path& filepath)
@@ -250,45 +237,6 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
         ASSERT_TRUE(success);
         EXPECT_FALSE(get_assembly()->objects().get_by_name("bunny")->get_parameters().strings().exist("filename"));
-    }
-
-    TEST_CASE_F(Write_CurveObjectWithoutFilePath_OmitWritingGeometryFilesIsNotSet_CreatesCurvesFileAndAssignsFilePath, Fixture)
-    {
-        create_project();
-        create_assembly();
-        create_curve_object("curve_object");
-
-        const bool success =
-            ProjectFileWriter::write(
-                m_project.ref(),
-                (m_output_directory / "curve_object.appleseed").string().c_str(),
-                ProjectFileWriter::OmitHeaderComment);
-
-        ASSERT_TRUE(success);
-        EXPECT_TRUE(exists(m_output_directory / "curve_object.binarycurve"));
-        EXPECT_EQ(
-            string("curve_object.binarycurve"),
-            get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
-    }
-
-    TEST_CASE_F(Write_CurveObjectWithoutFilePath_OmitWritingGeometryFilesIsSet_OnlyAssignsFilePath, Fixture)
-    {
-        create_project();
-        create_assembly();
-        create_curve_object("curve_object");
-
-        const bool success =
-            ProjectFileWriter::write(
-                m_project.ref(),
-                (m_output_directory / "curve_object.appleseed").string().c_str(),
-                ProjectFileWriter::OmitHeaderComment |
-                ProjectFileWriter::OmitWritingGeometryFiles);
-
-        ASSERT_TRUE(success);
-        EXPECT_FALSE(exists(m_output_directory / "curve_object.binarycurve"));
-        EXPECT_EQ(
-            string("curve_object.binarycurve"),
-            get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 
     TEST_CASE_F(Write_PackValidProject, Fixture)

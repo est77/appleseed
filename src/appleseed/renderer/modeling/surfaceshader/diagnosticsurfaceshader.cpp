@@ -455,11 +455,6 @@ void DiagnosticSurfaceShader::evaluate(
                 // todo: implement.
                 break;
 
-              case ShadingPoint::PrimitiveCurve1:
-              case ShadingPoint::PrimitiveCurve3:
-                // todo: implement.
-                break;
-
               assert_otherwise;
             }
         }
@@ -513,11 +508,6 @@ void DiagnosticSurfaceShader::evaluate(
                 break;
 
               case ShadingPoint::PrimitiveProceduralSurface:
-                // todo: implement.
-                break;
-
-              case ShadingPoint::PrimitiveCurve1:
-              case ShadingPoint::PrimitiveCurve3:
                 // todo: implement.
                 break;
 

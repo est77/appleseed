@@ -171,11 +171,6 @@ void ShadingPoint::fetch_source_geometry() const
         // Nothing to do.
         break;
 
-      case PrimitiveCurve1:
-      case PrimitiveCurve3:
-        fetch_curve_source_geometry();
-        break;
-
       assert_otherwise;
     }
 }
@@ -349,13 +344,6 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     }
 }
 
-void ShadingPoint::fetch_curve_source_geometry() const
-{
-    // Set primitive attribute to default value 0.
-    // todo: fix.
-    m_primitive_pa = 0;
-}
-
 void ShadingPoint::refine_and_offset() const
 {
     assert(hit_surface());
@@ -405,20 +393,6 @@ void ShadingPoint::refine_and_offset() const
       case PrimitiveProceduralSurface:
         // TODO: do we need to refine & offset here as well?
         m_front_point = m_back_point = local_ray.m_org;
-        break;
-
-      case PrimitiveCurve1:
-      case PrimitiveCurve3:
-        {
-            assert(is_curve_primitive());
-
-            m_asm_geo_normal = normalize(-local_ray.m_dir);
-
-            // todo: this does not look correct, considering the flat ribbon nature of curves.
-            const double Eps = 1.0e-6;
-            m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
-            m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
-        }
         break;
 
       assert_otherwise;
@@ -565,27 +539,6 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
         }
         break;
 
-      case PrimitiveCurve1:
-      case PrimitiveCurve3:
-        {
-            assert(is_curve_primitive());
-
-            const GScalar v = m_bary[1];
-
-            const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-            const GVector3 tangent =
-                m_primitive_type == PrimitiveCurve1
-                    ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
-                    : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
-
-            const Vector3d& sn = get_original_shading_normal();
-
-            m_dpdu = normalize(Vector3d(tangent));
-            m_dpdv = normalize(cross(sn, m_dpdu));
-            m_dndu = m_dndv = Vector3d(0.0);
-        }
-        break;
-
       assert_otherwise;
     }
 }
@@ -602,11 +555,6 @@ void ShadingPoint::compute_normals() const
 
       case PrimitiveProceduralSurface:
         // Nothing to do.
-        break;
-
-      case PrimitiveCurve1:
-      case PrimitiveCurve3:
-        compute_curve_normals();
         break;
 
       assert_otherwise;
@@ -698,13 +646,6 @@ void ShadingPoint::compute_triangle_normals() const
     }
 }
 
-void ShadingPoint::compute_curve_normals() const
-{
-    // We assume flat ribbons facing incoming rays.
-
-    m_geometric_normal = m_original_shading_normal = -m_ray.m_dir;
-}
-
 void ShadingPoint::compute_shading_basis() const
 {
     // Compute the unperturbed shading normal.
@@ -787,56 +728,6 @@ void ShadingPoint::compute_alpha() const
                     m_alpha *= a;
                 }
             }
-        }
-        break;
-
-      case PrimitiveCurve1:
-        {
-            assert(is_curve_primitive());
-            const GScalar v = m_bary[1];
-            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
-            m_alpha *= Alpha(curves->get_curve1(m_primitive_index).evaluate_opacity(v));
-        }
-        break;
-
-      case PrimitiveCurve3:
-        {
-            assert(is_curve_primitive());
-            const GScalar v = m_bary[1];
-            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
-            m_alpha *= Alpha(curves->get_curve3(m_primitive_index).evaluate_opacity(v));
-        }
-        break;
-
-      assert_otherwise;
-    }
-}
-
-void ShadingPoint::compute_per_vertex_color() const
-{
-    m_color = Color3f(1.0f);
-
-    switch (m_primitive_type)
-    {
-      case PrimitiveTriangle:
-      case PrimitiveProceduralSurface:
-        break;
-
-      case PrimitiveCurve1:
-        {
-            assert(is_curve_primitive());
-            const GScalar v = m_bary[1];
-            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
-            m_color = Color3f(curves->get_curve1(m_primitive_index).evaluate_color(v));
-        }
-        break;
-
-      case PrimitiveCurve3:
-        {
-            assert(is_curve_primitive());
-            const GScalar v = m_bary[1];
-            const CurveObject* curves = static_cast<const CurveObject*>(&get_object());
-            m_color = Color3f(curves->get_curve3(m_primitive_index).evaluate_color(v));
         }
         break;
 
@@ -1053,7 +944,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     always_poison(point.m_material);
     always_poison(point.m_opposite_material);
     always_poison(point.m_alpha);
-    always_poison(point.m_color);
 
     always_poison(point.m_asm_geo_normal);
     always_poison(point.m_front_point);
