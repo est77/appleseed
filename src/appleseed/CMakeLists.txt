@@ -1029,7 +1029,7 @@ if (WITH_ARNOLD_RENDER_DEVICE)
     set (renderer_device_ai_sources
         renderer/device/ai/airenderdevice.cpp
         renderer/device/ai/airenderdevice.h
-        renderer/device/ai/driver.cpp
+        renderer/device/ai/aidriver.cpp
     )
     list (APPEND appleseed_sources
         ${renderer_device_ai_sources}

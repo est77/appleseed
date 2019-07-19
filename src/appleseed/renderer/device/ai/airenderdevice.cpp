@@ -50,7 +50,7 @@
 using namespace foundation;
 using namespace std;
 
-// Defined in driver.cpp
+// Defined in aidriver.cpp
 extern const AtNodeMethods* as_ai_driver;
 
 namespace renderer
