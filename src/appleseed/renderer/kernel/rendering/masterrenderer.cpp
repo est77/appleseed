@@ -138,6 +138,8 @@ struct MasterRenderer::Impl
       , m_serial_renderer_controller(nullptr)
       , m_serial_tile_callback_factory(nullptr)
     {
+        init_fp_flags();
+
         if (m_tile_callback_factory == nullptr)
         {
             // Try to use the display if there is one in the project
@@ -165,6 +167,7 @@ struct MasterRenderer::Impl
       , m_serial_renderer_controller(nullptr)
       , m_serial_tile_callback_factory(nullptr)
     {
+        init_fp_flags();
     }
 
     ~Impl()
@@ -548,6 +551,26 @@ struct MasterRenderer::Impl
             if (m_serial_renderer_controller != nullptr)
                 m_serial_renderer_controller->exec_callbacks();
         }
+    }
+
+    void init_fp_flags()
+    {
+#ifdef APPLESEED_USE_SSE42
+        //
+        // Enable 'Flush to Zero' and 'Denormals are Zero' modes.
+        //
+        // Note: On some platforms, the preprocessor symbols _MM_SET_DENORMALS_ZERO_MODE() and
+        // _MM_DENORMALS_ZERO_ON are only defined if __SSE3__ is defined; executing these lines
+        // with APPLESEED_USE_SSE42 should ensure they are always defined.
+        //
+        // Reference:
+        //
+        //   https://embree.github.io/api.html#mxcsr-control-and-status-register
+        //
+
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
     }
 };
 
