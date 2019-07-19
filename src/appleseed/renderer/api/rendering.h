@@ -42,7 +42,6 @@
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
 #include "renderer/kernel/rendering/renderercontrollercollection.h"
 #include "renderer/kernel/rendering/tilecallbackbase.h"

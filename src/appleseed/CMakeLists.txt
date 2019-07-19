@@ -1114,16 +1114,6 @@ source_group ("renderer\\kernel\\lighting\\lighttracing" FILES
     ${renderer_kernel_lighting_lighttracing_sources}
 )
 
-set (renderer_kernel_lighting_null_sources
-    renderer/kernel/lighting/null/nulllightingengine.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_lighting_null_sources}
-)
-source_group ("renderer\\kernel\\lighting\\null" FILES
-    ${renderer_kernel_lighting_null_sources}
-)
-
 set (renderer_kernel_lighting_pt_sources
     renderer/kernel/lighting/pt/ptlightingengine.cpp
     renderer/kernel/lighting/pt/ptlightingengine.h
@@ -1295,8 +1285,6 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/localsampleaccumulationbuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
-    renderer/kernel/rendering/nulltilecallback.cpp
-    renderer/kernel/rendering/nulltilecallback.h
     renderer/kernel/rendering/oiioerrorhandler.cpp
     renderer/kernel/rendering/oiioerrorhandler.h
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
@@ -1341,8 +1329,6 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/closures.h
     renderer/kernel/shading/directshadingcomponents.cpp
     renderer/kernel/shading/directshadingcomponents.h
-    renderer/kernel/shading/fastambientocclusion.cpp
-    renderer/kernel/shading/fastambientocclusion.h
     renderer/kernel/shading/oslshadergroupexec.cpp
     renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/oslshadingsystem.cpp
@@ -1391,19 +1377,6 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\kernel\\texturing" FILES
     ${renderer_kernel_texturing_sources}
-)
-
-set (renderer_kernel_volume_sources
-    renderer/kernel/volume/occupancygrid.cpp
-    renderer/kernel/volume/occupancygrid.h
-    renderer/kernel/volume/volume.cpp
-    renderer/kernel/volume/volume.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_volume_sources}
-)
-source_group ("renderer\\kernel\\volume" FILES
-    ${renderer_kernel_volume_sources}
 )
 
 set (renderer_meta_benchmarks_sources
@@ -1542,7 +1515,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/metalbrdf.h
     renderer/modeling/bsdf/microfacethelper.cpp
     renderer/modeling/bsdf/microfacethelper.h
-    renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h
     renderer/modeling/bsdf/oslbsdf.cpp
