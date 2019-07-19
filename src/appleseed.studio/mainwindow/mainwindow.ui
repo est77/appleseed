@@ -79,7 +79,6 @@
     <addaction name="separator"/>
     <addaction name="action_file_save_project"/>
     <addaction name="action_file_save_project_as"/>
-    <addaction name="action_file_pack_project_as"/>
     <addaction name="separator"/>
     <addaction name="action_file_close_project"/>
     <addaction name="separator"/>

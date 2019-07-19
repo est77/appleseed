@@ -238,20 +238,4 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         ASSERT_TRUE(success);
         EXPECT_FALSE(get_assembly()->objects().get_by_name("bunny")->get_parameters().strings().exist("filename"));
     }
-
-    TEST_CASE_F(Write_PackValidProject, Fixture)
-    {
-        create_project();
-
-        const bool success =
-            ProjectFileWriter::write(
-                m_project.ref(),
-                (m_output_directory / "test_pack_valid_project.appleseedz").string().c_str(),
-                ProjectFileWriter::Defaults
-            );
-
-        ASSERT_TRUE(success);
-        ASSERT_TRUE(exists(m_output_directory / "test_pack_valid_project.appleseedz"));
-        ASSERT_FALSE(exists(m_output_directory / "test_pack_valid_project.unpacked"));
-    }
 }

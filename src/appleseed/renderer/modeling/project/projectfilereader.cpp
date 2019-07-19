@@ -122,7 +122,6 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
-#include "foundation/utility/zip.h"
 
 // Xerces-C++ headers.
 #include "xercesc/sax2/Attributes.hpp"
@@ -3196,30 +3195,6 @@ namespace
 
         return false;
     }
-
-    // Return the name of the single .appleseed file inside a given archive file.
-    // If there are zero or more than one .appleseed file inside the archive, an
-    // empty string is returned (i.e. the archive is not a valid packed project).
-    string get_project_filename_from_archive(const char* project_filepath)
-    {
-        const vector<string> files =
-            get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
-
-        return files.size() == 1 ? files[0] : string();
-    }
-
-    string unpack_project(
-        const string& project_filepath,
-        const string& project_name,
-        const bf::path& unpacked_project_directory)
-    {
-        if (bf::exists(unpacked_project_directory))
-            bf::remove_all(unpacked_project_directory);
-
-        unzip(project_filepath, unpacked_project_directory.string());
-
-        return (unpacked_project_directory / project_name).string().c_str();
-    }
 }
 
 auto_release_ptr<Project> ProjectFileReader::read(
@@ -3233,36 +3208,6 @@ auto_release_ptr<Project> ProjectFileReader::read(
     string project_name;
     if (is_builtin_project(project_filepath, project_name))
         return load_builtin(project_name.c_str());
-
-    // Handle packed projects.
-    string actual_project_filepath;
-    if (is_zip_file(project_filepath))
-    {
-        const string project_filename = get_project_filename_from_archive(project_filepath);
-        if (project_filename.empty())
-        {
-            RENDERER_LOG_ERROR(
-                "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
-                project_filepath);
-            return auto_release_ptr<Project>(nullptr);
-        }
-
-        const string unpacked_project_directory =
-            bf::path(project_filepath).replace_extension(".unpacked").string();
-
-        RENDERER_LOG_INFO(
-            "%s appears to be a packed project; unpacking to %s...",
-            project_filepath,
-            unpacked_project_directory.c_str());
-
-        actual_project_filepath =
-            unpack_project(
-                project_filepath,
-                project_filename,
-                unpacked_project_directory);
-
-        project_filepath = actual_project_filepath.data();
-    }
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())

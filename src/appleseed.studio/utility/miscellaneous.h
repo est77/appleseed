@@ -57,11 +57,9 @@ enum ProjectFilesFilter
 {
     ProjectFilesFilterAllProjects       = 1UL << 0,     // all project files extensions
     ProjectFilesFilterPlainProjects     = 1UL << 1,     // .appleseed extension
-    ProjectFilesFilterPackedProjects    = 1UL << 2,     // .appleseedz extension
     ProjectFilesFilterDefault           =
           ProjectFilesFilterAllProjects
         | ProjectFilesFilterPlainProjects
-        | ProjectFilesFilterPackedProjects
 };
 
 // Return a file dialog filter string for appleseed projects.

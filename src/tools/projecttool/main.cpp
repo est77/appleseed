@@ -147,61 +147,6 @@ bool remove_unused_entities()
 
 
 //
-// Pack a project to an *.appleseedz file.
-//
-
-bool pack_project()
-{
-    // Retrieve the input project path.
-    const string& input_filepath = g_cl.m_positional_args.values()[1];
-
-    // Read the input project from disk.
-    auto_release_ptr<Project> project(load_project(input_filepath));
-    if (project.get() == nullptr)
-        return false;
-
-    // Build the path of the output project.
-    const string packed_file_path =
-        bf::path(input_filepath).replace_extension(".appleseedz").string();
-
-    // Write the project to disk.
-    return ProjectFileWriter::write(project.ref(), packed_file_path.c_str());
-}
-
-
-//
-// Unpack an *.appleseedz file.
-//
-
-bool unpack_project()
-{
-    // Retrieve the input project path.
-    const string& input_filepath = g_cl.m_positional_args.values()[1];
-
-    // Read the input project from disk.
-    auto_release_ptr<Project> project(load_project(input_filepath));
-    if (project.get() == nullptr)
-        return false;
-
-    // Build the path of the output project.
-    const string unpacked_file_path =
-        bf::path(input_filepath).replace_extension(".appleseed").string();
-
-    // Write the project to disk.
-    const bool success =
-        ProjectFileWriter::write(
-            project.ref(),
-            unpacked_file_path.c_str());
-
-    // Delete the packed project file.
-    if (success)
-        bf::remove(input_filepath);
-
-    return success;
-}
-
-
-//
 // Print dependencies between entities.
 //
 
@@ -264,10 +209,6 @@ int main(int argc, char* argv[])
         success = update_project();
     else if (command == "clean")
         success = remove_unused_entities();
-    else if (command == "pack")
-        success = pack_project();
-    else if (command == "unpack")
-        success = unpack_project();
     else if (command == "deps")
         success = print_entity_dependencies(logger);
     else LOG_ERROR(logger, "unknown command: %s", command.c_str());

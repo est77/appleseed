@@ -70,14 +70,6 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         const char*     filepath,
         const int       options,
         const char*     comments);
-
-    // Write a project file to disk as a packed project file.
-    // Returns true on success, false otherwise.
-    static bool write_packed_project_file(
-        Project&        project,
-        const char*     filepath,
-        const int       options,
-        const char*     extra_comments);
 };
 
 }   // namespace renderer

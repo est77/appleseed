@@ -281,19 +281,6 @@ bool MainWindow::save_project(QString filepath)
     return successful;
 }
 
-bool MainWindow::pack_project(QString filepath)
-{
-    if (!m_project_manager.is_project_open())
-        return false;
-
-    const QString Extension = "appleseedz";
-
-    if (QFileInfo(filepath).suffix() != Extension)
-        filepath += "." + Extension;
-
-    return m_project_manager.pack_project_as(filepath.toUtf8().constData());
-}
-
 void MainWindow::close_project()
 {
     m_project_manager.close_project();
@@ -366,8 +353,6 @@ void MainWindow::build_menus()
 
     m_ui->action_file_save_project_as->setShortcut(QKeySequence::SaveAs);
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), SLOT(slot_save_project_as()));
-
-    connect(m_ui->action_file_pack_project_as, SIGNAL(triggered()), SLOT(slot_pack_project_as()));
 
     m_ui->action_file_close_project->setShortcut(QKeySequence::Close);
     connect(m_ui->action_file_close_project, SIGNAL(triggered()), SLOT(slot_close_project()));
@@ -821,7 +806,6 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled, const Rendering
     m_ui->action_file_save_project->setEnabled(allow_save);
     m_action_save_project->setEnabled(allow_save);
     m_ui->action_file_save_project_as->setEnabled(allow_save);
-    m_ui->action_file_pack_project_as->setEnabled(allow_save);
 
     // File -> Close Project.
     const bool allow_close = is_enabled && is_project_open;
@@ -1509,28 +1493,6 @@ void MainWindow::slot_save_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         save_project(filepath);
-    }
-}
-
-void MainWindow::slot_pack_project_as()
-{
-    assert(m_project_manager.is_project_open());
-
-    QString filepath =
-        get_save_filename(
-            this,
-            "Pack As...",
-            get_project_files_filter(ProjectFilesFilterPackedProjects),
-            m_application_settings,
-            SETTINGS_FILE_DIALOG_PROJECTS);
-
-    if (!filepath.isEmpty())
-    {
-        filepath = QDir::toNativeSeparators(filepath);
-
-        pack_project(filepath);
-
-        // Don't update the Recent Files menu.
     }
 }
 

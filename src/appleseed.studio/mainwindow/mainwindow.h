@@ -101,7 +101,6 @@ class MainWindow
     void open_project_async(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
     bool save_project(QString filepath);
-    bool pack_project(QString filepath);
     void close_project();
 
     void on_project_change();
@@ -250,7 +249,6 @@ class MainWindow
     void slot_open_project_complete(const QString& filepath, const bool successful);
     void slot_save_project();
     void slot_save_project_as();
-    void slot_pack_project_as();
     void slot_close_project();
     void slot_project_modified();
 

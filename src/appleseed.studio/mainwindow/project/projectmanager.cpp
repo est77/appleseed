@@ -118,11 +118,6 @@ bool ProjectManager::save_project_as(const string& filepath)
     return successful;
 }
 
-bool ProjectManager::pack_project_as(const string& filepath)
-{
-    return do_save_project(filepath, ProjectFileWriter::Defaults);
-}
-
 void ProjectManager::close_project()
 {
     m_project.reset();

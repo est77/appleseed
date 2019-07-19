@@ -78,7 +78,6 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
-#include "foundation/utility/zip.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"
@@ -886,10 +885,7 @@ bool ProjectFileWriter::write(
     const int       options,
     const char*     extra_comments)
 {
-    return
-        lower_case(bf::path(filepath).extension().string()) == ".appleseedz"
-            ? write_packed_project_file(project, filepath, options, extra_comments)
-            : write_plain_project_file(project, filepath, options, extra_comments);
+    return write_plain_project_file(project, filepath, options, extra_comments);
 }
 
 bool ProjectFileWriter::write_plain_project_file(
@@ -967,68 +963,6 @@ bool ProjectFileWriter::write_plain_project_file(
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
-}
-
-bool ProjectFileWriter::write_packed_project_file(
-    Project&        project,
-    const char*     filepath,
-    const int       options,
-    const char*     extra_comments)
-{
-    const bf::path project_path(filepath);
-
-    const bf::path temp_directory =
-        project_path.parent_path() /
-        project_path.filename().replace_extension(".unpacked.temp");
-
-    const bf::path temp_project_filepath =
-        temp_directory /
-        project_path.filename().replace_extension(".appleseed");
-
-    if (!bf::create_directory(temp_directory))
-    {
-        RENDERER_LOG_ERROR("failed to create directory %s", temp_directory.string().c_str());
-        return false;
-    }
-
-    bool success = true;
-
-    try
-    {
-        success =
-            write_plain_project_file(
-                project,
-                temp_project_filepath.string().c_str(),
-                options | ProjectFileWriter::CopyAllAssets,
-                extra_comments);
-
-        if (success)
-        {
-            Stopwatch<DefaultWallclockTimer> stopwatch;
-            stopwatch.start();
-
-            RENDERER_LOG_INFO("packing project to %s...", filepath);
-
-            zip(filepath, temp_directory.string());
-
-            stopwatch.measure();
-
-            RENDERER_LOG_INFO(
-                "packed project to %s in %s.",
-                filepath,
-                pretty_time(stopwatch.get_seconds()).c_str());
-        }
-    }
-    catch (const std::exception&)   // namespace qualification required
-    {
-        RENDERER_LOG_ERROR("failed to write project file %s.", filepath);
-        success = false;
-    }
-
-    if (bf::exists(temp_directory))
-        bf::remove_all(temp_directory);
-
-    return success;
 }
 
 }   // namespace renderer

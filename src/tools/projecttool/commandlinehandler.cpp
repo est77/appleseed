@@ -73,8 +73,6 @@ void CommandLineHandler::print_program_usage(
     LOG_INFO(logger, "commands:");
     LOG_INFO(logger, "  update               update a project to a given revision");
     LOG_INFO(logger, "  clean                update a project to the latest revision and remove unused entities");
-    LOG_INFO(logger, "  pack                 pack a project to an *.appleseedz file");
-    LOG_INFO(logger, "  unpack               unpack an *.appleseedz file");
     LOG_INFO(logger, "  deps                 print dependencies between entities");
     LOG_INFO(logger, "options:");
 
