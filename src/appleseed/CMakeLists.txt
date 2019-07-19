@@ -2203,6 +2203,7 @@ link_against_lz4 (appleseed)
 link_against_ocio (appleseed)
 link_against_oiio (appleseed)
 link_against_osl (appleseed)
+link_against_tbb (appleseed)
 
 if (WITH_EMBREE)
     link_against_embree (appleseed)

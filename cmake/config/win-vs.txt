@@ -372,6 +372,17 @@ macro (link_against_zlib target)
     endif ()
 endmacro ()
 
+macro (link_against_tbb target)
+    if (USE_FIND_PACKAGE_FOR_TBB)
+        target_link_libraries (${target} ${TBB_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/tbb-debug/lib/tbbd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/tbb-release/lib/tbb.lib
+        )
+    endif ()
+endmacro ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

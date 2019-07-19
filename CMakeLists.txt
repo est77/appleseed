@@ -156,6 +156,7 @@ else ()
     set (USE_FIND_PACKAGE_FOR_SEEXPR        ON)
     set (USE_FIND_PACKAGE_FOR_XERCES        ON)
     set (USE_FIND_PACKAGE_FOR_ZLIB          ON)
+    set (USE_FIND_PACKAGE_FOR_TBB           ON)
 endif ()
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                                ON)
@@ -256,6 +257,10 @@ link_directories (${Boost_LIBRARY_DIRS})
 # Find packages.
 #--------------------------------------------------------------------------------------------------
 
+if (USE_FIND_PACKAGE_FOR_TBB)
+    find_package (TBB REQUIRED)
+endif ()
+
 if (WITH_EMBREE)
     set (APPLESEED_WITH_EMBREE ON)
     add_definitions (-DAPPLESEED_WITH_EMBREE)
@@ -331,6 +336,12 @@ include_directories (
     src/thirdparty/murmurhash3
     src/appleseed
 )
+
+if (USE_FIND_PACKAGE_FOR_TBB)
+    include_directories (${TBB_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/tbb-debug/include)
+endif ()
 
 if (WITH_EMBREE)
     if (USE_FIND_PACKAGE_FOR_EMBREE)
