@@ -84,14 +84,13 @@ namespace renderer
 namespace
 {
     //
-    // A thin lens camera with active autofocus.
+    // A thin lens camera.
     //
     // References:
     //
     //   http://en.wikipedia.org/wiki/Thin_lens
     //   http://en.wikipedia.org/wiki/Focal_length
     //   http://en.wikipedia.org/wiki/F-number
-    //   http://en.wikipedia.org/wiki/Autofocus
     //   http://en.wikipedia.org/wiki/Diaphragm_(optics)
     //
     // Geometry of the camera:
@@ -202,8 +201,6 @@ namespace
                 "  film height                   %f\n"
                 "  focal length                  %f\n"
                 "  f-number                      %f\n"
-                "  autofocus                     %s\n"
-                "  autofocus target              %f, %f\n"
                 "  diaphragm map                 %s\n"
                 "  diaphragm blades              %s\n"
                 "  diaphragm tilt angle          %f\n"
@@ -220,9 +217,6 @@ namespace
                 m_film_dimensions[1],
                 m_focal_length,
                 m_f_number,
-                m_autofocus_enabled ? "on" : "off",
-                m_autofocus_target[0],
-                m_autofocus_target[1],
                 m_diaphragm_map_bound ? "on" : "off",
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,
@@ -244,14 +238,7 @@ namespace
             if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // Extract autofocus status.
-            m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
-
-            // Extract autofocus target and focal distance.
-            extract_focal_distance(
-                m_autofocus_enabled,
-                m_autofocus_target,
-                m_focal_distance);
+            extract_focal_distance(m_focal_distance);
 
             // Extract diaphragm configuration.
             m_diaphragm_map_bound = build_diaphragm_importance_sampler(*project.get_scene());
@@ -285,15 +272,6 @@ namespace
         {
             if (!Camera::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
-
-            // Perform autofocus, if enabled.
-            if (m_autofocus_enabled)
-            {
-                TextureStore texture_store(*project.get_scene());
-                TextureCache texture_cache(texture_store);
-                Intersector intersector(project.get_trace_context(), texture_cache);
-                m_focal_distance = get_autofocus_focal_distance(intersector);
-            }
 
             // Compute ratios between focal distance and focal length.
             m_focal_ratio = m_focal_distance / m_focal_length;
@@ -388,8 +366,6 @@ namespace
       private:
         // Parameters.
         double              m_f_number;                 // F-number
-        bool                m_autofocus_enabled;        // is autofocus enabled?
-        Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
         double              m_focal_distance;           // focal distance in camera space
         bool                m_diaphragm_map_bound;      // is a diaphragm map bound to the camera
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
@@ -426,47 +402,22 @@ namespace
             }
         }
 
-        void extract_focal_distance(
-            const bool              autofocus_enabled,
-            Vector2d&               autofocus_target,
-            double&                 focal_distance) const
+        void extract_focal_distance(double& focal_distance) const
         {
-            const Vector2d DefaultAFTarget(0.5);        // in NDC
             const double DefaultFocalDistance = 1.0;    // in meters
 
-            if (autofocus_enabled)
-            {
-                if (has_param("autofocus_target"))
-                    autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining camera \"%s\": no \"autofocus_target\" parameter found; "
-                        "using default value \"%f, %f\".",
-                        get_path().c_str(),
-                        DefaultAFTarget[0],
-                        DefaultAFTarget[1]);
-                    autofocus_target = DefaultAFTarget;
-                }
-
-                focal_distance = DefaultFocalDistance;
-            }
+            if (has_param("focal_distance"))
+                focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
             else
             {
-                if (has_param("focal_distance"))
-                    focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining camera \"%s\": no \"focal_distance\" parameter found; "
-                        "using default value \"%f\".",
-                        get_path().c_str(),
-                        DefaultFocalDistance);
-                    focal_distance = DefaultFocalDistance;
-                }
-
-                autofocus_target = DefaultAFTarget;
+                RENDERER_LOG_ERROR(
+                    "while defining camera \"%s\": no \"focal_distance\" parameter found; "
+                    "using default value \"%f\".",
+                    get_path().c_str(),
+                    DefaultFocalDistance);
+                focal_distance = DefaultFocalDistance;
             }
+
         }
 
         double extract_f_number() const
@@ -505,56 +456,6 @@ namespace
             m_importance_sampler->rebuild(sampler);
 
             return true;
-        }
-
-        double get_autofocus_focal_distance(const Intersector& intersector) const
-        {
-            // The autofocus considers the scene at the middle of the shutter interval.
-            const float time = get_shutter_middle_time();
-            const Transformd transform = m_transform_sequence.evaluate(time);
-
-            // Create a ray that goes through the center of the lens.
-            ShadingRay ray;
-            ray.m_org = transform.get_local_to_parent().extract_translation();
-            ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(m_autofocus_target)));
-            ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time =
-                ShadingRay::Time::create_with_normalized_time(
-                    0.5f,
-                    get_shutter_open_begin_time(),
-                    get_shutter_close_end_time());
-            ray.m_flags = VisibilityFlags::ProbeRay;
-            ray.m_depth = 0;
-
-            // Trace the ray.
-            ShadingPoint shading_point;
-            intersector.trace(ray, shading_point);
-
-            if (shading_point.hit_surface())
-            {
-                // Hit: compute the focal distance.
-                const Vector3d v = shading_point.get_point() - ray.m_org;
-                const double af_focal_distance = -transform.vector_to_local(v).z;
-
-                RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to %f (using camera position at time=%.1f).",
-                    get_path().c_str(),
-                    af_focal_distance,
-                    ray.m_time.m_absolute);
-
-                return af_focal_distance;
-            }
-            else
-            {
-                // Miss: focus at infinity.
-                RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=%.1f).",
-                    get_path().c_str(),
-                    ray.m_time.m_absolute);
-
-                return 1.0e38;
-            }
         }
 
         Vector3d sample_lens(SamplingContext& sampling_context) const
@@ -658,34 +559,11 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "autofocus_enabled")
-            .insert("label", "Enable autofocus")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("on_change", "rebuild_form"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "focal_distance")
             .insert("label", "Focal Distance")
             .insert("type", "text")
             .insert("use", "optional")
-            .insert("default", "1.0")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("autofocus_enabled", "false")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "autofocus_target")
-            .insert("label", "Autofocus Target")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "0.5 0.5")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("autofocus_enabled", "true")));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()

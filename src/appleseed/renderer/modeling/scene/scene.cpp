@@ -393,7 +393,6 @@ bool Scene::on_frame_begin(
     if (impl->m_environment.get())
         success = success && impl->m_environment->on_frame_begin(project, this, recorder, abort_switch);
 
-    // Call on_frame_begin() on cameras last because some of them cast rays to sense depth in their autofocus mechanism.
     success = success && invoke_on_frame_begin(cameras(), project, this, recorder, abort_switch);
 
     m_camera = project.get_uncached_active_camera();
