@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmparameters.h"
@@ -303,26 +302,6 @@ bool RendererComponents::create_sample_generator_factory()
                 m_frame,
                 m_sample_renderer_factory.get(),
                 get_child_and_inherit_globals(m_params, "generic_sample_generator")));
-
-        return true;
-    }
-    else if (name == "lighttracing")
-    {
-        m_forward_light_sampler.reset(
-            new ForwardLightSampler(
-                m_scene,
-                get_child_and_inherit_globals(m_params, "light_sampler")));
-
-        m_sample_generator_factory.reset(
-            new LightTracingSampleGeneratorFactory(
-                m_project,
-                m_frame,
-                m_trace_context,
-                m_texture_store,
-                *m_forward_light_sampler,
-                m_oiio_texture_system,
-                m_osl_shading_system,
-                get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));
 
         return true;
     }
