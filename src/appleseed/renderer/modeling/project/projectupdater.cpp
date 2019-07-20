@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "projectfileupdater.h"
+#include "projectupdater.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -2151,7 +2151,7 @@ namespace
     };
 }
 
-bool ProjectFileUpdater::update(
+bool ProjectUpdater::update(
     Project&        project,
     const size_t    to_revision)
 {
@@ -2160,7 +2160,7 @@ bool ProjectFileUpdater::update(
     return event_counters.get_error_count() == 0;
 }
 
-void ProjectFileUpdater::update(
+void ProjectUpdater::update(
     Project&        project,
     EventCounters&  event_counters,
     const size_t    to_revision)

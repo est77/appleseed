@@ -74,8 +74,8 @@
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectformatrevision.h"
+#include "renderer/modeling/project/projectupdater.h"
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
 #include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -3438,7 +3438,7 @@ void ProjectFileReader::upgrade_project(
     Project&                project,
     EventCounters&          event_counters) const
 {
-    ProjectFileUpdater updater;
+    ProjectUpdater updater;
     updater.update(project, event_counters);
 }
 

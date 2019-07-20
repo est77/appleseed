@@ -46,16 +46,13 @@ namespace renderer
 // Project file updater.
 //
 
-class APPLESEED_DLLSYMBOL ProjectFileUpdater
+class APPLESEED_DLLSYMBOL ProjectUpdater
 {
   public:
     // Return true if the update was successful, false otherwise.
     bool update(
         Project&        project,
         const size_t    to_revision = ~size_t(0));
-
-  private:
-    friend class ProjectFileReader;
 
     void update(
         Project&        project,

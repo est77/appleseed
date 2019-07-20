@@ -37,7 +37,7 @@ namespace renderer
 //
 // Revision number of the current project file format.
 //
-// Make sure to update the project file updater (renderer::ProjectFileUpdater)
+// Make sure to update the project file updater (renderer::ProjectUpdater)
 // when you increment this value.
 //
 

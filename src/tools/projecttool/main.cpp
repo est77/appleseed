@@ -96,7 +96,7 @@ bool update_project()
         return false;
 
     // Update the project file to the desired revision.
-    ProjectFileUpdater updater;
+    ProjectUpdater updater;
     const bool success =
         g_cl.m_to_revision.is_set()
             ? updater.update(project.ref(), g_cl.m_to_revision.value())
@@ -128,7 +128,7 @@ bool remove_unused_entities()
         return false;
 
     // Update the project file to the latest revision.
-    ProjectFileUpdater updater;
+    ProjectUpdater updater;
     const bool success = updater.update(project.ref());
     if (!success)
         return false;

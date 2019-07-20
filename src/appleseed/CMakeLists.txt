@@ -1862,13 +1862,13 @@ set (renderer_modeling_project_sources
     renderer/modeling/project/project.xsd
     renderer/modeling/project/projectfilereader.cpp
     renderer/modeling/project/projectfilereader.h
-    renderer/modeling/project/projectfileupdater.cpp
-    renderer/modeling/project/projectfileupdater.h
     renderer/modeling/project/projectfilewriter.cpp
     renderer/modeling/project/projectfilewriter.h
     renderer/modeling/project/projectformatrevision.h
     renderer/modeling/project/projecttracker.cpp
     renderer/modeling/project/projecttracker.h
+    renderer/modeling/project/projectupdater.cpp
+    renderer/modeling/project/projectupdater.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_project_sources}
