@@ -131,10 +131,8 @@ void bind_camera()
         .def("get_model", &Camera::get_model)
         .def("transform_sequence", camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("set_transform_sequence", camera_set_transform_sequence)
-        .def("get_shutter_open_begin_time", &Camera::get_shutter_open_begin_time)
-        .def("get_shutter_open_end_time", &Camera::get_shutter_open_end_time)
-        .def("get_shutter_close_begin_time", &Camera::get_shutter_close_begin_time)
-        .def("get_shutter_close_end_time", &Camera::get_shutter_close_end_time)
+        .def("get_shutter_open_time", &Camera::get_shutter_open_time)
+        .def("get_shutter_close_time", &Camera::get_shutter_close_time)
         .def("get_shutter_time_interval", &Camera::get_shutter_time_interval)
         .def("get_shutter_middle_time", &Camera::get_shutter_middle_time);
 

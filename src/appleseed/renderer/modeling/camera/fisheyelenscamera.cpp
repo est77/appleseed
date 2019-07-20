@@ -118,10 +118,8 @@ namespace
                 "  film height                   %f\n"
                 "  focal length                  %f\n"
                 "  near-z                        %f\n"
-                "  shutter open begin time       %f\n"
-                "  shutter open end time         %f\n"
-                "  shutter close begin time      %f\n"
-                "  shutter close end time        %f\n"
+                "  shutter open time             %f\n"
+                "  shutter close time            %f\n"
                 "  projection type               %s",
                 get_path().c_str(),
                 Model,
@@ -129,10 +127,8 @@ namespace
                 m_film_dimensions[1],
                 m_focal_length,
                 m_near_z,
-                m_shutter_open_begin_time,
-                m_shutter_open_end_time,
-                m_shutter_close_begin_time,
-                m_shutter_close_end_time,
+                m_shutter_open_time,
+                m_shutter_close_time,
                 projection_type);
         }
 

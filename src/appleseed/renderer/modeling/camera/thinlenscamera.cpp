@@ -206,10 +206,8 @@ namespace
                 "  diaphragm tilt angle          %f\n"
                 "  near z                        %f\n"
                 "  shift                         %f, %f\n"
-                "  shutter open begin time       %f\n"
-                "  shutter open end time         %f\n"
-                "  shutter close begin time      %f\n"
-                "  shutter close end time        %f",
+                "  shutter open time             %f\n"
+                "  shutter close time            %f",
                 get_path().c_str(),
                 get_uid(),
                 Model,
@@ -223,10 +221,8 @@ namespace
                 m_near_z,
                 m_shift.x,
                 m_shift.y,
-                m_shutter_open_begin_time,
-                m_shutter_open_end_time,
-                m_shutter_close_begin_time,
-                m_shutter_close_end_time);
+                m_shutter_open_time,
+                m_shutter_close_time);
         }
 
         bool on_render_begin(
