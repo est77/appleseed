@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/searchpaths.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -76,8 +75,7 @@ class APPLESEED_DLLSYMBOL ProjectFileReader
         const char*                     project_filepath,
         const char*                     schema_filepath,
         const int                       options,
-        EventCounters&                  event_counters,
-        const foundation::SearchPaths*  search_paths = nullptr) const;
+        EventCounters&                  event_counters) const;
 
     foundation::auto_release_ptr<Project> construct_builtin_project(
         const char*                     project_name,

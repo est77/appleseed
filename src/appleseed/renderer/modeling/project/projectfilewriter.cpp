@@ -885,15 +885,6 @@ bool ProjectFileWriter::write(
     const int       options,
     const char*     extra_comments)
 {
-    return write_plain_project_file(project, filepath, options, extra_comments);
-}
-
-bool ProjectFileWriter::write_plain_project_file(
-    Project&        project,
-    const char*     filepath,
-    const int       options,
-    const char*     extra_comments)
-{
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 

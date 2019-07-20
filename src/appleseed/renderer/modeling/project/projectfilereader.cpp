@@ -3275,8 +3275,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     const char*                     project_filepath,
     const char*                     schema_filepath,
     const int                       options,
-    EventCounters&                  event_counters,
-    const foundation::SearchPaths*  search_paths) const
+    EventCounters&                  event_counters) const
 {
     // Create an empty project.
     auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
@@ -3286,11 +3285,6 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     {
         project->search_paths().set_root_path(
             bf::absolute(project_filepath).parent_path().string());
-    }
-    else
-    {
-        assert(search_paths);
-        project->search_paths() = *search_paths;
     }
 
     // Create the error handler.
@@ -3359,13 +3353,9 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
     EventCounters&          event_counters) const
 {
     if (!strcmp(project_name, "cornell_box"))
-    {
         return CornellBoxProjectFactory::create();
-    }
     else if (!strcmp(project_name, "default"))
-    {
         return DefaultProjectFactory::create();
-    }
     else
     {
         RENDERER_LOG_ERROR("unknown built-in project %s.", project_name);
