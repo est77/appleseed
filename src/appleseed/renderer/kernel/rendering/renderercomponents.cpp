@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/bdpt/bdptlightingengine.h"
 #include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
@@ -193,21 +192,6 @@ bool RendererComponents::create_lighting_engine_factory()
                 *m_backward_light_sampler,
                 m_project.get_light_path_recorder(),
                 get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
-
-        return true;
-    }
-    else if (name == "bdpt")
-    {
-        m_forward_light_sampler.reset(
-            new ForwardLightSampler(
-                m_scene,
-                get_child_and_inherit_globals(m_params, "light_sampler")));
-
-        m_lighting_engine_factory.reset(
-            new BDPTLightingEngineFactory(
-                m_project,
-                *m_forward_light_sampler,
-                get_child_and_inherit_globals(m_params, "bdpt")));
 
         return true;
     }
