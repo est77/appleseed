@@ -67,25 +67,6 @@ class ShadingRay
     typedef foundation::RayInfo3d   RayInfoType;
     typedef foundation::uint16      DepthType;
 
-    class Time
-    {
-      public:
-        float                       m_absolute;                     // absolute time of the ray
-        float                       m_normalized;                   // time of the ray, relative to shutter open / close times
-
-        static Time create_with_normalized_time(
-            const float             time,
-            const float             shutter_open,
-            const float             shutter_close);
-
-        Time();                     // leave all fields uninitialized
-
-      private:
-        Time(
-            const float             absolute,
-            const float             normalized);
-    };
-
     enum { MaxMediumCount = 8 };
 
     struct Medium
@@ -98,7 +79,7 @@ class ShadingRay
     };
 
     // Public members, in an order that optimizes packing.
-    Time                            m_time;
+    float                           m_time;
     Medium                          m_media[MaxMediumCount];        // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
@@ -110,7 +91,7 @@ class ShadingRay
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const Time&                 time,
+        const float                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
     ShadingRay(
@@ -118,7 +99,7 @@ class ShadingRay
         const VectorType&           dir,
         const double                tmin,
         const double                tmax,
-        const Time&                 time,
+        const float                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
 
@@ -164,7 +145,7 @@ inline ShadingRay::ShadingRay()
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const Time&                     time,
+    const float                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir)
@@ -181,7 +162,7 @@ inline ShadingRay::ShadingRay(
     const VectorType&               dir,
     const double                    tmin,
     const double                    tmax,
-    const Time&                     time,
+    const float                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir, tmin, tmax)
@@ -213,36 +194,6 @@ inline float ShadingRay::get_previous_ior() const
     return m_medium_count > 1 ? m_media[1].m_ior : 1.0f;
 }
 
-
-//
-// ShadingRay::Time class implementation.
-//
-
-inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
-    const float                     time,
-    const float                     shutter_open,
-    const float                     shutter_close)
-{
-    return
-        Time(
-            foundation::lerp(shutter_open, shutter_close, time),
-            time);
-}
-
-inline ShadingRay::Time::Time()
-{
-}
-
-inline ShadingRay::Time::Time(
-    const float                     absolute,
-    const float                     normalized)
-  : m_absolute(absolute)
-  , m_normalized(normalized)
-{
-    assert(m_normalized >= 0.0f);
-    assert(m_normalized < 1.0f);
-}
-
 }       // namespace renderer
 
 namespace foundation
@@ -253,8 +204,7 @@ namespace foundation
       public:
         static void do_poison(renderer::ShadingRay& ray)
         {
-            always_poison(ray.m_time.m_absolute);
-            always_poison(ray.m_time.m_normalized);
+            always_poison(ray.m_time);
 
             for (size_t i = 0; i < renderer::ShadingRay::MaxMediumCount; ++i)
             {

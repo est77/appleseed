@@ -78,7 +78,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&           shading_context,
     const BackwardLightSampler&     light_sampler,
     const IMaterialSampler&         material_sampler,
-    const ShadingRay::Time&         time,
+    const float                     time,
     const int                       light_sampling_modes,
     const size_t                    material_sample_count,
     const size_t                    light_sample_count,

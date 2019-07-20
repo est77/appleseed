@@ -95,7 +95,7 @@ LightSamplerBase::LightSamplerBase(const Scene& scene, const ParamArray& params)
 }
 
 void LightSamplerBase::sample_non_physical_light(
-    const ShadingRay::Time&             time,
+    const float                         time,
     const size_t                        light_index,
     LightSample&                        light_sample,
     const float                         light_prob) const
@@ -107,7 +107,7 @@ void LightSamplerBase::sample_non_physical_light(
     // Evaluate and store the transform of the light.
     light_sample.m_light_transform =
           light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
+        * light_info.m_transform_sequence.evaluate(time);
 
     // Store the probability density of this light.
     light_sample.m_probability = light_prob;
@@ -669,7 +669,7 @@ void LightSamplerBase::store_object_area_in_shadergroups(
 }
 
 void LightSamplerBase::sample_emitting_shape(
-    const ShadingRay::Time&             time,
+    const float                         time,
     const Vector2f&                     s,
     const size_t                        shape_index,
     const float                         shape_prob,
@@ -687,7 +687,7 @@ void LightSamplerBase::sample_emitting_shape(
 }
 
 void LightSamplerBase::sample_emitting_shapes(
-    const ShadingRay::Time&             time,
+    const float                         time,
     const Vector3f&                     s,
     LightSample&                        light_sample) const
 {

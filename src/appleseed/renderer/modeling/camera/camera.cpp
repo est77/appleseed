@@ -504,10 +504,10 @@ void Camera::initialize_ray(
     else sample_time = 0.0f;
 
     ray.m_time =
-        ShadingRay::Time::create_with_normalized_time(
-            sample_time,
+        lerp(
             m_shutter_open_begin_time,
-            m_shutter_close_end_time);
+            m_shutter_close_end_time,
+            sample_time);
 }
 
 float Camera::map_to_shutter_curve(const float sample) const

@@ -99,7 +99,7 @@ class VolumeLightingIntegrator
   private:
     const ShadingContext&               m_shading_context;
     const BackwardLightSampler&         m_light_sampler;
-    const ShadingRay::Time&             m_time;
+    const float                         m_time;
     const Volume&                       m_volume;
     const ShadingRay&                   m_volume_ray;
     const void*                         m_volume_data;

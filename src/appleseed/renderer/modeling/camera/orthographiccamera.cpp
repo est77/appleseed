@@ -156,7 +156,7 @@ namespace
             // Retrieve the camera transform.
             Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
+                m_transform_sequence.evaluate(ray.m_time, scratch);
 
             // Compute ray origin and direction.
             ray.m_org = transform.point_to_parent(ndc_to_camera(ndc));

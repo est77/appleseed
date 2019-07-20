@@ -513,7 +513,7 @@ bool InstanceLeafVisitor::visit(
             &item.m_transform_sequence;
         Transformd scratch;
         const Transformd& assembly_instance_transform =
-            assembly_instance_transform_seq->evaluate(ray.m_time.m_absolute, scratch);
+            assembly_instance_transform_seq->evaluate(ray.m_time, scratch);
 
         // Transform the ray to assembly instance space.
         ShadingPoint local_shading_point;
@@ -542,7 +542,7 @@ bool InstanceLeafVisitor::visit(
                     *triangle_tree,
                     local_shading_point.m_ray,
                     local_ray_info,
-                    local_shading_point.m_ray.m_time.m_normalized,
+                    local_shading_point.m_ray.m_time,
                     visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                     , m_triangle_tree_stats
@@ -621,7 +621,7 @@ bool InstanceLeafProbeVisitor::visit(
         // Evaluate the transformation of the assembly instance.
         Transformd scratch;
         const Transformd& assembly_instance_transform =
-            item.m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
+            item.m_transform_sequence.evaluate(ray.m_time, scratch);
 
         // Transform the ray to assembly instance space.
         ShadingRay local_ray;
@@ -643,14 +643,14 @@ bool InstanceLeafProbeVisitor::visit(
         {
             // Check the intersection between the ray and the triangle tree.
             TriangleTreeProbeIntersector intersector;
-            TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time.m_normalized, local_ray.m_flags);
+            TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time, local_ray.m_flags);
             if (triangle_tree->get_moving_triangle_count() > 0)
             {
                 intersector.intersect_motion(
                     *triangle_tree,
                     local_ray,
                     local_ray_info,
-                    local_ray.m_time.m_normalized,
+                    local_ray.m_time,
                     visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                     , m_triangle_tree_stats

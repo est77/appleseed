@@ -304,7 +304,7 @@ namespace
             // Retrieve the camera transform.
             Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
+                m_transform_sequence.evaluate(ray.m_time, scratch);
 
             // Compute lens point in world space.
             const Vector3d lens_point = transform.point_to_parent(sample_lens(sampling_context));

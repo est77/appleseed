@@ -87,7 +87,7 @@ BackwardLightSampler::BackwardLightSampler(
 }
 
 void BackwardLightSampler::sample_lightset(
-    const ShadingRay::Time&             time,
+    const float                         time,
     const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const

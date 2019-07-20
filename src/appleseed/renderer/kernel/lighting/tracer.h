@@ -110,7 +110,7 @@ class Tracer
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
-        const ShadingRay::Time&         ray_time,
+        const float                     ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
         Spectrum&                       transmission);
@@ -157,7 +157,7 @@ class Tracer
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
-        const ShadingRay::Time&         ray_time,
+        const float                     ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
         Spectrum&                       transmission);
@@ -359,7 +359,7 @@ inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
-    const ShadingRay::Time&             ray_time,
+    const float                         ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
     Spectrum&                           transmission)
@@ -517,7 +517,7 @@ inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
-    const ShadingRay::Time&             ray_time,
+    const float                         ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
     Spectrum&                           transmission)

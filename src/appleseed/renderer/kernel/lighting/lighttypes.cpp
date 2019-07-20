@@ -341,7 +341,7 @@ void EmittingShape::make_shading_point(
         direction,
         0.0,
         0.0,
-        ShadingRay::Time(),
+        0.0f,
         VisibilityFlags::CameraRay, 0);
 
     const auto shape_type = get_shape_type();

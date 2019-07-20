@@ -97,7 +97,7 @@ class PathVertex
 
     // Forward the most useful methods to the shading point.
     const ShadingRay& get_ray() const;
-    const ShadingRay::Time& get_time() const;
+    const float get_time() const;
     const foundation::Vector2f& get_uv(const size_t uvset) const;
     const foundation::Vector3d& get_point() const;
     const foundation::Vector3d& get_geometric_normal() const;
@@ -133,7 +133,7 @@ inline const ShadingRay& PathVertex::get_ray() const
     return m_shading_point->get_ray();
 }
 
-inline const ShadingRay::Time& PathVertex::get_time() const
+inline const float PathVertex::get_time() const
 {
     return m_shading_point->get_time();
 }

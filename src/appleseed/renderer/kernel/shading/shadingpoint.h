@@ -115,7 +115,7 @@ class ShadingPoint
     const ShadingRay& get_ray() const;
 
     // Return the time stored in the ray.
-    const ShadingRay::Time& get_time() const;
+    const float get_time() const;
 
     // Return true if the shading point is either
     // a surface point or a volume point and can be shaded.
@@ -435,7 +435,7 @@ inline const ShadingRay& ShadingPoint::get_ray() const
     return m_ray;
 }
 
-inline const ShadingRay::Time& ShadingPoint::get_time() const
+inline const float ShadingPoint::get_time() const
 {
     return m_ray.m_time;
 }

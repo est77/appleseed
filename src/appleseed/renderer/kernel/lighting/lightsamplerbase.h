@@ -65,7 +65,7 @@ class LightSamplerBase
 
     // Sample a single given non-physical light.
     void sample_non_physical_light(
-        const ShadingRay::Time&             time,
+        const float                         time,
         const size_t                        light_index,
         LightSample&                        light_sample,
         const float                         light_prob = 1.0f) const;
@@ -133,7 +133,7 @@ class LightSamplerBase
 
     // Sample a given emitting shape.
     void sample_emitting_shape(
-        const ShadingRay::Time&             time,
+        const float                         time,
         const foundation::Vector2f&         s,
         const size_t                        shape_index,
         const float                         shape_prob,
@@ -141,7 +141,7 @@ class LightSamplerBase
 
     // Sample the set of emitting shapes.
     void sample_emitting_shapes(
-        const ShadingRay::Time&             time,
+        const float                         time,
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 

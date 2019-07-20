@@ -269,7 +269,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         const ShadingPoint& shading_point =
@@ -287,7 +287,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         Spectrum transmission;
@@ -307,7 +307,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
+                0.0f,
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -323,7 +323,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0,
             transmission);
@@ -348,7 +348,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         const ShadingPoint& shading_point =
@@ -368,7 +368,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         m_tracer.trace_simple(
@@ -387,7 +387,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
+                0.0f,
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -404,7 +404,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0,
             transmission);
@@ -429,7 +429,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         const ShadingPoint& shading_point =
@@ -448,7 +448,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         m_tracer.trace_simple(
@@ -467,7 +467,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
+                0.0f,
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -483,7 +483,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0,
             transmission);
@@ -509,7 +509,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         const ShadingPoint& shading_point =
@@ -529,7 +529,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         m_tracer.trace_simple(
@@ -548,7 +548,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
+                0.0f,
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -565,7 +565,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0,
             transmission);
@@ -581,7 +581,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
-                ShadingRay::Time(),
+                0.0f,
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -597,7 +597,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(4.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0,
             transmission);
@@ -622,7 +622,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         Spectrum parent_transmission;
@@ -665,7 +665,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ShadingRay ray(
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(1.0, 0.0, 0.0),
-            ShadingRay::Time(),
+            0.0f,
             VisibilityFlags::ShadowRay,
             0);
         Spectrum parent_transmission;

@@ -183,7 +183,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
     // Compute motion interpolation parameters.
     const size_t motion_segment_count = tess.get_motion_segment_count();
-    const double base_time = m_ray.m_time.m_normalized * motion_segment_count;
+    const double base_time = m_ray.m_time * motion_segment_count;
     const size_t base_index = truncate<size_t>(base_time);
     const GScalar frac = static_cast<GScalar>(base_time - base_index);
     const GScalar one_minus_frac = GScalar(1.0) - frac;
@@ -783,7 +783,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         // Time and its derivative.
-        m_shader_globals.time = ray.m_time.m_absolute;
+        m_shader_globals.time = ray.m_time;
         m_shader_globals.dtime = m_scene->get_active_camera()->get_shutter_time_interval();
 
         // Point being illuminated and its differentials.
