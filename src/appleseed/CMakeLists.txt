@@ -1120,34 +1120,11 @@ source_group ("renderer\\kernel\\lighting\\pt" FILES
     ${renderer_kernel_lighting_pt_sources}
 )
 
-set (renderer_kernel_lighting_sppm_sources
-    renderer/kernel/lighting/sppm/sppmlightingengine.cpp
-    renderer/kernel/lighting/sppm/sppmlightingengine.h
-    renderer/kernel/lighting/sppm/sppmparameters.cpp
-    renderer/kernel/lighting/sppm/sppmparameters.h
-    renderer/kernel/lighting/sppm/sppmpasscallback.cpp
-    renderer/kernel/lighting/sppm/sppmpasscallback.h
-    renderer/kernel/lighting/sppm/sppmphoton.cpp
-    renderer/kernel/lighting/sppm/sppmphoton.h
-    renderer/kernel/lighting/sppm/sppmphotonmap.cpp
-    renderer/kernel/lighting/sppm/sppmphotonmap.h
-    renderer/kernel/lighting/sppm/sppmphotontracer.cpp
-    renderer/kernel/lighting/sppm/sppmphotontracer.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_lighting_sppm_sources}
-)
-source_group ("renderer\\kernel\\lighting\\sppm" FILES
-    ${renderer_kernel_lighting_sppm_sources}
-)
-
 set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/backwardlightsampler.cpp
     renderer/kernel/lighting/backwardlightsampler.h
     renderer/kernel/lighting/directlightingintegrator.cpp
     renderer/kernel/lighting/directlightingintegrator.h
-    renderer/kernel/lighting/forwardlightsampler.cpp
-    renderer/kernel/lighting/forwardlightsampler.h
     renderer/kernel/lighting/ilightingengine.h
     renderer/kernel/lighting/imagebasedlighting.cpp
     renderer/kernel/lighting/imagebasedlighting.h
@@ -1395,7 +1372,6 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
-    renderer/meta/tests/test_forwardlightsampler.cpp
     renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imagetools.cpp
     renderer/meta/tests/test_inputarray.cpp
@@ -1774,8 +1750,6 @@ set (renderer_modeling_light_sources
     renderer/modeling/light/light.h
     renderer/modeling/light/lightfactoryregistrar.cpp
     renderer/modeling/light/lightfactoryregistrar.h
-    renderer/modeling/light/lighttarget.cpp
-    renderer/modeling/light/lighttarget.h
     renderer/modeling/light/lighttraits.h
     renderer/modeling/light/maxomnilight.cpp
     renderer/modeling/light/maxomnilight.h

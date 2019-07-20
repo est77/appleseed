@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
-#include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
-#include "renderer/kernel/lighting/sppm/sppmparameters.h"
-#include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/rendering/debug/blanksamplerenderer.h"
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugsamplerenderer.h"
@@ -110,7 +107,6 @@ RendererComponents::RendererComponents(
   , m_scene(*project.get_scene())
   , m_frame(*project.get_frame())
   , m_trace_context(project.get_trace_context())
-  , m_forward_light_sampler(nullptr)
   , m_backward_light_sampler(nullptr)
   , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
@@ -191,42 +187,6 @@ bool RendererComponents::create_lighting_engine_factory()
                 *m_backward_light_sampler,
                 m_project.get_light_path_recorder(),
                 get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
-
-        return true;
-    }
-    else if (name == "sppm")
-    {
-        m_forward_light_sampler.reset(
-            new ForwardLightSampler(
-                m_scene,
-                get_child_and_inherit_globals(m_params, "light_sampler")));
-
-        m_backward_light_sampler.reset(
-            new BackwardLightSampler(
-                m_scene,
-                get_child_and_inherit_globals(m_params, "light_sampler")));
-
-        const SPPMParameters sppm_params(
-            get_child_and_inherit_globals(m_params, "sppm"));
-
-        SPPMPassCallback* sppm_pass_callback =
-            new SPPMPassCallback(
-                m_scene,
-                *m_forward_light_sampler,
-                m_trace_context,
-                m_texture_store,
-                m_oiio_texture_system,
-                m_osl_shading_system,
-                sppm_params);
-
-        m_pass_callback.reset(sppm_pass_callback);
-
-        m_lighting_engine_factory.reset(
-            new SPPMLightingEngineFactory(
-                *sppm_pass_callback,
-                *m_forward_light_sampler,
-                *m_backward_light_sampler,
-                sppm_params));
 
         return true;
     }
@@ -521,12 +481,6 @@ bool RendererComponents::create_frame_renderer_factory()
         if (m_sample_generator_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the progressive frame renderer without a sample generator.");
-            return false;
-        }
-
-        if (dynamic_cast<SPPMLightingEngineFactory*>(m_lighting_engine_factory.get()) != nullptr)
-        {
-            RENDERER_LOG_ERROR("cannot use the progressive frame renderer together with the sppm lighting engine.");
             return false;
         }
 

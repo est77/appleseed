@@ -45,7 +45,6 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
-namespace renderer      { class LightTargetArray; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -118,15 +117,6 @@ class APPLESEED_DLLSYMBOL Light
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
         float&                          probability) const = 0;     // PDF value
-    virtual void sample(
-        const ShadingContext&           shading_context,
-        const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector2d&     s,                          // sample in [0,1)^2
-        const LightTargetArray&         targets,
-        foundation::Vector3d&           position,                   // world space emission position
-        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
-        Spectrum&                       value,                      // light value
-        float&                          probability) const;         // PDF value
 
     // Compute the distance attenuation of this light.
     virtual float compute_distance_attenuation(

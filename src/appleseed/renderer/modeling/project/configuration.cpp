@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
-#include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
 #include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
 #include "renderer/kernel/rendering/final/texturecontrolledpixelrenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
@@ -154,7 +153,7 @@ Dictionary Configuration::get_metadata()
         "lighting_engine",
         Dictionary()
             .insert("type", "enum")
-            .insert("values", "pt|sppm")
+            .insert("values", "pt")
             .insert("default", "pt")
             .insert("label", "Lighting Engine")
             .insert("help", "Light transport engine")
@@ -165,12 +164,7 @@ Dictionary Configuration::get_metadata()
                         "pt",
                         Dictionary()
                             .insert("label", "Unidirectional Path Tracer")
-                            .insert("help", "Unidirectional path tracing"))
-                    .insert(
-                        "sppm",
-                        Dictionary()
-                            .insert("label", "Stochastic Progressive Photon Mapping")
-                            .insert("help", "Stochastic Progressive Photon Mapping"))));
+                            .insert("help", "Unidirectional path tracing"))));
 
     metadata.insert(
         "rendering_threads",
@@ -210,10 +204,6 @@ Dictionary Configuration::get_metadata()
     metadata.dictionaries().insert(
         "pt",
         PTLightingEngineFactory::get_params_metadata());
-
-    metadata.dictionaries().insert(
-        "sppm",
-        SPPMLightingEngineFactory::get_params_metadata());
 
     return metadata;
 }

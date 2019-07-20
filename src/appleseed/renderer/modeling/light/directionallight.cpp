@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -154,49 +153,6 @@ namespace
                 outgoing,
                 value,
                 probability);
-        }
-
-        void sample(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector2d&         s,
-            const LightTargetArray& targets,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value,
-            float&                  probability) const override
-        {
-            const size_t target_count = targets.size();
-
-            if (target_count > 0)
-            {
-                const double x = s[0] * target_count;
-                const size_t target_index = truncate<size_t>(x);
-                const Vector2d target_s(x - target_index, s[1]);
-                const LightTarget& target = targets[target_index];
-
-                sample_disk(
-                    light_transform,
-                    target_s,
-                    target.get_center(),
-                    target.get_radius(),
-                    position,
-                    outgoing,
-                    value,
-                    probability);
-            }
-            else
-            {
-                sample_disk(
-                    light_transform,
-                    s,
-                    m_scene_center,
-                    m_scene_radius,
-                    position,
-                    outgoing,
-                    value,
-                    probability);
-            }
         }
 
         float compute_distance_attenuation(

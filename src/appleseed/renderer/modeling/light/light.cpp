@@ -123,26 +123,4 @@ bool Light::on_frame_begin(
     return true;
 }
 
-void Light::sample(
-    const ShadingContext&   shading_context,
-    const Transformd&       light_transform,
-    const Vector2d&         s,
-    const LightTargetArray& targets,
-    Vector3d&               position,
-    Vector3d&               outgoing,
-    Spectrum&               value,
-    float&                  probability) const
-{
-    // By default we ignore the light targets.
-    return
-        sample(
-            shading_context,
-            light_transform,
-            s,
-            position,
-            outgoing,
-            value,
-            probability);
-}
-
 }   // namespace renderer
