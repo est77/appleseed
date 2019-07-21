@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +26,65 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+// Interface header.
+#include "ogawaprojectwriter.h"
 
-// API headers.
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projecttracker.h"
-#include "renderer/modeling/project/projectupdater.h"
-#include "renderer/modeling/project-io/projectfilereader.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/project-io/projectfilewriter.h"
+
+// Ogawa headers.
+#include "Alembic/Ogawa/OArchive.h"
+#include "Alembic/Ogawa/OGroup.h"
+
+using namespace Alembic;
+
+namespace renderer
+{
+namespace
+{
+
+class OutputGroup
+{
+  public:
+    OutputGroup() = default;
+
+    explicit OutputGroup(Ogawa::OArchive& archive)
+      : m_group(archive.getGroup())
+    {
+    }
+
+    explicit OutputGroup(Ogawa::OGroupPtr group)
+      : m_group(group)
+    {
+    }
+
+    Ogawa::OGroupPtr m_group;
+};
+
+void write_project(
+    const Project&      project,
+    Ogawa::OArchive&    archive)
+{
+    // todo: implement me...
+}
+
+}
+
+bool OgawaProjectWriter::write(
+    Project&    project,
+    const char* filepath,
+    const int   options)
+{
+    try
+    {
+        Ogawa::OArchive archive(filepath);
+        write_project(project, archive);
+        return true;
+    }
+    catch(Util::Exception&)
+    {
+        return false;
+    }
+}
+
+}   // namespace renderer

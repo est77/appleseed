@@ -32,7 +32,7 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projectfilewriter.h"
+#include "renderer/modeling/project-io/projectfilewriter.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"

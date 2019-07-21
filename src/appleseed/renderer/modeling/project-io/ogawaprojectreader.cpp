@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,40 +26,44 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+// Interface header.
+#include "ogawaprojectreader.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Ogawa headers.
+#include "Alembic/Ogawa/IArchive.h"
+#include "Alembic/Ogawa/IGroup.h"
 
-// Forward declarations.
-namespace renderer  { class Project; }
+using namespace Alembic;
 
 namespace renderer
 {
+namespace
+{
 
-//
-// Project file writer.
-//
-
-class APPLESEED_DLLSYMBOL ProjectFileWriter
+template <typename T>
+class InputAttribute
 {
   public:
-    enum Options
-    {
-        Defaults                    = 0,            // none of the flags below
-        OmitHeaderComment           = 1UL << 0,     // do not write the header comment
-        OmitWritingGeometryFiles    = 1UL << 1,     // do not write geometry files to disk
-        OmitHandlingAssetFiles      = 1UL << 2,     // do not change paths to asset files (such as texture files)
-        CopyAllAssets               = 1UL << 3      // copy all asset files (by default copy asset files with relative paths only)
-    };
-
-    // Write a project to disk.
-    // Returns true on success, false otherwise.
-    static bool write(
-        Project&        project,
-        const char*     filepath,
-        const int       options = Defaults,
-        const char*     extra_comments = nullptr);
 };
+
+class InpuGroup
+{
+  public:
+    InpuGroup() = default;
+
+    explicit InpuGroup(Ogawa::IArchive& archive)
+      : m_group(archive.getGroup())
+    {
+    }
+
+    explicit InpuGroup(Ogawa::IGroupPtr group)
+      : m_group(group)
+    {
+    }
+
+    Alembic::Ogawa::IGroupPtr m_group;
+};
+
+}
 
 }   // namespace renderer

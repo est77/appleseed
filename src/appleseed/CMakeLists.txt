@@ -1851,19 +1851,12 @@ source_group ("renderer\\modeling\\postprocessingstage" FILES
 )
 
 set (renderer_modeling_project_sources
-    renderer/modeling/project/assethandler.cpp
-    renderer/modeling/project/assethandler.h
     renderer/modeling/project/configuration.cpp
     renderer/modeling/project/configuration.h
     renderer/modeling/project/configurationcontainer.h
     renderer/modeling/project/eventcounters.h
     renderer/modeling/project/project.cpp
     renderer/modeling/project/project.h
-    renderer/modeling/project/project.xsd
-    renderer/modeling/project/projectfilereader.cpp
-    renderer/modeling/project/projectfilereader.h
-    renderer/modeling/project/projectfilewriter.cpp
-    renderer/modeling/project/projectfilewriter.h
     renderer/modeling/project/projectformatrevision.h
     renderer/modeling/project/projecttracker.cpp
     renderer/modeling/project/projecttracker.h
@@ -1888,6 +1881,30 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\modeling\\project-builtin" FILES
     ${renderer_modeling_project-builtin_sources}
+)
+
+set (renderer_modeling_project-io_sources
+    renderer/modeling/project-io/assethandler.cpp
+    renderer/modeling/project-io/assethandler.h
+    renderer/modeling/project-io/xmlprojectreader.cpp
+    renderer/modeling/project-io/xmlprojectreader.h
+    renderer/modeling/project-io/ogawaprojectreader.cpp
+    renderer/modeling/project-io/ogawaprojectreader.h
+    renderer/modeling/project-io/xmlprojectwriter.cpp
+    renderer/modeling/project-io/xmlprojectwriter.h
+    renderer/modeling/project-io/ogawaprojectwriter.cpp
+    renderer/modeling/project-io/ogawaprojectwriter.h
+    renderer/modeling/project-io/project.xsd
+    renderer/modeling/project-io/projectfilereader.cpp
+    renderer/modeling/project-io/projectfilereader.h
+    renderer/modeling/project-io/projectfilewriter.cpp
+    renderer/modeling/project-io/projectfilewriter.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_project-io_sources}
+)
+source_group ("renderer\\modeling\\project-io" FILES
+    ${renderer_modeling_project-io_sources}
 )
 
 set (renderer_modeling_scene_sources

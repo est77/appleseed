@@ -29,8 +29,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projectfilereader.h"
-#include "renderer/modeling/project/projectfilewriter.h"
+#include "renderer/modeling/project-io/projectfilereader.h"
+#include "renderer/modeling/project-io/projectfilewriter.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"

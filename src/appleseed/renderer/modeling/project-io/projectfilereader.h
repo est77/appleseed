@@ -71,12 +71,6 @@ class APPLESEED_DLLSYMBOL ProjectFileReader
         const char*                     project_name);
 
   private:
-    foundation::auto_release_ptr<Project> load_project_file(
-        const char*                     project_filepath,
-        const char*                     schema_filepath,
-        const int                       options,
-        EventCounters&                  event_counters) const;
-
     foundation::auto_release_ptr<Project> construct_builtin_project(
         const char*                     project_name,
         EventCounters&                  event_counters) const;

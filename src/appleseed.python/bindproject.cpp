@@ -150,16 +150,6 @@ namespace
         return ProjectFileWriter::write(*project, filepath, opts);
     }
 
-    bool write_project_with_opts_and_comments(
-        const ProjectFileWriter*            writer,
-        Project*                            project,
-        const char*                         filepath,
-        int                                 opts,
-        const char*                         extra_comments)
-    {
-        return ProjectFileWriter::write(*project, filepath, opts, extra_comments);
-    }
-
     auto_release_ptr<Configuration> create_config(const string& name)
     {
         return ConfigurationFactory::create(name.c_str());
@@ -377,6 +367,5 @@ void bind_project()
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
         // These methods are static but for symmetry with ProjectFileReader we're exposing them as non-static.
         .def("write", write_project_default_opts)
-        .def("write", write_project_with_opts)
-        .def("write", write_project_with_opts_and_comments);
+        .def("write", write_project_with_opts);
 }

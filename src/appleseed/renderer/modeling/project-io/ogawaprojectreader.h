@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +28,7 @@
 
 #pragma once
 
-// API headers.
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projecttracker.h"
-#include "renderer/modeling/project/projectupdater.h"
-#include "renderer/modeling/project-io/projectfilereader.h"
-#include "renderer/modeling/project-io/projectfilewriter.h"
+namespace renderer
+{
+
+}   // namespace renderer

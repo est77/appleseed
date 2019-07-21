@@ -27,15 +27,24 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+// Interface header.
+#include "projectfilewriter.h"
 
-// API headers.
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projecttracker.h"
-#include "renderer/modeling/project/projectupdater.h"
-#include "renderer/modeling/project-io/projectfilereader.h"
-#include "renderer/modeling/project-io/projectfilewriter.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/project-io/xmlprojectwriter.h"
+
+namespace renderer
+{
+
+bool ProjectFileWriter::write(
+    Project&        project,
+    const char*     filepath,
+    const int       options)
+{
+    return XMLProjectWriter::write(
+        project,
+        filepath,
+        options);
+}
+
+}   // namespace renderer

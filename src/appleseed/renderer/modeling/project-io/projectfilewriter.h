@@ -29,13 +29,37 @@
 
 #pragma once
 
-// API headers.
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projecttracker.h"
-#include "renderer/modeling/project/projectupdater.h"
-#include "renderer/modeling/project-io/projectfilereader.h"
-#include "renderer/modeling/project-io/projectfilewriter.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace renderer  { class Project; }
+
+namespace renderer
+{
+
+//
+// Project file writer.
+//
+
+class APPLESEED_DLLSYMBOL ProjectFileWriter
+{
+  public:
+    enum Options
+    {
+        Defaults                    = 0,            // none of the flags below
+        OmitHeaderComment           = 1UL << 0,     // do not write the header comment
+        OmitWritingGeometryFiles    = 1UL << 1,     // do not write geometry files to disk
+        OmitHandlingAssetFiles      = 1UL << 2,     // do not change paths to asset files (such as texture files)
+        CopyAllAssets               = 1UL << 3      // copy all asset files (by default copy asset files with relative paths only)
+    };
+
+    // Write a project to disk.
+    // Returns true on success, false otherwise.
+    static bool write(
+        Project&        project,
+        const char*     filepath,
+        const int       options = Defaults);
+};
+
+}   // namespace renderer
