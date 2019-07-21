@@ -2192,6 +2192,7 @@ endif ()
 target_link_libraries (appleseed
     ${Boost_LIBRARIES}
     murmurhash3
+    Ogawa
     ${CMAKE_DL_LIBS}
     "${APPLESEED_LINK_EXTRA_LIBRARIES}"
 )

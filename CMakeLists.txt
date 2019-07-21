@@ -342,6 +342,7 @@ endif ()
 include_directories (
     src/thirdparty/glad/include
     src/thirdparty/murmurhash3
+    src/thirdparty/Ogawa
     src/appleseed
 )
 
@@ -639,6 +640,7 @@ endmacro ()
 
 add_subdirectory (src/thirdparty/glad)
 add_subdirectory (src/thirdparty/murmurhash3)
+add_subdirectory (src/thirdparty/Ogawa)
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
