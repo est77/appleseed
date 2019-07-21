@@ -205,21 +205,6 @@ source_group ("foundation\\image" FILES
     ${foundation_image_sources}
 )
 
-set (foundation_math_bsp_sources
-    foundation/math/bsp/bsp_builder.h
-    foundation/math/bsp/bsp_intersector.h
-    foundation/math/bsp/bsp_node.h
-    foundation/math/bsp/bsp_statistics.cpp
-    foundation/math/bsp/bsp_statistics.h
-    foundation/math/bsp/bsp_tree.h
-)
-list (APPEND appleseed_sources
-    ${foundation_math_bsp_sources}
-)
-source_group ("foundation\\math\\bsp" FILES
-    ${foundation_math_bsp_sources}
-)
-
 set (foundation_math_bvh_sources
     foundation/math/bvh/bvh_bboxsortpredicate.h
     foundation/math/bvh/bvh_builder.h
@@ -263,22 +248,6 @@ source_group ("foundation\\math\\intersection" FILES
     ${foundation_math_intersection_sources}
 )
 
-set (foundation_math_knn_sources
-    foundation/math/knn/knn_answer.h
-    foundation/math/knn/knn_builder.h
-    foundation/math/knn/knn_node.h
-    foundation/math/knn/knn_query.h
-    foundation/math/knn/knn_statistics.cpp
-    foundation/math/knn/knn_statistics.h
-    foundation/math/knn/knn_tree.h
-)
-list (APPEND appleseed_sources
-    ${foundation_math_knn_sources}
-)
-source_group ("foundation\\math\\knn" FILES
-    ${foundation_math_knn_sources}
-)
-
 set (foundation_math_rng_sources
     foundation/math/rng/distribution.h
     foundation/math/rng/lcg.h
@@ -308,7 +277,6 @@ set (foundation_math_sampling_sources
     foundation/math/sampling/mappings.h
     foundation/math/sampling/qmcsamplingcontext.h
     foundation/math/sampling/rngsamplingcontext.h
-    foundation/math/sampling/sphericalimportancesampler.h
     foundation/math/sampling/sphericalrectanglesampler.h
     foundation/math/sampling/sphericaltrianglesampler.h
 )
@@ -319,28 +287,10 @@ source_group ("foundation\\math\\sampling" FILES
     ${foundation_math_sampling_sources}
 )
 
-set (foundation_math_voxel_sources
-    foundation/math/voxel/voxel_builder.h
-    foundation/math/voxel/voxel_intersector.h
-    foundation/math/voxel/voxel_node.h
-    foundation/math/voxel/voxel_statistics.cpp
-    foundation/math/voxel/voxel_statistics.h
-    foundation/math/voxel/voxel_tree.h
-)
-list (APPEND appleseed_sources
-    ${foundation_math_voxel_sources}
-)
-source_group ("foundation\\math\\voxel" FILES
-    ${foundation_math_voxel_sources}
-)
-
 set (foundation_math_sources
     foundation/math/aabb.h
     foundation/math/area.h
     foundation/math/basis.h
-    foundation/math/bezier.h
-    foundation/math/beziercurve.h
-    foundation/math/bsp.h
     foundation/math/bvh.h
     foundation/math/cdf.h
     foundation/math/combination.h
@@ -356,14 +306,11 @@ set (foundation_math_sources
     foundation/math/half.cpp
     foundation/math/half.h
     foundation/math/hash.h
-    foundation/math/knn.h
     foundation/math/matrix.h
     foundation/math/microfacet.cpp
     foundation/math/microfacet.h
     foundation/math/minmax.h
     foundation/math/mis.h
-    foundation/math/noise.cpp
-    foundation/math/noise.h
     foundation/math/ordering.cpp
     foundation/math/ordering.h
     foundation/math/permutation.cpp
@@ -390,8 +337,6 @@ set (foundation_math_sources
     foundation/math/treeoptimizer.h
     foundation/math/triangulator.h
     foundation/math/vector.h
-    foundation/math/voxel.h
-    foundation/math/voxelgrid.h
 )
 list (APPEND appleseed_sources
     ${foundation_math_sources}
@@ -440,7 +385,6 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_integerdivision.cpp
     foundation/meta/benchmarks/benchmark_intersection.cpp
     foundation/meta/benchmarks/benchmark_job.cpp
-    foundation/meta/benchmarks/benchmark_knn.cpp
     foundation/meta/benchmarks/benchmark_math_filter.cpp
     foundation/meta/benchmarks/benchmark_matrix.cpp
     foundation/meta/benchmarks/benchmark_microfacet.cpp
@@ -457,7 +401,6 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_tile.cpp
     foundation/meta/benchmarks/benchmark_transform.cpp
     foundation/meta/benchmarks/benchmark_vector.cpp
-    foundation/meta/benchmarks/benchmark_voxelgrid.cpp
 )
 list (APPEND appleseed_sources
     ${foundation_meta_benchmarks_sources}
@@ -475,12 +418,10 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
-    foundation/meta/tests/test_beziercurve.cpp
     foundation/meta/tests/test_bitmask.cpp
     foundation/meta/tests/test_boost_datetime.cpp
     foundation/meta/tests/test_boost_path.cpp
     foundation/meta/tests/test_boost_regex.cpp
-    foundation/meta/tests/test_bsp.cpp
     foundation/meta/tests/test_bufferedfile.cpp
     foundation/meta/tests/test_bvh.cpp
     foundation/meta/tests/test_bvh_partitioner.cpp
@@ -519,7 +460,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_iostreamop.cpp
     foundation/meta/tests/test_job.cpp
     foundation/meta/tests/test_keyframedarray.cpp
-    foundation/meta/tests/test_knn.cpp
     foundation/meta/tests/test_kvpair.cpp
     foundation/meta/tests/test_lazy.cpp
     foundation/meta/tests/test_makevector.cpp
@@ -531,7 +471,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_mis.cpp
     foundation/meta/tests/test_murmurhash.cpp
-    foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
     foundation/meta/tests/test_objmeshfilewriter.cpp
     foundation/meta/tests/test_otherwise.cpp
@@ -555,7 +494,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_sharedlibrary.cpp
     foundation/meta/tests/test_siphash.cpp
     foundation/meta/tests/test_snprintf.cpp
-    foundation/meta/tests/test_sphericalimportancesampler.cpp
     foundation/meta/tests/test_spline.cpp
     foundation/meta/tests/test_stampedptr.cpp
     foundation/meta/tests/test_statistics.cpp
@@ -571,10 +509,8 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_typetraits.cpp
     foundation/meta/tests/test_utility_filter.cpp
     foundation/meta/tests/test_vector.cpp
-    foundation/meta/tests/test_voxelgrid.cpp
     foundation/meta/tests/test_windows.cpp
     foundation/meta/tests/test_z85.cpp
-    foundation/meta/tests/test_zip.cpp
 )
 list (APPEND appleseed_sources
     ${foundation_meta_tests_sources}
@@ -808,22 +744,6 @@ source_group ("foundation\\utility\\log" FILES
     ${foundation_utility_log_sources}
 )
 
-set (foundation_utility_minizip_sources
-    foundation/utility/minizip/crypt.h
-    foundation/utility/minizip/ioapi.c
-    foundation/utility/minizip/ioapi.h
-    foundation/utility/minizip/unzip.c
-    foundation/utility/minizip/unzip.h
-    foundation/utility/minizip/zip.c
-    foundation/utility/minizip/zip.h
-)
-list (APPEND appleseed_sources
-    ${foundation_utility_minizip_sources}
-)
-source_group ("foundation\\utility\\minizip" FILES
-    ${foundation_utility_minizip_sources}
-)
-
 set (foundation_utility_settings_sources
     foundation/utility/settings/settings.xsd
     foundation/utility/settings/settingsfilereader.cpp
@@ -948,8 +868,6 @@ set (foundation_utility_sources
     foundation/utility/xmlelement.h
     foundation/utility/z85.cpp
     foundation/utility/z85.h
-    foundation/utility/zip.cpp
-    foundation/utility/zip.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_sources}
